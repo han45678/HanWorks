@@ -1,0 +1,850 @@
+body {
+  font-family: 'Bernard',Microsoft JhengHei;
+  background: #181818;
+}
+
+header .menu_button .icon::before, header .menu_button .icon::after, header .menu_button.active .icon::before, header .menu_button.active .icon::after {
+  content: "";
+  width: 50px;
+  height: 3px;
+  background: #fff;
+  display: block;
+  position: absolute;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+header {
+  width: 100%;
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 15px;
+  z-index: 1;
+}
+
+header.active {
+  background: rgba(24, 24, 24, 0.8);
+}
+
+header .logo {
+  padding-top: 15px;
+  padding-left: 15px;
+  float: left;
+  position: relative;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+header .logo a {
+  font-size: 42px;
+  color: #fff;
+  position: relative;
+  display: block;
+  width: 50px;
+  height: 50px;
+  text-shadow: 0px 0px 1px #000, 0px 0px 1px #000, 0px 0px 1px #000, 0px 0px 1px #000, 0px 0px 1px #000, 0px 0px 3px #000, 0px 0px 1px #000;
+}
+
+header .logo a h1 {
+  display: none;
+}
+
+header .logo a .name {
+  position: absolute;
+}
+
+header .logo a .works {
+  position: absolute;
+  top: 13px;
+  right: 0;
+}
+
+header .logo a:hover {
+  width: auto;
+}
+
+header .logo a:hover h1 {
+  display: block;
+}
+
+header .logo a:hover .name {
+  display: none;
+}
+
+header .logo a:hover .works {
+  display: none;
+}
+
+header .menu_button {
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin-top: 10px;
+  margin-right: 15px;
+  float: right;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+header .menu_button:hover .icon {
+  width: 30px;
+}
+
+header .menu_button .icon {
+  width: 50px;
+  height: 3px;
+  background: #fff;
+  display: block;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+header .menu_button .icon::before {
+  top: 5px;
+}
+
+header .menu_button .icon::after {
+  bottom: 5px;
+}
+
+header .menu_button.active .icon {
+  height: 0px;
+}
+
+header .menu_button.active .icon::before {
+  top: 25px;
+  -webkit-transform: rotate(45rad);
+          transform: rotate(45rad);
+}
+
+header .menu_button.active .icon::after {
+  bottom: unset;
+  -webkit-transform: rotate(-45rad);
+          transform: rotate(-45rad);
+}
+
+header .menu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: -200%;
+  width: 100%;
+  height: 100vh;
+  min-height: 500px;
+  padding: 100px 0 0 0;
+  text-align: center;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+  background: #383838;
+}
+
+header .menu.active {
+  right: 0;
+}
+
+header .menu .title {
+  font-size: 84px;
+  color: #fff;
+  margin-bottom: 100px;
+}
+
+header .menu a {
+  color: #fff;
+  text-align: left;
+  display: block;
+  padding: 30px;
+  font-size: 42px;
+  position: relative;
+  width: calc(100% - 60px);
+  max-width: 480px;
+  margin: auto;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+header .menu a span {
+  width: 200px;
+}
+
+header .menu a::after {
+  content: "";
+  width: calc(100% - 200px);
+  height: 5px;
+  background: #fff;
+  display: block;
+  position: absolute;
+  top: calc(50% - 2.5px);
+  right: 30px;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+header .menu a:hover {
+  color: #000;
+  background: #fff;
+}
+
+header .menu a:hover::after {
+  background: #000;
+}
+
+main {
+  overflow-x: hidden;
+}
+
+main #banner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-height: 900px;
+}
+
+main #banner .text {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 50%;
+          flex: 0 0 50%;
+  height: 100vh;
+  min-height: 500px;
+  position: relative;
+}
+
+main #banner .text .content {
+  position: absolute;
+  top: 50%;
+  padding-left: 30%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+
+main #banner .text .content h1 {
+  font-size: 144px;
+  color: #fff;
+}
+
+main #banner .text .content h1 span {
+  display: block;
+}
+
+main #banner .text .content a {
+  display: inline-block;
+  margin: 30px 30px 0 0;
+  padding: 15px 30px;
+  border: 3px solid #fff;
+  color: #fff;
+  font-size: 24px;
+  position: relative;
+  overflow: hidden;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+main #banner .text .content a:hover {
+  color: #000;
+  background: #fff;
+}
+
+main #banner .photo {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 50%;
+          flex: 0 0 50%;
+  background: #000;
+  height: 100vh;
+  min-height: 500px;
+  position: relative;
+  overflow: hidden;
+}
+
+main #banner .photo::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 50vh 0 50vh 100px;
+  border-color: transparent transparent transparent #181818;
+}
+
+main #banner .photo .imgLiquidCenter {
+  width: 100%;
+  height: 100vh;
+  min-height: 500px;
+  -webkit-filter: grayscale(100%);
+          filter: grayscale(100%);
+}
+
+main #works {
+  background: #222;
+  width: 100%;
+  height: 100vh;
+  min-height: 900px;
+  position: relative;
+}
+
+main #works .content {
+  width: 100%;
+  max-width: 1366px;
+  padding: 0;
+  margin: auto;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  left: 0;
+  right: 0;
+}
+
+main #works .content h2 {
+  color: #fff;
+  text-align: center;
+  font-size: 72px;
+  padding-bottom: 15px;
+  margin: 0 30px 55px 30px;
+  border-bottom: 5px solid #fff;
+}
+
+main #works .content .slick {
+  margin: 0 75px;
+  position: relative;
+}
+
+main #works .content .slick .imgLiquidCenter {
+  width: 100%;
+  height: 450px;
+  display: block;
+}
+
+main #works .content .slick .imgLiquidCenter img {
+  max-height: 100%;
+}
+
+main #works .content .slick .prev {
+  position: absolute;
+  left: -45px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 20px 15px 0;
+  border-color: transparent #ffffff transparent transparent;
+  background: transparent;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+main #works .content .slick .prev:hover {
+  border-color: transparent #777 transparent transparent;
+}
+
+main #works .content .slick .next {
+  position: absolute;
+  right: -45px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 0 15px 20px;
+  border-color: transparent transparent transparent #ffffff;
+  background: transparent;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+main #works .content .slick .next:hover {
+  border-color: transparent transparent transparent #777;
+}
+
+main #about {
+  background: #565656;
+  width: 100%;
+  height: 100vh;
+  min-height: 900px;
+  position: relative;
+  overflow: hidden;
+}
+
+main #about .content {
+  width: 100%;
+  max-width: 1306px;
+  padding: 0;
+  margin: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-shadow: 0 5px 8px rgba(0, 0, 0, 0.75);
+          box-shadow: 0 5px 8px rgba(0, 0, 0, 0.75);
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  left: 0;
+  right: 0;
+}
+
+main #about .content::after {
+  content: "HAN";
+  color: #222;
+  font-size: 124px;
+  -webkit-transform: rotate(90deg);
+          transform: rotate(90deg);
+  position: absolute;
+  right: -139px;
+  bottom: 30px;
+}
+
+main #about .content h2 {
+  text-align: center;
+  font-size: 72px;
+  padding-bottom: 15px;
+  margin: 0 30px;
+}
+
+main #about .content h2.mobile {
+  display: none;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 100%;
+          flex: 0 0 100%;
+}
+
+main #about .content h2.pc {
+  display: block;
+  font-size: 125px;
+  padding: 30px 0 30px 30px;
+  text-align: left;
+  margin: 0;
+}
+
+main #about .content .photo {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 60%;
+          flex: 0 0 60%;
+  background: #000;
+  height: auto;
+  min-height: 250px;
+  -webkit-filter: grayscale(100%);
+          filter: grayscale(100%);
+}
+
+main #about .content .data {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 40%;
+          flex: 0 0 40%;
+  background: #fff;
+  height: auto;
+  padding: 0 0 30px 0;
+}
+
+main #about .content .data h3 {
+  font-size: 48px;
+  padding: 0 0 30px 30px;
+}
+
+main #about .content .data h4 {
+  font-size: 60px;
+  padding: 0 0 30px 30px;
+}
+
+main #about .content .data ul {
+  font-size: 24px;
+  padding: 0 0 30px 30px;
+}
+
+main #about .content .data ul li {
+  line-height: 50px;
+}
+
+main #about .content .data ul li a {
+  color: #000;
+}
+
+main #about .content .data .more {
+  color: #000;
+  border: 5px solid #000;
+  margin-top: 15px;
+}
+
+main #about .content .data .more:hover {
+  background: #000;
+  color: #fff;
+}
+
+#works_content {
+  background: #222;
+  position: relative;
+}
+
+#works_content button {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  right: 30px;
+  top: 30px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#works_content button .icon {
+  width: 50px;
+  height: 3px;
+  background: #fff;
+  display: block;
+  position: relative;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+#works_content button .icon::before {
+  content: "";
+  width: 30px;
+  height: 3px;
+  background: #fff;
+  display: block;
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  -webkit-transform: rotate(45rad);
+          transform: rotate(45rad);
+}
+
+#works_content button .icon::after {
+  content: "";
+  width: 30px;
+  height: 3px;
+  background: #fff;
+  display: block;
+  position: absolute;
+  bottom: -12px;
+  right: -8px;
+  -webkit-transform: rotate(-45rad);
+          transform: rotate(-45rad);
+}
+
+#works_content button:hover .icon {
+  left: -3px;
+}
+
+#works_content .content {
+  padding-top: 100px;
+  padding-bottom: 100px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1366px;
+}
+
+#works_content .content h2 {
+  color: #fff;
+  font-size: 72px;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 100%;
+          flex: 0 0 100%;
+}
+
+#works_content .content h3 {
+  color: #fff;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  font-size: 36px;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 100%;
+          flex: 0 0 100%;
+}
+
+#works_content .content .works_detail {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+#works_content .content .works_detail .detail {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 30%;
+          flex: 0 0 30%;
+  margin-left: 1.5%;
+  margin-right: 1.5%;
+  margin-bottom: 3%;
+  min-height: 1px;
+  text-align: center;
+}
+
+#works_content .content .works_detail .detail a {
+  display: block;
+}
+
+#works_content .content ul {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+#works_content .content ul li {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 30%;
+          flex: 0 0 30%;
+  margin-left: 1.5%;
+  margin-right: 1.5%;
+  margin-bottom: 3%;
+  text-align: center;
+}
+
+#works_content .content ul li img {
+  height: 50px;
+  background: #fff;
+}
+
+#works_content .content ol {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+#works_content .content ol li {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 47%;
+          flex: 0 0 47%;
+  margin-left: 1.5%;
+  margin-right: 1.5%;
+  margin-bottom: 3%;
+  text-align: center;
+}
+
+#works_content .content ol li img {
+  max-width: 100%;
+  background: #fff;
+}
+
+@media (max-width: 1366px) {
+  main #about {
+    height: auto;
+  }
+  main #about .content {
+    width: calc(100% - 60px);
+    margin: 100px 30px;
+    position: -webkit-sticky;
+    position: sticky;
+    -webkit-transform: translateY(0%);
+            transform: translateY(0%);
+  }
+  #works_content .content {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    padding: 0 50px;
+  }
+}
+
+@media (max-width: 1199px) {
+  main #banner {
+    display: block;
+    position: relative;
+    height: 100vh;
+    min-height: 900px;
+  }
+  main #banner .text {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(24, 24, 24, 0.8);
+  }
+  main #banner .text .content {
+    padding-left: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  main #banner .text .content a {
+    margin: 30px;
+  }
+  main #banner .photo {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+  main #banner .photo::after {
+    top: auto;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 50vw 150px 50vw;
+    border-color: transparent transparent #181818 transparent;
+  }
+  main #about {
+    padding: 100px 0;
+  }
+  main #about .content {
+    width: calc(100% - 60px);
+    margin: auto 30PX;
+    position: static;
+    -webkit-transform: translateY(0%);
+            transform: translateY(0%);
+  }
+  main #about .content h2 {
+    font-size: 72px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    background: #fff;
+  }
+  main #about .content h2.mobile {
+    display: block;
+    font-size: 72px;
+    margin: 0;
+  }
+  main #about .content h2.pc {
+    display: none;
+  }
+  main #about .content .photo {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 100%;
+            flex: 0 0 100%;
+    min-height: 500px;
+  }
+  main #about .content .data {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 100%;
+            flex: 0 0 100%;
+    max-height: -webkit-max-content;
+    max-height: -moz-max-content;
+    max-height: max-content;
+    height: auto;
+    padding-bottom: 30px;
+  }
+  main #about .content .data h3 {
+    padding: 30px 0 30px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  header .menu .title {
+    margin-bottom: 50px;
+  }
+  main #banner {
+    min-height: 500px;
+  }
+  main #banner .text .content h1 {
+    font-size: 100px;
+  }
+  main #banner .text .content a {
+    margin: 30px 15px 0 15px;
+  }
+  main #works {
+    min-height: auto;
+  }
+  main #works .content {
+    padding: 50px 0;
+  }
+  main #works .content h2 {
+    font-size: 42px;
+    padding-bottom: 10px;
+  }
+  main #works .content .slick {
+    margin: 0 65px;
+  }
+  main #about {
+    padding: 50px 0;
+    min-height: auto;
+  }
+  #works_content .content .works_detail .detail {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 47%;
+            flex: 0 0 47%;
+  }
+  #works_content .content ul li {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 30%;
+            flex: 0 0 30%;
+  }
+  #works_content .content ol li {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 97%;
+            flex: 0 0 97%;
+  }
+}
+
+@media (max-width: 480px) {
+  header .menu .title {
+    margin-bottom: 30px;
+  }
+  main #banner .text .content h1 {
+    font-size: 72px;
+  }
+  main #works .content h2 {
+    font-size: 42px;
+    padding-bottom: 10px;
+  }
+  main #works .content .slick {
+    margin: 0 50px;
+  }
+  main #works .content .slick .imgLiquidCenter {
+    height: 250px;
+  }
+  main #about .content::after {
+    font-size: 30px;
+    right: -35px;
+    bottom: 15px;
+  }
+  main #about .content .photo {
+    min-height: 250px;
+  }
+  main #about .content .data h3 {
+    font-size: 24px;
+    padding: 30px 0 30px 30px;
+  }
+  main #about .content .data h4 {
+    font-size: 40px;
+  }
+  main #about .content .data ul {
+    font-size: 12px;
+    padding: 0 0 15px 30px;
+  }
+  main #about .content .data ul li {
+    line-height: 30px;
+  }
+  #works_content .content .works_detail .detail {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 97%;
+            flex: 0 0 97%;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+  }
+  #works_content .content ul li {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 47%;
+            flex: 0 0 47%;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+    margin-bottom: 3%;
+  }
+  #works_content .content ol li {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 97%;
+            flex: 0 0 97%;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+    margin-bottom: 3%;
+  }
+}
+/*# sourceMappingURL=style.css.map */
