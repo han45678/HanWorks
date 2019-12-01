@@ -4,18 +4,18 @@ $(function () {
         url: "../HanWorks/js/data.json"
     })
         .done(function (data) {
-            var position = data.results[0].position;
-            var englishName = data.results[0].englishName;
-            var Name = data.results[0].Name;
-            var birthday = data.results[0].birthday;
-            var expertise = data.results[0].expertise;
-            var phone = data.results[0].phone;
-            var email = data.results[0].email;
+            var position = data.position;
+            var englishName = data.englishName;
+            var Name = data.Name;
+            var birthday = data.birthday;
+            var expertise = data.expertise;
+            var phone = data.phone;
+            var email = data.email;
             
-            var works0 = data.results[0].works[0].worksPhoto;
-            var works1 = data.results[0].works[1].worksPhoto;
-            var works2 = data.results[0].works[2].worksPhoto;
-            var works3 = data.results[0].works[3].worksPhoto;
+            // var works0 = data.works[0].worksPhoto;
+            // var works1 = data.works[1].worksPhoto;
+            // var works2 = data.works[2].worksPhoto;
+            // var works3 = data.works[3].worksPhoto;
 
             $("span.englishName,h4.englishName").append(englishName);
             $("h3.position").append(position);
@@ -24,8 +24,6 @@ $(function () {
             $("span.expertise").append(expertise);
             $("span.phone").append(phone);
             $("span.email").append(email);
-
-
         });
 
 });
