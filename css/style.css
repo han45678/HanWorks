@@ -202,7 +202,7 @@ main #banner {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  min-height: 900px;
+  min-height: 400px;
 }
 
 main #banner .text {
