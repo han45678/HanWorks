@@ -1,36 +1,39 @@
-[
-    {
-        "englishName": "HAN",
-        "Name": "林旻翰",
-        "birthday": "1995-07-17",
-        "expertise": "網頁前端工程、平面設計",
-        "phone": "0910812144",
-        "email": "han0910812144@gmail.com",
-        "position": "Front-end engineer",
-        "works": [
-            {
-                "worksPhoto": "images/w1.jpg"
-            },
-            {
-                "worksPhoto": "images/w2.jpg"
-            },
-            {
-                "worksPhoto": "images/w3.jpg"
-            },
-            {
-                "worksPhoto": "images/w4.jpg"
-            }
-        ],
-        "photo": [
-            {
-                "personalPhoto": "images/b1.jpg"
-            },
-            {
-                "personalPhoto": "images/b2.jpg"
-            },
-            {
-                "personalPhoto": "images/b3.jpg"
-            }
-        ]
-    }
-]
+{
+    "results": [
+        {
+            "englishName": "HAN",
+            "Name": "林旻翰",
+            "birthday": "1995-07-17",
+            "expertise": "網頁前端工程、平面設計",
+            "phone": "0910812144",
+            "email": "han0910812144@gmail.com",
+            "position": "Front-end engineer",
+            "works":[
+                {
+                    "worksPhoto":"images/w1.jpg"
+                },
+                {
+                    "worksPhoto":"images/w2.jpg"
+                },
+                {
+                    "worksPhoto":"images/w3.jpg"
+                },
+                {
+                    "worksPhoto":"images/w4.jpg"
+                }
+            ],
+            "photo":[
+                {
+                    "personalPhoto": "images/b1.jpg"
+                },
+                {
+                    "personalPhoto": "images/b2.jpg"
+                },
+                {
+                    "personalPhoto": "images/b3.jpg"
+                }
+            ]
+        }
+    ]
+}
+
