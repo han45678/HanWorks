@@ -71,6 +71,6 @@ $(document).ready(function () {
     $(".imgLiquidCenter,#about .photo").imgLiquid({
         fill: true,
         horizontalAlign: "center",
-        verticalAlign: "top"
+        verticalAlign: "center"
     });
 });
