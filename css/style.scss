@@ -473,6 +473,9 @@ main{
                 text-align: center;
                 a{
                     display: block;
+                    img{
+                        max-width: 100%;
+                    }
                 }
             }
         }
@@ -486,8 +489,9 @@ main{
                 margin-bottom: 3%;
                 text-align: center;
                 img{
-                    height: 50px;
+                    min-height: 50px;
                     background: #fff;
+                    max-width: 100%;
                 }
             }
         }

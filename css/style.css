@@ -587,6 +587,10 @@ main #about .content .data .more:hover {
   display: block;
 }
 
+#works_content .content .works_detail .detail a img {
+  max-width: 100%;
+}
+
 #works_content .content ul {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -606,8 +610,9 @@ main #about .content .data .more:hover {
 }
 
 #works_content .content ul li img {
-  height: 50px;
+  min-height: 50px;
   background: #fff;
+  max-width: 100%;
 }
 
 #works_content .content ol {
