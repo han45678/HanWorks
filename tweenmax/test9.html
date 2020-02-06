@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #404040;
+        }
+
+        p {
+            font-size: 128px;
+            color: #fff;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="box">
+        <p class="digital"></p>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        $(function () {
+            var digital = {
+                int: 100
+            }
+            TweenMax.to(digital, 3, {
+                ease: Power4.easeInOut,
+                int: 0,
+                onUpdate: beat
+            })
+            function beat() {
+                $(".digital").html(Math.ceil(digital.int));
+                //Math.ceil可以不出現小數點
+            }
+        })
+    </script>
+</body>
+
+</html>

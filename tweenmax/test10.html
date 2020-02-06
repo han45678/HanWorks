@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>parallax捲軸動態</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        .box{
+            width: 128px;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content:space-between;
+            padding: 0;
+            list-style: none;
+        }
+        .box li{
+            width: 128px;
+            opacity: 0;
+        }
+        .box li.picL{
+            transform: translateX(-50px);
+        }
+        .box li.picR{
+            transform: translateX(50px);
+        }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; height: 600px;"></div>
+    <ul class="box">
+        <li class="picL pic1"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic2"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picL pic3"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic4"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picL pic5"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic6"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picL pic7"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic8"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picL pic9"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic10"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picL pic11"><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li class="picR pic12"><img src="jobs.jpg" alt="賈伯斯"></li>
+    </ul>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        var TL = new TimelineLite();
+        //TimelineLite時間軸功能
+
+        // TL.to(".box li.pic1",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic2",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic3",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic4",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic5",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic6",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic7",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic8",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic9",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic10",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic11",3,{opacity:1,transform:"translateX(0)"})
+        // TL.to(".box li.pic12",3,{opacity:1,transform:"translateX(0)"})
+
+        //上方是教學的做法，下方實際更簡易的寫法
+        TL.staggerTo(".box li",10,{ease: Power4.easeInOut,opacity:1,transform:"translateX(0)"},1)
+
+        TL.pause();//暫停動畫
+
+        $(window).scroll(function(){
+            var scrullTop = $(window).scrollTop();//目前捲軸的位置
+            var docHeight = $(document).height();//整個網頁的高度
+            var winHeight = $(window).height();//目前視窗的高度
+
+            var reel = scrullTop / (docHeight - winHeight)
+            //目前捲軸的位置 /（整個網頁的高度-目前視窗的高度）= 捲軸在整體網頁上的百分之幾
+            
+            TL.progress(reel)
+            //在（progress）捲軸進度抓取（reel）捲軸百分比，並執行
+        })
+
+    </script>
+</body>
+</html>

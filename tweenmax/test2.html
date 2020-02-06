@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Scale的縮放</title>
+    <style>
+        #jobs{
+            width: 384px;
+            height: 480px;
+            background-image: url(jobs.jpg);
+            background-size: cover;
+            margin: auto;
+            border: 5px solid #000;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            overflow: hidden;
+        }
+
+        #box{
+            width: 200px;
+            height: 200px;
+            background-image: url(box.png);
+            background-size: cover;
+            position: absolute;
+            top: 150px;
+            left: -30px;
+            transform: scale(0,0);
+        }
+        #box p{
+            width: 32px;
+            height: 40px;
+            font-size: 32px;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="jobs">
+        <div id="box">
+            <p>HI!</p>
+        </div>
+    </div>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        TweenMax.to("#box",1,{
+            scaleX:1,
+            scaleY:1,
+            transformOrigin:"100% 100%",
+            ease: Bounce.easeOut
+        })
+    </script>
+</body>
+</html>

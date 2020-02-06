@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TweenMax.staggerFrom()效果展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        button {
+            outline: none;
+            cursor: pointer;
+        }
+
+        header {
+            background-color: #ccc;
+            min-height: 50px;
+            position: relative;
+        }
+
+        button {
+            position: absolute;
+            right: 9px;
+            top: 9px;
+            background-color: transparent;
+            border: none;
+            background-image: url(menu.png);
+            width: 32px;
+            height: 32px;
+            transition: 1s;
+        }
+
+        header.open button {
+            background-image: url(open-menu.png);
+        }
+
+        header ul {
+            max-width: 300px;
+            width: 100%;
+            height: calc(100vh - 50px);
+            position: absolute;
+            right: -300px;
+            top: 50px;
+            background-color: #969696;
+            list-style: none;
+            transition: 1s;
+        }
+
+        header.open ul {
+            right: 0;
+        }
+
+        header ul li {
+            border-bottom: 1px solid #757575;
+        }
+
+        header ul li a {
+            text-decoration: none;
+            color: #000;
+            transition: 0.5s;
+            display: block;
+            text-align: center;
+            line-height: 50px;
+        }
+
+        header ul li:hover a {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button></button>
+        <ul>
+            <li>
+                <a href="javascript:void(0)">選單1</a>
+            </li>
+            <li>
+                <a href="javascript:void(0)">選單2</a>
+            </li>
+            <li>
+                <a href="javascript:void(0)">選單3</a>
+            </li>
+            <li>
+                <a href="javascript:void(0)">選單4</a>
+            </li>
+            <li>
+                <a href="javascript:void(0)">選單5</a>
+            </li>
+            <li>
+                <a href="javascript:void(0)">選單6</a>
+            </li>
+        </ul>
+    </header>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        $(function () {
+            $("header button").click(function () {
+                if ($("header").hasClass('open')) 
+                {
+                    $("header").removeClass('open');
+                    resst("header ul li")
+                } else {
+                    $("header").addClass('open');
+                    aminateSet("header ul li");
+                }
+            });
+
+            function aminateSet(as) {
+                TweenMax.killAll();
+                //killAll可刪掉目前的動畫
+                TweenMax.staggerFrom(as, 0.8, {
+                    //staggerFrom可以先幫初始值先完成,不需要再利用css去撰寫預設的樣式
+                    //讓物件可以先利用scale縮小點擊後觸發，然後再復原
+                    scaleX: 0,
+                    scaleY: 0,
+                    opacity: 0,
+                    x:"350px"
+                }, 0.3)
+            }
+            function resst(as) {
+                //多寫這個resst的用處是動畫可能快速連點會發生ＢＵＧ，需要讓物件擁有一個原本該有的ＣＳＳ
+                TweenMax.killAll();
+                //killAll可刪掉目前的動畫
+                TweenMax.set(as, {
+                    //set是TweenMax內建的css控制，可強制給物件ＣＳＳ
+                    scaleX: 1,
+                    scaleY: 1,
+                    opacity: 1,
+                    x:"0px"
+                })
+            }
+        });
+    </script>
+</body>
+
+</html>

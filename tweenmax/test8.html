@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>滾輪加減動態</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script src="ScrollToPlugin.min.js">//處理捲軸動態需要額外載入</script>
+</head>
+<body>
+    <div style="width: 100%; height: 2000px;"></div>
+    
+    <script>
+        $(function(){
+            var speed = 170;
+            $(window).on("mousewheel DOMMouseScroll",function(roll){
+                //DOMMouseScroll為火狐瀏覽器所需的
+                roll.preventDefault();//禁用瀏覽器原本的滾動事件
+                var mouse = roll.originalEvent.wheelDelta / 120 || -roll.originalEvent.scroll / 3;
+                //OriginalEvent（原始事件）中的originalEvent（滾輪事件）
+                var scrollTop = $(window).scrollTop();
+                var finalScroll = scrollTop - mouse * speed;
+                TweenMax.to(window,1.5,{scrollTo:{y:finalScroll},ease: Power1.easeInOut})
+            })
+        })
+    </script>
+</body>
+</html>

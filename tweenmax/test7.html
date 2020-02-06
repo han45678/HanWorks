@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>多物件操作與延遲</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        .box{
+            width: 266px;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content:space-between;
+            padding: 0;
+            list-style: none;
+        }
+        .box li{
+            width: 128px;
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+    </style>
+</head>
+<body>
+    <ul class="box">
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+        <li><img src="jobs.jpg" alt="賈伯斯"></li>
+    </ul>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        TweenMax.staggerTo(".box li",1,{opacity:1,transform:"translateY(0)"},0.2)
+    </script>
+</body>
+</html>
