@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口罩販賣點</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            font-family: Microsoft JhengHei;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #4FC08C;
+        }
+
+        #app {
+            max-width: 768px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 30px 0 15px 0;
+            color: #274434;
+        }
+
+        input {
+            font-size: 20px;
+            width: calc(100% - 60px);
+            margin: 15px;
+            padding: 0 15px;
+            border: none;
+            line-height: 50px;
+            border-radius: 5px;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .j-center {
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        button {
+            font-size: 20px;
+            width: calc(50% - 30px);
+            margin: 15px;
+            line-height: 50px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .submit {
+            background-color: blue;
+        }
+
+        .clear {
+            background-color: red;
+        }
+
+        ul {
+            margin: 15px 15px 0 15px;
+            list-style: none;
+            overflow-x: hidden;
+        }
+
+        li {
+            background-color: #fff;
+            margin: 0 0 10px 0;
+            padding: 15px 15px 15px 15px;
+            position: relative;
+        }
+
+        .item {
+            line-height: 50px;
+            font-size: 18px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .fz24 {
+            font-size: 24px;
+            font-weight: bolder;
+            color: #4FC08C;
+        }
+
+        .fz12 {
+            font-size: 12px;
+            color: red;
+        }
+
+        .title {
+            font-weight: bolder;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .time {
+            padding: 15px 0;
+        }
+
+        a{
+            color: #000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h1>口罩販賣點</h1>
+        <ul>
+            <li v-for="item in features" v-if="item.town==='大雅區'">
+                <!-- <div>{{item.id}}</div> -->
+                <div class="item fz24">{{item.name}}</div>
+                <div class="item">
+                    <span class="title">電話：</span><a :href="'tel:'+item.phone">{{item.phone}}</a>
+                </div>
+                <div class="item">
+                    <span class="title">地址：</span>
+                    <a :href="'https://www.google.com.tw/maps/place/'+item.address" target="_blank">{{item.address}}</a>
+                </div>
+                <div class="item">
+                    <span class="title">成人：</span>{{item.mask_adult}}
+                </div>
+                <div class="item">
+                    <span class="title">兒童：</span>{{item.mask_child}}
+                </div>
+                <div class="time">
+                    <span class="title d-flex">營運時間：</span>{{item.available}}
+                </div>
+                <!-- <div class="item">{{item.note}}</div>
+                <div class="item">{{item.custom_note}}</div>
+                <div class="item">{{item.website}}</div> -->
+                <div class="item text-right fz12">更新時間：{{item.updated}}</div>
+                <!-- <div>{{item.county}市}{{item.town}區}</div> -->
+            </li>
+        </ul>
+    </div>
+    <script>
+        const vm = new Vue({
+            el: '#app',
+            data: {
+                features: []
+            },
+            mounted() {
+                axios
+                    .get('https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json')
+                    .then(res => {
+                        this.features = res.data.features.map(data => data.properties)
+                    })
+            },
+        });
+    </script>
+</body>
+
+</html>
