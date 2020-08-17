@@ -10,7 +10,6 @@ header .menu_button .icon::before, header .menu_button .icon::after, header .men
   background: #fff;
   display: block;
   position: absolute;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -34,7 +33,6 @@ header .logo {
   padding-left: 15px;
   float: left;
   position: relative;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -101,7 +99,6 @@ header .menu_button .icon {
   height: 3px;
   background: #fff;
   display: block;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -119,14 +116,12 @@ header .menu_button.active .icon {
 
 header .menu_button.active .icon::before {
   top: 25px;
-  -webkit-transform: rotate(45rad);
-          transform: rotate(45rad);
+  transform: rotate(45rad);
 }
 
 header .menu_button.active .icon::after {
   bottom: unset;
-  -webkit-transform: rotate(-45rad);
-          transform: rotate(-45rad);
+  transform: rotate(-45rad);
 }
 
 header .menu {
@@ -139,7 +134,6 @@ header .menu {
   min-height: 500px;
   padding: 100px 0 0 0;
   text-align: center;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
   background: #383838;
 }
@@ -164,7 +158,6 @@ header .menu a {
   width: calc(100% - 60px);
   max-width: 480px;
   margin: auto;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -181,7 +174,6 @@ header .menu a::after {
   position: absolute;
   top: calc(50% - 2.5px);
   right: 30px;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -199,16 +191,12 @@ main {
 }
 
 main #banner {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   min-height: 900px;
 }
 
 main #banner .text {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 50%;
-          flex: 0 0 50%;
+  flex: 0 0 50%;
   height: 100vh;
   min-height: 500px;
   position: relative;
@@ -218,8 +206,7 @@ main #banner .text .content {
   position: absolute;
   top: 50%;
   padding-left: 30%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 
 main #banner .text .content h1 {
@@ -240,7 +227,6 @@ main #banner .text .content a {
   font-size: 24px;
   position: relative;
   overflow: hidden;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -250,9 +236,7 @@ main #banner .text .content a:hover {
 }
 
 main #banner .photo {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 50%;
-          flex: 0 0 50%;
+  flex: 0 0 50%;
   background: #000;
   height: 100vh;
   min-height: 500px;
@@ -276,8 +260,7 @@ main #banner .photo .imgLiquidCenter {
   width: 100%;
   height: 100vh;
   min-height: 500px;
-  -webkit-filter: grayscale(100%);
-          filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 
 main #works {
@@ -295,8 +278,7 @@ main #works .content {
   margin: auto;
   position: absolute;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+  transform: translateY(-50%);
   left: 0;
   right: 0;
 }
@@ -325,19 +307,21 @@ main #works .content .slick .imgLiquidCenter img {
   max-height: 100%;
 }
 
+main #works .content .slick .slick-slide {
+  margin: 0 15px;
+}
+
 main #works .content .slick .prev {
   position: absolute;
   left: -45px;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+  transform: translateY(-50%);
   width: 0;
   height: 0;
   border-style: solid;
   border-width: 15px 20px 15px 0;
   border-color: transparent #ffffff transparent transparent;
   background: transparent;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -349,15 +333,13 @@ main #works .content .slick .next {
   position: absolute;
   right: -45px;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+  transform: translateY(-50%);
   width: 0;
   height: 0;
   border-style: solid;
   border-width: 15px 0 15px 20px;
   border-color: transparent transparent transparent #ffffff;
   background: transparent;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -379,17 +361,12 @@ main #about .content {
   max-width: 1306px;
   padding: 0;
   margin: auto;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
-  -webkit-box-shadow: 0 5px 8px rgba(0, 0, 0, 0.75);
-          box-shadow: 0 5px 8px rgba(0, 0, 0, 0.75);
+  flex-wrap: wrap;
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.75);
   position: absolute;
   top: 50%;
-  -webkit-transform: translateY(-50%);
-          transform: translateY(-50%);
+  transform: translateY(-50%);
   left: 0;
   right: 0;
 }
@@ -398,8 +375,7 @@ main #about .content::after {
   content: "HAN";
   color: #222;
   font-size: 124px;
-  -webkit-transform: rotate(90deg);
-          transform: rotate(90deg);
+  transform: rotate(90deg);
   position: absolute;
   right: -139px;
   bottom: 30px;
@@ -414,9 +390,7 @@ main #about .content h2 {
 
 main #about .content h2.mobile {
   display: none;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
+  flex: 0 0 100%;
 }
 
 main #about .content h2.pc {
@@ -428,20 +402,15 @@ main #about .content h2.pc {
 }
 
 main #about .content .photo {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 60%;
-          flex: 0 0 60%;
+  flex: 0 0 60%;
   background: #000;
   height: auto;
   min-height: 250px;
-  -webkit-filter: grayscale(100%);
-          filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 
 main #about .content .data {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 40%;
-          flex: 0 0 40%;
+  flex: 0 0 40%;
   background: #fff;
   height: auto;
   padding: 0 0 30px 0;
@@ -504,7 +473,6 @@ main #about .content .data .more:hover {
   background: #fff;
   display: block;
   position: relative;
-  -webkit-transition: 0.6s;
   transition: 0.6s;
 }
 
@@ -517,8 +485,7 @@ main #about .content .data .more:hover {
   position: absolute;
   top: -12px;
   right: -8px;
-  -webkit-transform: rotate(45rad);
-          transform: rotate(45rad);
+  transform: rotate(45rad);
 }
 
 #works_content button .icon::after {
@@ -530,8 +497,7 @@ main #about .content .data .more:hover {
   position: absolute;
   bottom: -12px;
   right: -8px;
-  -webkit-transform: rotate(-45rad);
-          transform: rotate(-45rad);
+  transform: rotate(-45rad);
 }
 
 #works_content button:hover .icon {
@@ -549,9 +515,7 @@ main #about .content .data .more:hover {
 #works_content .content h2 {
   color: #fff;
   font-size: 72px;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
+  flex: 0 0 100%;
 }
 
 #works_content .content h3 {
@@ -559,23 +523,16 @@ main #about .content .data .more:hover {
   margin-top: 30px;
   margin-bottom: 30px;
   font-size: 36px;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
+  flex: 0 0 100%;
 }
 
 #works_content .content .works_detail {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 #works_content .content .works_detail .detail {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 30%;
-          flex: 0 0 30%;
+  flex: 0 0 30%;
   margin-left: 1.5%;
   margin-right: 1.5%;
   margin-bottom: 3%;
@@ -592,17 +549,12 @@ main #about .content .data .more:hover {
 }
 
 #works_content .content ul {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 #works_content .content ul li {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 30%;
-          flex: 0 0 30%;
+  flex: 0 0 30%;
   margin-left: 1.5%;
   margin-right: 1.5%;
   margin-bottom: 3%;
@@ -616,17 +568,12 @@ main #about .content .data .more:hover {
 }
 
 #works_content .content ol {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 #works_content .content ol li {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 47%;
-          flex: 0 0 47%;
+  flex: 0 0 47%;
   margin-left: 1.5%;
   margin-right: 1.5%;
   margin-bottom: 3%;
@@ -645,10 +592,8 @@ main #about .content .data .more:hover {
   main #about .content {
     width: calc(100% - 60px);
     margin: 100px 30px;
-    position: -webkit-sticky;
     position: sticky;
-    -webkit-transform: translateY(0%);
-            transform: translateY(0%);
+    transform: translateY(0%);
   }
   #works_content .content {
     padding-top: 50px;
@@ -704,8 +649,7 @@ main #about .content .data .more:hover {
     width: calc(100% - 60px);
     margin: auto 30PX;
     position: static;
-    -webkit-transform: translateY(0%);
-            transform: translateY(0%);
+    transform: translateY(0%);
   }
   main #about .content h2 {
     font-size: 72px;
@@ -722,17 +666,11 @@ main #about .content .data .more:hover {
     display: none;
   }
   main #about .content .photo {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 100%;
-            flex: 0 0 100%;
+    flex: 0 0 100%;
     min-height: 500px;
   }
   main #about .content .data {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 100%;
-            flex: 0 0 100%;
-    max-height: -webkit-max-content;
-    max-height: -moz-max-content;
+    flex: 0 0 100%;
     max-height: max-content;
     height: auto;
     padding-bottom: 30px;
@@ -773,19 +711,13 @@ main #about .content .data .more:hover {
     min-height: auto;
   }
   #works_content .content .works_detail .detail {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 47%;
-            flex: 0 0 47%;
+    flex: 0 0 47%;
   }
   #works_content .content ul li {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 30%;
-            flex: 0 0 30%;
+    flex: 0 0 30%;
   }
   #works_content .content ol li {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 97%;
-            flex: 0 0 97%;
+    flex: 0 0 97%;
   }
 }
 
@@ -829,24 +761,18 @@ main #about .content .data .more:hover {
     line-height: 30px;
   }
   #works_content .content .works_detail .detail {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 97%;
-            flex: 0 0 97%;
+    flex: 0 0 97%;
     margin-left: 1.5%;
     margin-right: 1.5%;
   }
   #works_content .content ul li {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 47%;
-            flex: 0 0 47%;
+    flex: 0 0 47%;
     margin-left: 1.5%;
     margin-right: 1.5%;
     margin-bottom: 3%;
   }
   #works_content .content ol li {
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 97%;
-            flex: 0 0 97%;
+    flex: 0 0 97%;
     margin-left: 1.5%;
     margin-right: 1.5%;
     margin-bottom: 3%;
