@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>轉場動態</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        .opening {
+            position: fixed;
+            top: 0;
+            z-index: 9;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-15deg)
+        }
+
+        .photo {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+
+        }
+
+        .p1 {
+            background-color: red;
+            z-index: 1;
+            top: -40%;
+            left: -50%;
+        }
+
+        .p2 {
+            background-color: royalblue;
+            z-index: 3;
+            left: 50%;
+            top: -35%;
+        }
+
+        .p3 {
+            background-color: seagreen;
+            z-index: 3;
+            left: -50%;
+            top: 50%;
+        }
+
+        .p4 {
+            background-color: yellow;
+            z-index: 2;
+            left: 50%;
+            top: 35%;
+        }
+
+        .title {
+            transform: rotate(15deg);
+            position: absolute;
+            z-index: 5;
+            width: 200px;
+            line-height: 200px;
+            height: 200px;
+            background: #db7c00;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            font-size: 120px;
+            text-align: center;
+            color: #fff;
+            -webkit-border-radius: 100px;
+            -moz-border-radius: 100px;
+            border-radius: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="opening">
+        <div class="photo p1"></div>
+        <div class="photo p2"></div>
+        <div class="photo p3"></div>
+        <div class="photo p4"></div>
+        <div class="title">JS</div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        var ww = $(window).width();
+        var wh = $(window).height();
+
+        //staggerFrom可以先幫初始值先完成,不需要再利用css去撰寫預設的樣式
+        TweenMax.staggerFrom(".opening", 3, { rotation: 0 })
+        TweenMax.staggerFrom(".title", 1, { scaleX: 0, scaleY: 0, delay: 1, ease: Back.easeOut.config(1.7) })
+        TweenMax.staggerFrom(".p1", 1, { y: -wh / 2, ease: Back.easeOut.config(1.7) })
+        TweenMax.staggerFrom(".p2", 1, { x: ww / 2, ease: Back.easeOut.config(1.7),onComplete:p2 })
+        TweenMax.staggerFrom(".p3", 1, { x: -ww / 2, ease: Back.easeOut.config(1.7),onComplete:p3})
+        //onComplete該物件執行完的後續動做
+        TweenMax.staggerFrom(".p4", 1, { y: wh / 2, ease: Back.easeOut.config(1.7) })
+
+        function p2(){
+            TweenMax.to(".p2",1,{
+                y:-wh/3,
+                height:"200%"
+            })
+        }
+
+        function p3(){
+            TweenMax.to(".p3",1,{
+                y:-wh,
+                height:"200%"
+            })
+        } 
+    </script>
+</body>
+
+</html>

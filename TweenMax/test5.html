@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>旋轉+補間動畫</title>
+    <style>
+        body,html{
+            width:100%;
+            height:100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body{
+            background: #000;
+        }
+        #jobs{
+            width: 0;
+            height: 0;
+            background-image: url(jobs.jpg);
+            background-size: cover;
+            margin: auto;
+            position: relative;
+        }
+
+        #box{
+            width: 200px;
+            height: 200px;
+            background-image: url(box.png);
+            background-size: cover;
+            position: absolute;
+            top: 150px;
+            left: -30px;
+            opacity: 0;
+        }
+        #box p{
+            width: 32px;
+            height: 40px;
+            font-size: 32px;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            opacity: 0;
+        }
+        #box pre{
+            width: 32px;
+            height: 40px;
+            font-size: 32px;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="jobs">
+        <div id="box">
+            <p>HI!</p>
+            <pre>再見</pre>
+        </div>
+    </div>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        TweenMax.to("#jobs",2,{
+            width: "384px",
+            height: "480px",
+            rotation: 360,
+            y: window.innerHeight - 480,//要扣掉物件本身的高度
+            onComplete: box
+        })
+        function box(){
+            TweenMax.to("#box",1.5,{opacity:1,onComplete:boxP})
+        }
+        function boxP(){
+            TweenMax.to("#box p",1.5,{opacity:3,y:-10,onComplete:boxPre})
+        }
+        function boxPre(){
+            TweenMax.to("#box p",0.2,{opacity:0})
+            TweenMax.to("#box pre",1,{opacity:3,y:-10,x:-20,onComplete:winX})
+        }
+        function winX(){
+            TweenMax.to("#jobs",7,{x: window.innerWidth})
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>onComplete動畫結束之後</title>
+    <style>
+        *{padding: 0;margin: 0;}
+        html,body{
+            height: 100%;
+            width: 100%;
+        }
+        #box{
+            height: 100%;
+            width: 0%;
+            background-image: url(image637090751418774817.jpg);
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="box"></div>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        TweenMax.to("#box",3,{
+            width: "100%",
+            ease: Bounce.easeOut,
+            onComolete: function(){
+                console.log("動畫執行完成");
+            }
+        })
+    </script>
+</body>
+</html>

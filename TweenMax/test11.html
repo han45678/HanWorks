@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>pageX & pageY滑鼠ＸＹ軸定位</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body,html{
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        #back{
+            background-image: url(maxresdefault.jpg);
+            background-size:cover;
+            background-repeat: no-repeat;
+            max-width: 953px;
+            max-height: 696px;
+            width: 100%;
+            height: 100%;
+            margin: auto;
+        }
+        #mario{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 270px;
+            height: 329px;
+            background-image: url(Mario.png);
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="back">
+        <div id="mario"></div>bu
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="TweenMax.min.js"></script>
+    <script>
+        $(function(){
+            $(window).on("mousemove",function(e){
+                TweenMax.to("#mario",0.1,{
+                    left:e.pageX - ($("#mario").width() / 2),
+                    top:e.pageY - ($("#mario").height() / 2),
+                    //利用mousemove抓取滑鼠在網頁上的位置
+                    //並利用絕對定位給物件一個位置
+                    //再利用pageX與pageY改變Ｘ軸與Ｙ軸（top與left）的位置
+                })
+            })
+        })
+    </script>
+</body>
+</html>
