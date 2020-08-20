@@ -373,7 +373,7 @@ main #works .content h2 {
 }
 
 main #works .content .slick {
-  margin: 0;
+  margin: 0 15px;
   position: relative;
 }
 
