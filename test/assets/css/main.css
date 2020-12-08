@@ -1,0 +1,391 @@
+@import url("https://fonts.googleapis.com/css2?family=Pacifico&display=swap");
+header {
+  width: 100%;
+  height: 80px;
+  background-color: #1192a6;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  z-index: 9999;
+  box-shadow: 0px 0px 9px #000;
+}
+
+header #logo {
+  width: 85px;
+  margin-left: 30px;
+  display: inline-block;
+}
+
+header #logo h1 a {
+  height: 80px;
+  line-height: 80px;
+  text-decoration: none;
+  font-family: "Pacifico", cursive;
+  color: #fff;
+  font-size: 52px;
+  text-shadow: 0px 0px 10px #000;
+}
+
+header #menu {
+  background-color: #0d8091;
+  width: 280px;
+  height: calc(100vh - 80px);
+  box-shadow: 0px 5px 10px #000;
+  position: absolute;
+  top: 80px;
+  right: 0;
+  z-index: 999;
+  transition: 0.6s;
+  transform: translateX(100%);
+}
+
+header #menu ul {
+  margin-top: 30px;
+}
+
+header #menu ul li a {
+  line-height: 50px;
+  font-size: 16px;
+  color: #fff;
+  text-decoration: none;
+  padding: 0 30px;
+  display: block;
+  transition: 0.6s;
+}
+
+header #menu ul li a:hover {
+  background: #fff;
+  color: #0d8091;
+}
+
+header #menu.active {
+  transform: translateX(0);
+}
+
+header #menu_button {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  right: 30px;
+  top: 15px;
+  z-index: 1000;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.6s;
+}
+
+header #menu_button .icon {
+  display: inline-block;
+  width: 50px;
+  height: 2px;
+  background-color: white;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: 0.6s;
+  box-shadow: 0px 0px 10px #000;
+}
+
+header #menu_button .icon::before, header #menu_button .icon::after {
+  content: "";
+  display: inline-block;
+  width: 50px;
+  height: 2px;
+  background-color: white;
+  position: absolute;
+  transition: 0.6s;
+  box-shadow: 0px 0px 10px #000;
+}
+
+header #menu_button .icon::before {
+  top: -20px;
+}
+
+header #menu_button .icon::after {
+  top: 20px;
+}
+
+header #menu_button:hover .icon {
+  width: 30px;
+}
+
+header #menu_button.active {
+  text-shadow: 0px 0px 10px #000;
+  border-radius: 999px;
+  border: 2px solid #fff;
+}
+
+header #menu_button.active .icon {
+  width: 0;
+}
+
+header #menu_button.active .icon::before {
+  top: -25px;
+  width: 70px;
+  transform-origin: left;
+  transform: rotate(45deg);
+}
+
+header #menu_button.active .icon::after {
+  left: -22.5px;
+  top: -25px;
+  width: 70px;
+  transform-origin: right;
+  transform: rotate(-45deg);
+}
+
+header #dark {
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: none;
+  transition: 0.8;
+}
+
+header #dark.active {
+  display: block;
+}
+
+footer {
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  background-color: #1192a6;
+  color: #fff;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#loading {
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  overflow: hidden;
+}
+
+#loading .back {
+  width: 100%;
+  position: absolute;
+  height: 100vh;
+  background-color: white;
+  animation-name: loading;
+  animation-duration: 0.8s;
+  animation-fill-mode: forwards;
+}
+
+#loading .left,
+#loading .right {
+  width: 50%;
+  position: absolute;
+  height: 100vh;
+  background-color: black;
+  z-index: 2;
+  animation-fill-mode: forwards;
+  animation-duration: 0.8s;
+}
+
+#loading .left {
+  top: 0;
+  left: 0;
+  animation-name: loading_left;
+}
+
+#loading .right {
+  top: 0;
+  right: 0;
+  animation-name: loading_right;
+}
+
+@keyframes loading {
+  0% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes loading_left {
+  20% {
+    transform: translateY(-100%);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loading_right {
+  20% {
+    transform: translateY(100%);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+main {
+  margin-top: 80px;
+  min-height: calc(100vh - 80px - 60px);
+}
+
+main #banner {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+main #banner .el-carousel__container {
+  height: 450px;
+}
+
+main #banner .el-carousel__container .item {
+  overflow: hidden;
+  height: 100%;
+}
+
+main #banner .el-carousel__container .item img {
+  width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+main #banner .item img {
+  width: 100%;
+}
+
+main .wrapper {
+  max-width: 860px;
+  margin: auto;
+  padding: 0 30px;
+}
+
+main .wrapper .grid-content {
+  width: 100%;
+  height: 50px;
+  background-color: #000011;
+  color: #fff;
+  text-align: center;
+  margin: 15px 0;
+  padding: 0 10px;
+}
+
+main .wrapper .el-row {
+  margin: 0 -7.5px;
+}
+
+main .wrapper .el-row .item {
+  padding: 0 7.5px;
+  margin: 0 0 15px 0;
+}
+
+main .wrapper .el-row .item .evaluation {
+  max-width: 280px;
+  padding: 50px 0 65px 0;
+  margin: 50px auto;
+  border: 1px solid #ccc;
+}
+
+main .wrapper .el-row .item .demonstration {
+  display: block;
+  margin-bottom: 15px;
+}
+
+main .wrapper .el-row .item .el-rate__text {
+  display: block;
+  margin-top: 15px;
+}
+
+main .wrapper .el-row .card {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+main .wrapper .el-row .card .img {
+  margin: -20px -20px 20px -20px;
+  width: calc(100% + 40px);
+  height: 250px;
+  overflow: hidden;
+  position: relative;
+}
+
+main .wrapper .el-row .card .img img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+main .wrapper .el-radio {
+  margin-right: 0px;
+}
+
+main .wrapper .payment .pay_item {
+  display: inline-block;
+  position: relative;
+  top: 2.5px;
+}
+
+main .wrapper#content {
+  padding-top: 50px;
+  max-width: 540px;
+}
+
+main .wrapper#content .el-row {
+  margin-bottom: 15px;
+}
+
+main .wrapper#content .el-row .form {
+  position: relative;
+}
+
+main .wrapper#content .el-row .form label {
+  position: absolute;
+  z-index: 1;
+  background: #fff;
+  left: 20px;
+  top: -5px;
+  font-size: 14px;
+  color: #828282;
+}
+
+main .wrapper#content .el-row .form h3 {
+  line-height: 40px;
+  text-align: center;
+  font-size: 32px;
+}
+
+main .wrapper#content .el-row .form input {
+  text-align: center;
+}
+
+main p {
+  height: 40px;
+  line-height: 40px;
+  background: #f5f5f5;
+  padding: 0 15px;
+}
+
+main .block .el-cascader {
+  width: 100%;
+}
+/*# sourceMappingURL=main.css.map */
