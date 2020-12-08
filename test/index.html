@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>test</title>
+  <link rel="shortcut icon" href="./icon.png" />
+  <link rel="stylesheet" href="./assets/css/reset.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="./assets/css/main.min.css">
+</head>
+
+<body>
+  <div id="app">
+    <div id="loading" v-if="loading">
+      <div class="back"></div>
+      <div class="left"></div>
+      <div class="right"></div>
+    </div>
+    <v-header></v-header>
+    <main>
+
+      <template>
+        <el-carousel id="banner" :interval="2000" arrow="always">
+          <el-carousel-item v-for="(item,index) in banner" :key="index">
+            <div class="item">
+              <img :src="item.img" alt="">
+            </div>
+          </el-carousel-item>
+        </el-carousel>
+      </template>
+      <div class="wrapper">
+        <el-row>
+          <div class="item" :xs="12" :sm="12" :md="12" :lg="6" :xl="6">
+            <el-radio border v-model="radio1" label="1">本國籍</el-radio>
+            <el-radio border v-model="radio1" label="0">外國籍</el-radio>
+          </div>
+        </el-row>
+      </div>
+      <div class="wrapper">
+        <!--本國籍▼-->
+        <el-row v-if="radio1 === '1'">
+          <el-col class="item" :xs="12" :sm="12" :md="12" :lg="5" :xl="5">
+            <div class="block">
+              <el-cascader v-model="value" :options="tw" :props="{ expandTrigger: 'hover' }" @change="handleChange" />
+            </div>
+          </el-col>
+          <el-col class="item" :xs="4" :sm="6" :md="8" :lg="19" :xl="19">
+            <el-input v-if="!value" :disabled="true" placeholder="請輸入地址"></el-input>
+            <el-input v-else :disabled="false" clearable v-model="address" placeholder="請輸入地址"></el-input>
+          </el-col>
+          <el-col class="item" :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+            <p>{{value[0]}}{{value[1]}}{{address}}</p>
+          </el-col>
+          <el-col class="item payment" :xs="24" :sm="24" :md="24" :lg="24">
+            <el-switch v-model="value_switch" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+            <span class="pay_item" v-if="value_switch">按年付費 $ 4200</span>
+            <span class="pay_item" v-else>單月付費 $ 390，購買{{months}}個月，{{390*months}}</span>
+          </el-col>
+          <el-col class="item" :xs="24" :sm="24" :md="24" :lg="24" v-if="!value_switch">
+            <template>
+              <div class="block" v-if="!value_switch">
+                <span class="demonstration">選擇月數</span>
+                <el-slider v-model="months" :min="1" :max="12"></el-slider>
+              </div>
+            </template>
+            <template>
+              <el-input-number v-model="months" :min="1" :max="12" :step="1" step-strictly></el-input-number>
+            </template>
+          </el-col>
+          <el-col class="item text-center" :xs="24" :sm="24" :md="24" :lg="24">
+            <el-upload class="upload-demo" drag action="https://jsonplaceholder.typicode.com/posts/" multiple>
+              <i class="el-icon-upload"></i>
+              <div class="el-upload__text">將檔案拖到此處，或<em>點擊上傳</em></div>
+              <div class="el-upload__tip" slot="tip">只能傳送jpg/png文件，並且不超過500kb</div>
+            </el-upload>
+          </el-col>
+          <el-col class="item text-center" :xs="24" :sm="24" :md="24" :lg="24">
+            <div class="block evaluation">
+              <span class="demonstration">對本次服務評分</span>
+              <el-rate v-model="evaluation" :colors="colors" :texts="texts" show-text>
+              </el-rate>
+            </div>
+          </el-col>
+          <el-col class="item text-center" :xs="24" :sm="24" :md="24" :lg="24">
+          </el-col>
+        </el-row>
+        <!--外國籍▼-->
+        <el-row v-else>
+          <el-col class="item" :xs="12" :sm="12" :md="12" :lg="5" :xl="5">
+            <div class="block">
+              <el-cascader disabled />
+            </div>
+          </el-col>
+          <el-col class="item" :xs="4" :sm="6" :md="8" :lg="19" :xl="19">
+            <el-input :disabled="true" placeholder="請輸入地址"></el-input>
+          </el-col>
+          <el-col class="item" :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+            <p></p>
+          </el-col>
+          <el-col class="item payment" :xs="24" :sm="24" :md="24" :lg="24">
+            <el-switch active-color="#13ce66" inactive-color="#ff4949" disabled></el-switch>
+            <span class="pay_item" v-if="value_switch">按年付費 $ 4200</span>
+            <span class="pay_item" v-else>按月付費 $ 390</span>
+          </el-col>
+          <el-col class="item" :xs="24" :sm="24" :md="24" :lg="24">
+            <template>
+              <div class="block">
+                <span class="demonstration">選擇月數</span>
+                <el-slider :min="1" :max="12" disabled></el-slider>
+              </div>
+            </template>
+          </el-col>
+        </el-row>
+        <el-divider></el-divider>
+        <template>
+          <el-tabs v-model="activeName" @tab-click="handleClick">
+            <el-tab-pane label="麥香雞腿堡" name="first">
+              <el-row :gutter="20">
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img
+                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                        class="image">
+                    </div>
+                    <div>
+                      這是麥香雞腿堡
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img
+                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                        class="image">
+                    </div>
+                    <div>
+                      這是麥香雞腿堡
+                    </div>
+
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img
+                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                        class="image">
+                    </div>
+                    <div>
+                      這是麥香雞腿堡
+                    </div>
+
+                  </el-card>
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane label="蘋果派" name="second">
+              <el-row :gutter="20">
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://i.ytimg.com/vi/Ncg3ru52JcM/hqdefault.jpg" class="image">
+                    </div>
+                    <div>
+                      這是蘋果派
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://i.ytimg.com/vi/Ncg3ru52JcM/hqdefault.jpg" class="image">
+                    </div>
+                    <div>
+                      這是蘋果派
+                    </div>
+
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://i.ytimg.com/vi/Ncg3ru52JcM/hqdefault.jpg" class="image">
+                    </div>
+                    <div>
+                      這是蘋果派
+                    </div>
+
+                  </el-card>
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane label="薯條" name="third">
+              <el-row :gutter="20">
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://media.nownews.com/nn_media/thumbnail/2019/11/1574783868-436df74166292bd5e73fba824f9411a7-696x364.png" class="image">
+                    </div>
+                    <div>
+                      這是薯條
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://media.nownews.com/nn_media/thumbnail/2019/11/1574783868-436df74166292bd5e73fba824f9411a7-696x364.png" class="image">
+                    </div>
+                    <div>
+                      這是薯條
+                    </div>
+
+                  </el-card>
+                </el-col>
+                <el-col :span="8" class="card">
+                  <el-card>
+                    <div class="img">
+                      <img src="https://media.nownews.com/nn_media/thumbnail/2019/11/1574783868-436df74166292bd5e73fba824f9411a7-696x364.png" class="image">
+                    </div>
+                    <div>
+                      這是薯條
+                    </div>
+
+                  </el-card>
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane label="炸雞" name="fourth">炸雞</el-tab-pane>
+          </el-tabs>
+        </template>
+        <el-divider></el-divider>
+
+      </div>
+    </main>
+    <v-footer></v-footer>
+  </div>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/http-vue-loader"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="//unpkg.com/element-ui/lib/umd/locale/zh-TW.js"></script>
+  <script src="./assets/js/main.js"></script>
+</body>
+
+</html>

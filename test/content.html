@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>test</title>
+  <link rel="stylesheet" href="./assets/css/reset.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="./assets/css/main.min.css">
+</head>
+
+<body>
+  <div id="app">
+    <!-- <div id="loading" v-if="loading">
+      <div class="back"></div>
+      <div class="left"></div>
+      <div class="right"></div>
+    </div> -->
+    <v-header></v-header>
+    <main>
+      <div id="content" class="wrapper">
+        <el-row :gutter="20">
+          <el-col :span="24" class="form">
+            <label for="age" v-if="age===''">請輸入年齡</label>
+            <el-input v-model="age">
+              <template slot="append">歲</template>
+            </el-input>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="4" class="form">
+            <h3>3</h3>
+          </el-col>
+          <el-col :span="4" class="form">
+            <h3>+</h3>
+          </el-col>
+          <el-col :span="4" class="form">
+            <h3>2</h3>
+          </el-col>
+          <el-col :span="5" class="form">
+            <h3>=</h3>
+          </el-col>
+          <el-col :span="7" class="form">
+            <el-input v-model="answer"></el-input>
+          </el-col>
+        </el-row>
+        <div v-if="answer==='5' && age<=35" 
+        style="
+        text-align: center;
+        font-size: 34px;
+        color: red;
+        margin: 15px 0;
+        font-weight: 900;">
+          年輕人不講5得
+        </div>
+      </div>
+    </main>
+    <v-footer></v-footer>
+  </div>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/http-vue-loader"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="//unpkg.com/element-ui/lib/umd/locale/zh-TW.js"></script>
+  <script src="./assets/js/main.js"></script>
+</body>
+
+</html>
