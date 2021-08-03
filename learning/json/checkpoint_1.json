@@ -1,0 +1,121 @@
+{
+    "order": "1",
+    "map": "/images/level.svg",
+    "checkpoint": [{
+            "title": "",
+
+            "number": "1",
+            "text": "unit",
+            "style_1": false,
+            "style_2": false,
+            "gray": false,
+            "width": 120,
+            "left": 7.5,
+            "top": 15,
+            "s1": true,
+            "s2": true,
+            "s3": true
+        },
+        {
+            "title": "",
+
+            "number": "2",
+            "text": "unit",
+            "style_1": true,
+            "style_2": false,
+            "gray": false,
+            "width": 120,
+            "left": 7.5,
+            "top": 66,
+            "s1": true,
+            "s2": true,
+            "s3": true
+        }, {
+            "title": "",
+
+            "number": "3",
+            "text": "unit",
+            "style_1": false,
+            "style_2": true,
+            "gray": false,
+            "width": 120,
+            "left": 28,
+            "top": 66,
+            "s1": true,
+            "s2": true,
+            "s3": true
+        }, {
+            "title": "",
+
+            "number": "4",
+            "text": "unit",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 120,
+            "left": 28,
+            "top": 30,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "",
+
+            "number": "5",
+            "text": "unit",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 120,
+            "left": 56,
+            "top": 30,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "",
+
+            "number": "6",
+            "text": "unit",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 120,
+            "left": 56,
+            "top": 66,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "",
+
+            "number": "7",
+            "text": "unit",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 120,
+            "left": 80,
+            "top": 66,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }
+    ],
+    "left_arrow": "",
+    "right_arrow": "checkpoint2",
+    "lock": false,
+    "unlock": false,
+    "condition": [{
+            "text": "Clearance conditions - 1",
+            "pass": true
+        },
+        {
+            "text": "Clearance conditions - 2",
+            "pass": false
+        }, {
+            "text": "Clearance conditions - 3",
+            "pass": false
+        }
+    ]
+}

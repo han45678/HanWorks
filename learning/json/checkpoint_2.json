@@ -1,0 +1,280 @@
+{
+    "order":"1",
+    "map": "/images/level2.svg",
+    "checkpoint": [
+        {
+            "title": "Aa",
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": false,
+            "width": 65,
+            "left": 13,
+            "top": 26,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Bb",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 13,
+            "top": 62.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Cc",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 13,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Dd",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 22.5,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Ee",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 22.5,
+            "top": 62.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Ff",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 31,
+            "top": 62.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Gg",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 31,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Hh",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 40,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Ii",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 40,
+            "top": 47.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Jj",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 32,
+            "top": 37,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Kk",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 60,
+            "top": 37,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Ll",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 60,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }, {
+            "title": "Mm",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 75,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Nn",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 90,
+            "top": 77.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Oo",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 90,
+            "top": 57.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Pp",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 71,
+            "top": 57.5,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Qq",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 71,
+            "top": 30,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        },
+        {
+            "title": "Rr",
+            
+            "number": "",
+            "text": "",
+            "style_1": false,
+            "style_2": false,
+            "gray": true,
+            "width": 65,
+            "left": 90,
+            "top": 30,
+            "s1": false,
+            "s2": false,
+            "s3": false
+        }
+    ],
+    "left_arrow": "checkpoint",
+    "right_arrow": "",
+    "lock": true,
+    "unlock": false,
+    "condition": [{
+            "text": "Clearance conditions - 1",
+            "pass": false
+        },
+        {
+            "text": "Clearance conditions - 2",
+            "pass": false
+        }, {
+            "text": "Clearance conditions - 3",
+            "pass": false
+        }
+    ]
+}
