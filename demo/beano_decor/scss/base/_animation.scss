@@ -1,0 +1,75 @@
+.an {
+    transition: 0.6s;
+}
+
+.fd {
+    transform: translateY(-30%);
+    opacity: 0;
+
+    &.an_go {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fu {
+    transform: translateY(30%);
+    opacity: 0;
+
+    &.an_go {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+
+.fl {
+    transform: translateX(100%);
+    opacity: 0;
+
+    &.an_go {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.fr {
+    transform: translateX(-100%);
+    opacity: 0;
+
+    &.an_go {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes rotation_ring {
+    from {
+        transform: translateX(-50%) rotate(0deg);
+    }
+
+    to {
+        transform: translateX(-50%) rotate(359deg);
+    }
+}
+
+@keyframes reverse_rotation {
+    from {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    to {
+        transform: translateY(-50%) rotate(-359deg);
+    }
+}
