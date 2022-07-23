@@ -57,7 +57,7 @@
                     overflow: hidden;
                     width: 100%;
                     height: 0;
-                    padding-bottom: 125%;
+                    padding-bottom: 100%;
                     background-color: #7e7e7e;
                     position: relative;
 
@@ -83,6 +83,8 @@
                     box-sizing: border-box;
                     // padding-right: 50px;
                     text-align: center;
+                    position: relative;
+                    overflow: hidden;
 
                     h3 {
                         margin-top: 15px;
@@ -110,6 +112,13 @@
                         // margin-bottom: 5px;
                         font-size: 16px;
                         font-weight: 600;
+                        .original{
+                            color: #ccc;
+                            text-decoration:line-through;
+                        }
+                        .discount{
+                            color: #e25c5c;
+                        }
                     }
 
                     .add_heart {
@@ -128,6 +137,54 @@
                             font-size: 20px;
                             color: #ccc;
                             transition: 0.6s;
+                        }
+                    }
+                    
+                    .effect{
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: #fff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: 0.6s;
+                        transform: translateY(100%);
+                        opacity: 0;
+                        button{
+                            overflow: hidden;
+                            margin-top: 2px;
+                            margin-left: 5px;
+                            margin-right: 5px;
+                            padding: 0;
+                            border: none;
+                            width: 48px;
+                            height: 48px;
+                            border-radius: 999px;
+                            background-color: $text_content;
+                            transition: 0.6s;
+                            svg{
+                                height: 32px;
+                                
+                                &.add_car{
+                                    .cls-1{
+                                        stroke:#fff
+                                    }
+                                }
+
+                                &.heart{
+                                    position: relative;
+                                    top: 2.5px;
+                                    .cls-2 {
+                                        stroke: #fff;
+                                    }
+                                }
+                            }
+                            &:hover{
+                                background-color: $text_submain;
+                            }
                         }
                     }
 
@@ -210,6 +267,12 @@
                             &.before {
                                 opacity: 1;
                             }
+                        }
+                    }
+                    .text{
+                        .effect{
+                            transform: translateY(0);
+                            opacity: 1;
                         }
                     }
                 }
