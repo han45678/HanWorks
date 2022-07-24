@@ -25,7 +25,6 @@
     }
 
     #commodity {
-        margin-top: 15px;
         #commodity_main_photo {
             .item {
                 height: 600px;
@@ -149,7 +148,7 @@
                         box-sizing: border-box;
                         padding-left: 35px;
                         padding-right: 35px;
-                        text-align: left;
+                        text-align: center;
                     }
                     button{
                         width: 35px;
@@ -173,7 +172,7 @@
                     }
                 }
                 span{
-                    margin-left: 20px;
+                    // margin-left: 20px;
                     font-size: 14px;
                     font-weight: 400;
                     letter-spacing: 1px;
