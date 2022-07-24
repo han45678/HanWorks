@@ -219,6 +219,22 @@ header {
                 }
             }
 
+            position: relative;
+            span{
+                font-size: 12px;
+                border-radius: 999px;
+                display: block;
+                color: #fff;
+                width: 15px;
+                height: 15px;
+                text-align: center;
+                line-height: 15px;
+                background-color: #129447;
+                position: absolute;
+                right: -5px;
+                bottom: 0;
+            }
+
             &:hover {
                 opacity: 0.6s;
             }
@@ -578,6 +594,22 @@ header {
 
             &+a {
                 margin-left: 7.5px;
+            }
+
+            position: relative;
+            span{
+                font-size: 12px;
+                border-radius: 999px;
+                display: block;
+                color: #fff;
+                width: 15px;
+                height: 15px;
+                text-align: center;
+                line-height: 15px;
+                background-color: #129447;
+                position: absolute;
+                right: 7.5px;
+                bottom: 2.5px;
             }
 
             &:hover {
