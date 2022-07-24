@@ -161,4 +161,8 @@ window.onload = function () {
         document.write('<script src="./js/pages/faq.js"></script>');
     }
 
+    if ($("main#shop_checkout").length > 0) {
+        document.write('<script src="./js/pages/shop_checkout.js"></script>');
+    }
+
 })(jQuery);
