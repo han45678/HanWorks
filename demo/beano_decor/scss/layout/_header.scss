@@ -1,6 +1,6 @@
 header {
     width: 100%;
-    height: 160px;
+    height: 300px;
     padding-left: 15px;
     padding-right: 15px;
     position: fixed;
@@ -22,6 +22,49 @@ header {
         margin-left: auto;
         margin-right: auto;
         position: relative;
+        
+    }
+    #top{
+        height: 80px;
+        background-color: #129447;
+        margin-left: -15px;
+        margin-right: -15px;
+        @media only screen and (max-width: 1199px){
+            display: none;
+        }
+        .wrapper{
+            display: flex;
+            justify-content:space-between;
+            align-items: center;
+            #top_link{
+                a{
+                    display: inline-block;
+                    &+a{
+                        margin-left: 10px;
+                    }
+                    i{
+                        color: #fff;
+                        font-size: 32px;
+                    }
+                }
+            }
+            #slogan{
+                line-height: 80px;
+                color: #fff;
+                font-size: 32px;
+                font-weight: bolder;
+                letter-spacing: 1.5px;
+            }
+
+            #language{
+                select{
+                    border: none;
+                    background-color: transparent;
+                    color: #fff;
+                    font-size: 18px;
+                }
+            }
+        }
     }
 
     #menu_button {
@@ -105,7 +148,28 @@ header {
         h1 {
             display: none !important;
         }
-
+        .pc{
+            display: block;
+        }
+        .m{
+            display: none;
+        }
+        @media only screen and (max-width: 1199px) {
+            .pc{
+                display: none;
+            }
+            .m{
+                display: block;
+                height: 105px;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+        }
+        @media only screen and (max-width: 1024px){
+            .m{
+                height: 45px;
+            }
+        }
         #streamer {
             width: 100%;
             margin-top: 5px;
