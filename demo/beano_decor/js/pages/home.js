@@ -26,7 +26,7 @@ $('#shop_class .slick').slick({
         {
             breakpoint: 480,
             settings: {
-                slidesToShow: 1,
+                slidesToShow: 2,
             }
         }
     ]
@@ -53,8 +53,13 @@ $('#best .slick').slick({
         {
             breakpoint: 480,
             settings: {
-                slidesToShow: 1,
+                slidesToShow: 2,
             }
         }
     ]
 });
+
+if($(window).width()<=1024){
+    const w = $("#home #banner .slick .item").width()
+    $("#home #banner .slick .item").height(w)
+}

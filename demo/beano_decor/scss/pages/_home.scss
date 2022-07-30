@@ -36,7 +36,7 @@
         .title{
             h2{
                 margin-bottom: 0;
-                &::before{
+                &::before,&::after{
                     display: none;
                 }
                 span{
@@ -84,7 +84,7 @@
         // max-width: 1540px;
         overflow: hidden;
         padding-top: 100px;
-        padding-bottom: 100px;
+        padding-bottom: 50px;
 
         // .title {
 
@@ -153,7 +153,7 @@
     #best {
         overflow: hidden;
         padding-top: 100px;
-        padding-bottom: 100px;
+        padding-bottom: 50px;
 
         // &.container{
         //     max-width: 1680px;
@@ -222,6 +222,9 @@
                         background-color: $main_color;
                         font-size: 16px;
                         font-weight: 600;
+                        width: 185px;
+                        margin-left: auto;
+                        margin-right: auto;
                     }
                 }
 
@@ -365,7 +368,7 @@
     #instagram {
         overflow: hidden;
         padding-top: 100px;
-        padding-bottom: 100px;
+        padding-bottom: 50px;
 
         // &.container{
         //     max-width: 1680px;

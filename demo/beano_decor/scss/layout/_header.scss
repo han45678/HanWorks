@@ -41,7 +41,10 @@ header {
                     display: inline-block;
                     transition: 0.6s;
                     &+a{
-                        margin-left: 10px;
+                        margin-left: 5px;
+                    }
+                    img{
+                        height: 40px;
                     }
                     i{
                         color: #fff;
@@ -159,7 +162,7 @@ header {
             display: none;
         }
         img{
-            max-height: 120px;
+            max-height: 100px;
         }
 
         @media only screen and (max-width: 1199px) {
@@ -275,7 +278,7 @@ header {
             display: inline-block;
 
             img {
-                height: 32px;
+                height: 48px;
             }
 
             @media only screen and (max-width: 1024px) {
@@ -283,7 +286,7 @@ header {
             }
 
             &+a {
-                margin-left: 15px;
+                // margin-left: 15px;
 
                 @media only screen and (max-width: 1024px) {
                     margin-left: 0;
@@ -303,8 +306,8 @@ header {
                 line-height: 15px;
                 background-color: #129447;
                 position: absolute;
-                right: -5px;
-                bottom: 0;
+                right: 0px;
+                bottom: 7.5px;
             }
 
             &:hover {
@@ -334,7 +337,7 @@ header {
 
             li {
                 &+li {
-                    margin-left: 65px;
+                    margin-left: 80px;
                 }
 
                 position: relative;
@@ -392,7 +395,14 @@ header {
                         &+li {
                             margin-left: 0;
                         }
-
+                        h3{
+                            color: #fff;
+                            text-align: left;
+                            font-size: 16px;
+                            font-weight: 300;
+                            padding: 10px 15px;
+                            margin-bottom: 10px;
+                        }
                         a {
                             text-align: left;
                             padding: 0 15px;
@@ -663,7 +673,7 @@ header {
             transition: 0.6s;
 
             img {
-                height: 32px;
+                height: 48px;
             }
 
             &+a {
@@ -683,7 +693,7 @@ header {
                 background-color: #129447;
                 position: absolute;
                 right: 7.5px;
-                bottom: 2.5px;
+                bottom: 7.5px;
             }
 
             &:hover {
