@@ -8,7 +8,7 @@ $('#banner .slick').slick({
 $('#shop_class .slick').slick({
     dots: false,
     infinite: true,
-    slidesToShow: 5,
+    slidesToShow: 6,
     autoplay: true,
     responsive: [
         {

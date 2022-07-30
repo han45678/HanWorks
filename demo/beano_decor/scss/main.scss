@@ -2,14 +2,13 @@
 @import './base/slick';
 @import './layout/header';
 @import './layout/footer';
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;300;400;500;700;900&family=Roboto+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 *,
 a,
 button,
 table {
-    font-family: 'Roboto Mono', 'Noto Sans TC', sans-serif;
+    font-family: 'Noto Sans JP', sans-serif;
 }
 
 button {
@@ -28,7 +27,7 @@ body {
 }
 
 main {
-    padding-top: 300px;
+    padding-top: 215px;
     max-width: 100vw;
     overflow: hidden;
 
@@ -48,27 +47,44 @@ main {
 }
 
 img {
+    -webkit-user-drag: none;
+    user-drag: none;
     max-width: 100%;
 }
 
 
 .title {
     margin-bottom: 45px;
-
+    
     h2 {
         text-align: center;
-        font-size: 28px;
-        font-weight: 600;
-        color: $text_content;
-        letter-spacing: .2px;
-
-        @media (min-width: 768px) {
-            font-size: 37px;
-            font-weight: 600;
-            letter-spacing: .2px;
+        margin-bottom: 30px;
+        position: relative;
+        &::before{
+            content: '';
+            width: 100%;
+            height: 1px;
+            background-color: #000;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            margin: auto;
         }
-
+        .title_pic{
+            background-color: #fff;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
         span {
+            display: none;
+        }
+        img{
+            max-height: 40px;
             margin-left: 10px;
             margin-right: 10px;
         }
@@ -99,9 +115,10 @@ img {
     border-radius: 999px;
     border: none;
     text-align: center;
-    background-color: $text_content;
+    background-color: $main_color;
     font-size: 0;
     transition: 0.6s;
+    padding: 10px;
 
     &:hover {
         opacity: 0.8;
@@ -112,14 +129,15 @@ img {
         font-family: "Font Awesome 5 Free";
         font-weight: 900;
         color: #fff;
+        position: relative;
+        top: -4px;
     }
 
     &.slick-prev {
         left: 15px;
-
+        box-sizing: border-box;
         &::before {
             content: url(../images/prev.svg) !important;
-            
         }
     }
 
@@ -144,7 +162,7 @@ img {
         height: 15px;
         border-radius: 999px;
         border: none;
-        background-color: $text_content;
+        background-color: $main_color;
         margin-left: 5px;
         margin-right: 5px;
 
