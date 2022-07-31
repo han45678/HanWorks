@@ -204,30 +204,6 @@
                     }
                 }
 
-                .product_text{
-                    h3 {
-                        margin-top: 15px;
-                        margin-bottom: 15px;
-                        font-size: 16px;
-                        font-weight: 300;
-                        text-transform: none;
-                        letter-spacing: .2px;
-                        color: $text_content;
-                        text-align: center;
-                    }
-                    p {
-                        color: #fff;
-                        line-height: 2;
-                        text-align: center;
-                        background-color: $main_color;
-                        font-size: 16px;
-                        font-weight: 600;
-                        width: 185px;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                }
-
                 .text {
                     position: relative;
                     box-sizing: border-box;
@@ -410,6 +386,9 @@
                         }
                         svg{
                             width: 84px;
+                            .st2{
+                                fill:$text_content;
+                            }
                         }
                         p{
                             // margin-top: 15px;

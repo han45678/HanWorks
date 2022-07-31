@@ -54,7 +54,7 @@ img {
 
 
 .title {
-    margin-bottom: 45px;
+    margin-bottom: 90px;
     position: relative;
     h2 {
         text-align: center;
@@ -553,6 +553,35 @@ img {
     height: 1px;
     background-color: #ccc
 }
+
+.product{
+    .item{
+        .product_text{
+            h3 {
+                margin-top: 15px;
+                margin-bottom: 15px;
+                font-size: 16px;
+                font-weight: 300;
+                text-transform: none;
+                letter-spacing: .2px;
+                color: $text_content;
+                text-align: center;
+            }
+            p {
+                color: #fff;
+                line-height: 2;
+                text-align: center;
+                background-color: $main_color;
+                font-size: 16px;
+                font-weight: 600;
+                width: 185px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    }
+}
+
 @import './pages/home';
 @import './pages/customized_list';
 @import './pages/customized';
