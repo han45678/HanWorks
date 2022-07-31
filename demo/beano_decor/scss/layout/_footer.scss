@@ -12,12 +12,14 @@ footer {
 
         .row {
             text-align: center;
-
+            @media only screen and (min-width: 1025px){
+                align-items: center;
+            }
             #footer_logo {
                 display: block;
                 margin-left: auto;
                 margin-right: auto;
-                margin-bottom: 50px;
+                margin-bottom: 30px;
                 fill: #fff;
 
                 img,svg {
@@ -30,6 +32,7 @@ footer {
 
                 li {
                     display: inline-block;
+                    position: relative;
                     @media only screen and (max-width: 768px){
                         display: block;
                         line-height: 50px;
@@ -41,9 +44,27 @@ footer {
                         margin: 0 10px;
                         letter-spacing: 1px;
                         transition: 0.6s;
-
+                        line-height: 1.5;
+                        span{
+                            display: block;
+                            &.en{
+                                font-size: 18px;
+                                margin-bottom: 5px;
+                            }
+                        }
                         &:hover {
                             color: #000;
+                        }
+                    }
+                    &+li{
+                        margin-left: 50px;
+                        &::before{
+                            content: '/';
+                            display: block;
+                            position: absolute;
+                            color: #FFF;
+                            left: -27.5px;
+                            top: 25px;
                         }
                     }
                 }
@@ -59,10 +80,11 @@ footer {
                         color: #fff;
                         font-size: 16px;
                         font-weight: 400;
-                        margin: 0 10px;
                         letter-spacing: 1px;
                         transition: 0.6s;
-
+                        svg{
+                            width: 48px;
+                        }
                         &:hover {
                             color: #000;
                         }
@@ -72,9 +94,9 @@ footer {
 
             p {
                 color:#fff;
-                font-size: 16px;
+                font-size: 12px;
                 font-weight: 400;
-                letter-spacing: 1px;
+                // letter-spacing: 1px;
                 transition: 0.6s;
                 line-height: 1.5;
 
