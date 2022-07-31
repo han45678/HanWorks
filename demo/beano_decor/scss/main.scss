@@ -55,14 +55,14 @@ img {
 
 .title {
     margin-bottom: 45px;
-    
+    position: relative;
     h2 {
         text-align: center;
-        margin-bottom: 30px;
-        position: relative;
+        margin-bottom: 20px;
+        
         &::before{
             content: '';
-            width: 250px;
+            width: 300px;
             height: 1px;
             background-color: #000;
             position: absolute;
@@ -73,7 +73,7 @@ img {
         }
         &::after{
             content: '';
-            width: 250px;
+            width: 300px;
             height: 1px;
             background-color: #000;
             position: absolute;
@@ -116,7 +116,7 @@ img {
 .slick-arrow {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-100%);
     z-index: 1;
     padding: 0;
     width: 50px;
@@ -125,13 +125,13 @@ img {
     border-radius: 999px;
     border: none;
     text-align: center;
-    background-color: $text_content;
+    background-color: #DCDCDC;
     font-size: 0;
     transition: 0.6s;
     padding: 10px;
 
     &:hover {
-        opacity: 0.8;
+        background-color: #696969;
     }
 
     &::before {
