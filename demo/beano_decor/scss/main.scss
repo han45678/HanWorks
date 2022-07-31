@@ -70,6 +70,9 @@ img {
             transform: translateY(-50%);
             left: 0;
             margin: auto;
+            @media only screen and (max-width: 1024px){
+                display: none;
+            }
         }
         &::after{
             content: '';
@@ -81,6 +84,9 @@ img {
             transform: translateY(-50%);
             right: 0;
             margin: auto;
+            @media only screen and (max-width: 1024px){
+                display: none;
+            }
         }
         .title_pic{
             background-color: #fff;
