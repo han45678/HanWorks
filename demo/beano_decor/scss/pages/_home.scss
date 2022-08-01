@@ -344,7 +344,11 @@
     #instagram {
         overflow: hidden;
         padding-top: 100px;
-        padding-bottom: 50px;
+        padding-bottom: 100px;
+        @media only screen and (max-width: 1024px){
+            padding-right: 20px;
+            padding-left: 20px;
+        }
 
         // &.container{
         //     max-width: 1680px;
@@ -355,6 +359,13 @@
             overflow: hidden;
             cursor: pointer;
 
+            @media only screen and (max-width: 1024px){
+                padding-right: 7.5px;
+                padding-left: 7.5px;
+                margin-top: 7.5px;
+                margin-bottom: 7.5px;
+            }
+            
             .pic {
                 width: 100%;
                 height: 0;
@@ -392,13 +403,16 @@
                         }
                         p{
                             // margin-top: 15px;
-                            padding: 7.5px 5px;
+                            padding: 7.5px 15px;
                             font-size: 16px;
                             width: 165px;
                             border-radius: 30px;
                             background-color: $main_color;
                             letter-spacing: 1px;
                             color: #fff;
+                            @media only screen and (max-width: 415px){
+                                width: 125px;
+                            }
                         }
                     }
                 }

@@ -14,7 +14,7 @@ header {
     }
 
     @media only screen and (max-width: 1024px) {
-        height: 75px;
+        height: 85px;
     }
 
     .wrapper {
@@ -30,13 +30,20 @@ header {
         margin-left: -15px;
         margin-right: -15px;
         @media only screen and (max-width: 1199px){
-            display: none;
+            height: 20px;
         }
+        
         .wrapper{
             display: flex;
             justify-content:space-between;
             align-items: center;
+            @media only screen and (max-width: 1199px){
+                justify-content: center;
+            }
             #top_link{
+                @media only screen and (max-width: 1199px){
+                    display: none;
+                }
                 a{
                     display: inline-block;
                     transition: 0.6s;
@@ -58,12 +65,18 @@ header {
             #slogan{
                 line-height: 40px;
                 color: #fff;
-                font-size: 24px;
+                font-size: 12px;
                 font-weight: bolder;
                 letter-spacing: 1.5px;
+                @media only screen and (max-width: 1199px){
+                    line-height: 20px;
+                }
             }
 
             #language{
+                @media only screen and (max-width: 1199px){
+                    display: none;
+                }
                 select{
                     cursor: pointer;
                     border: none;
@@ -181,14 +194,15 @@ header {
             }
             .m{
                 display: block;
-                height: 105px;
+                height: 95px;
                 margin-top: 15px;
                 margin-bottom: 15px;
             }
         }
         @media only screen and (max-width: 1024px){
             .m{
-                height: 45px;
+                margin-top: 17.5px;
+                height: 35px;
             }
         }
         // #streamer {
@@ -359,17 +373,11 @@ header {
                     transition: 0.6s;
 
                     i {
-                        width: 0;
-                        height: 0;
-                        border-style: solid;
-                        border-width: 8px 6px 0 6px;
-                        border-color: $text_content transparent transparent transparent;
                         display: inline-block;
                         margin-left: 5px;
                         transition: 0.6s;
                         position: relative;
-                        top: -2.5px;
-                        transform-origin: center;
+                        top: 0px;
                     }
                 }
 
