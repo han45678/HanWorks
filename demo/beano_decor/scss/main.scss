@@ -543,17 +543,6 @@ img {
     }
 }
 
-// .icon{
-//     &.icon_heart{
-//         &::before{
-//             content: '';
-//             display: inline-block;
-//             background-image: url(../images/heart.svg);
-
-//         }
-//     }
-// }
-
 .line{
     width: 100%;
     height: 1px;
@@ -594,7 +583,7 @@ img {
 @import './pages/product_class';
 @import './pages/product_list';
 @import './pages/product';
-// @import './pages/about';
+@import './pages/about';
 @import './pages/shop_cart';
 // @import './pages/download';
 @import './pages/faq';
