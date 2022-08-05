@@ -91,7 +91,7 @@
     }
 
     #commodity_info {
-        margin-top: 30px;
+        // margin-top: 30px;
         margin-bottom: 80px;
 
         h2 {
@@ -117,7 +117,6 @@
             font-style: normal;
             line-height: 1.75;
             color: #696969;
-            margin-bottom: 45px;
         }
 
         .choose{
@@ -296,8 +295,8 @@
         }
 
         .add{
-            margin-bottom: 50px;
-            margin-top: 50px;
+            margin-bottom: 30px;
+            margin-top: 30px;
             .quantity {
                 width: 100%;
                 box-sizing: border-box;
@@ -319,6 +318,10 @@
                         box-sizing: border-box;
                         padding-left: 10px;
                         padding-right: 10px;
+                        @media only screen and (max-width: 768px){
+                            width:100%;
+                            margin-left: 0;
+                        }
                     }
                 }
                 
@@ -331,7 +334,6 @@
             font-style: normal;
             line-height: 1.75;
             color: #696969;
-            margin-bottom: 45px;
             &.transport_info {
                 margin-top: 15px;
                 padding-left: 2.5em;
@@ -358,6 +360,7 @@
             border: none;
             background-color: $main_color;
             transition: 0.6s;
+            margin-top: 30px;
 
             &:hover {
                 opacity: 0.6s;
@@ -367,37 +370,37 @@
     }
 
     #commodity_content {
-        margin-top: 100px;
+        // margin-top: 50px;
         .label {
             display: flex;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid $text_content;
 
             .item {
-                margin-left: 20px;
-                margin-right: 20px;
                 cursor: pointer;
-                width: auto;
-                font-size: 40px;
+                width: 120px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 18px;
                 font-weight: 400;
-                line-height: 1;
                 display: block;
                 color: $text_content;
                 text-align: center;
-                opacity: 0.3;
                 @media (max-width: 1024px){
                     width: 50%;
                 }
                 &.active {
-                    opacity: 1;
+                    background-color:$text_content;
+                    color: #fff;
                 }
             }
         }
 
         .content {
-            padding-bottom: 100px;
+            padding-bottom: 50px;
             display: none;
             color: $text_content;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 300;
             font-style: normal;
             line-height: 1.75;

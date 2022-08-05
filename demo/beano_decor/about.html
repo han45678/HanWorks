@@ -69,7 +69,7 @@
             <div id="header_menu">
                 <ul>
                     <li>
-                        <a href="javascript:void(0)">BEANO BOX<i></i></a>
+                        <a href="javascript:void(0)">BEANO BOX<i class="fa-solid fa-angle-down"></i></a>
                         <ol>
                             <li>
                                 <h3>客製化派對商品</h3>
@@ -84,7 +84,7 @@
                                 <a href="./product_class.html"><span>Baby Shower 產前派對</span></a>
                             </li>
                             <li>
-                                <a href="./customized_list.html"><span>Gender Reveal 性別派對</span></a>
+                                <a href="./product_class.html"><span>Gender Reveal 性別派對</span></a>
                             </li>
                             <li>
                                 <a href="./product_class.html"><span>Anniversary 週年紀念</span></a>
@@ -93,12 +93,12 @@
                                 <a href="./product_class.html"><span>Pet’s Birthday 寵物⽣⽇派對</span></a>
                             </li>
                             <li>
-                                <a href="./customized_list.html"><span>Other 其他</span></a>
+                                <a href="./product_class.html"><span>Other 其他</span></a>
                             </li>
                         </ol>
                     </li>
                     <li>
-                        <a href="javascript:void(0)">PARTY ACCESSORIES<i></i></a>
+                        <a href="javascript:void(0)">PARTY ACCESSORIES<i class="fa-solid fa-angle-down"></i></a>
                         <ol>
                             <li>
                                 <h3>派對佈置道具</h3>
@@ -124,7 +124,7 @@
                         </ol>
                     </li>
                     <li>
-                        <a href="javascript:void(0)">SEASONAL<i></i></a>
+                        <a href="javascript:void(0)">SEASONAL<i class="fa-solid fa-angle-down"></i></a>
                         <ol>
                             <li>
                                 <h3>節慶派對</h3>
@@ -162,7 +162,7 @@
                         </ol>
                     </li>
                     <li>
-                        <a href="javascript:void(0)">ABOUT US<i></i></a>
+                        <a href="javascript:void(0)">ABOUT US<i class="fa-solid fa-angle-down"></i></a>
                         <ol>
                             <li>
                                 <h3>關於我們</h3>
@@ -173,7 +173,7 @@
                         </ol>
                     </li>
                     <li>
-                        <a href="./contact.html">CONTACT US</a>
+                        <a href="./contact.html">CONTACT US<!-- <i></i> --></a>
                     </li>
                 </ul>
             </div>
@@ -334,25 +334,15 @@
     </div>
 
     <main id="about">
-        <div id="banner_page">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <img src="./images/banner_page.jpg" alt="banner_page">
-                        <div class="text">
-                            <h2>
-                                About
-                            </h2>
-                            <ul>
-                                <li>
-                                    <a href="">Home</a>
-                                </li>
-                                <li>
-                                    <a href="">品牌故事</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+        <div id="banner" class="container">
+            <div class="banner_content row slick">
+                <div class="item col-12">
+                    <img class="pc" src="./images/1banner/beano.jpeg" alt="banner">
+                    <img class="m" src="./images/1banner/beano.jpeg" alt="banner">
+                </div>
+                <div class="item col-12">
+                    <img class="pc" src="./images/1banner/beano1.jpeg" alt="banner">
+                    <img class="m" src="./images/1banner/beano1.jpeg" alt="banner">
                 </div>
             </div>
         </div>
@@ -510,6 +500,15 @@
         </div>
     </div>
     <script src="./js/ui.js"></script>
+    <script src="./js/slick.min.js"></script>
+    <script>
+        $('#banner .slick').slick({
+            dots: true,
+            infinite: true,
+            slidesToShow: 1,
+            autoplay: true,
+        });
+    </script>
 </body>
 
 </html>

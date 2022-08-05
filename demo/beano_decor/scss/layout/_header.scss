@@ -104,8 +104,9 @@ header {
             display: block;
         }
         @media only screen and (max-width: 1024px) {
-            left: unset;
-            right: 15px;
+            left: 5px;
+            transform-origin: center;
+            transform:translateY(-50%) scale(0.8);
         }
 
         .icon {
