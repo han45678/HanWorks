@@ -78,8 +78,9 @@
         }
     } //init_end
 
-    setTimeout(() => {
-      initMap()
+    setInterval(() => {
+      initMap();
+      console.log('資料更新')
     }, 500);
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_Za7RqKvUuEg2Nln0EcpUVN3k2fZtDuE&callback=initMap">
