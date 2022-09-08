@@ -37,8 +37,10 @@
             width: 100%;
             background-color: rgba(255, 255, 255, 0.45);
         }
-
-        #map::after {
+        /* .gm-style img{
+            width: 24px !important;
+        } */
+        /* #map::after {
             content: '';
             position: absolute;
             top: 0;
@@ -50,7 +52,7 @@
             height: 15px;
             border-radius: 999px;
             background-color: red;
-        }
+        } */
     </style>
 </head>
 
@@ -81,29 +83,21 @@
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
+                    setInterval(() => {
+                        pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                    }, 15000);
                     var marker = new google.maps.Marker({
                         position: pos,
-                        icon: 'marker.png',
+                        icon: 'location-dot-solid.svg',
                         map: map
                     });
                     map.setZoom(17);
                     map.setCenter(pos);
                 });
-                setInterval(() => {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        var pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        var marker = new google.maps.Marker({
-                            position: pos,
-                            icon: 'marker.png',
-                            map: map
-                        });
-                        map.setZoom(17);
-                        map.setCenter(pos);
-                    });
-                }, 5000);
+                
             } else {
                 // Browser doesn't support Geolocation
                 alert("未允許或遭遇錯誤！");
