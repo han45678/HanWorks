@@ -37,6 +37,7 @@
             width: 100%;
             background-color: rgba(255, 255, 255, 0.45);
         }
+
         /* .gm-style img{
             width: 24px !important;
         } */
@@ -58,7 +59,6 @@
 
 <body>
     <div class="body">
-        <h1>King Tzeng的鐵人地圖</h1>
         <h2>抓取當前位置的練習</h2>
         <div id="map"></div>
     </div>
@@ -66,8 +66,8 @@
     <script>
         function initMap() {
             var latlng = {
-                lat: 25.046891,
-                lng: 121.516602
+                lat: 24.17421135978934,
+                lng: 120.67278155012745
             }; // 給一個初始位置
             var map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 14, //放大的倍率
@@ -97,13 +97,16 @@
                     map.setZoom(17);
                     map.setCenter(pos);
                 });
-                
+
             } else {
                 // Browser doesn't support Geolocation
                 alert("未允許或遭遇錯誤！");
             }
-        } //init_end
-
+        }
+        
+        setInterval(()=> {
+            initMap()
+        }, 5000);
     </script>
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_Za7RqKvUuEg2Nln0EcpUVN3k2fZtDuE&callback=initMap">
