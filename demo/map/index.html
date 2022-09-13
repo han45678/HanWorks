@@ -54,6 +54,17 @@
             border-radius: 999px;
             background-color: red;
         } */
+
+        #xy{
+            z-index: 5;
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            color:#fff;
+            font-size: 18px;
+            line-height: 1.5;
+            font-size: 32px;
+        }
     </style>
 </head>
 
@@ -61,6 +72,14 @@
     <div class="body">
         <h2>抓取當前位置的練習</h2>
         <div id="map"></div>
+        <div id="xy">
+            <div id="xx">
+                緯度:<span id="x"></span>
+            </div>
+            <div id="yy">
+                經度:<span id="y"></span>
+            </div>
+        </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script>
@@ -95,7 +114,9 @@
                 // Browser doesn't support Geolocation
                 alert("未允許或遭遇錯誤！");
             }
-        } 
+            document.getElementById('x').innerHTML=latlng.lat
+            document.getElementById('y').innerHTML=latlng.lng
+        }
     </script>
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_Za7RqKvUuEg2Nln0EcpUVN3k2fZtDuE&callback=initMap">
