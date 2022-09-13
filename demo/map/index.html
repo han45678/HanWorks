@@ -65,12 +65,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script>
         function initMap() {
+            
             var latlng = {
                 lat: 24.17421135978934,
                 lng: 120.67278155012745
             }; // 給一個初始位置
             var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 14, //放大的倍率
+                zoom: 20, //放大的倍率
                 center: latlng //初始化的地圖中心位置
             });
             var marker = new google.maps.Marker({
@@ -78,34 +79,18 @@
                 map: map
             });
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                    setInterval(() => {
-                        pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                    }, 15000);
-                    var marker = new google.maps.Marker({
-                        position: pos,
-                        icon: 'location-dot-solid.svg',
-                        map: map
-                    });
-                    map.setZoom(17);
-                    map.setCenter(pos);
-                });
-
-            } else {
-                // Browser doesn't support Geolocation
                 alert("未允許或遭遇錯誤！");
             }
+            console.log("latlng-x",latlng.lat);
+            console.log("latlng-y",latlng.lng);
+            
         }
-        
+
         setInterval(()=> {
-            initMap()
+            var marker = new google.maps.Marker({
+                position: latlng,
+                map: map
+            });
         }, 5000);
     </script>
     <script async defer
