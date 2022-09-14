@@ -4,7 +4,7 @@ var user = {
     lat: 24.17424710202494,
     lng: 120.6727611244978
 };
-var diameter = 150;
+var diameter = 1500;
 
 function initMap() {
 
@@ -63,28 +63,25 @@ var checkPoint = {
     lng: y
 }
 
-var centerPoint = { //打卡的座標
-    lat: 24.17424710202494,
-    lng: 120.67276112449782
-}
+var centerPoint = user //打卡的座標
 
 document.getElementById("xx").innerHTML = centerPoint.lat
 document.getElementById("yy").innerHTML = centerPoint.lng
 
-var m = 150 //打卡的範圍
+var m = diameter //打卡的範圍
 
+
+function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
+    var km = m / 1000;
+    var ky = 40000 / 360;
+    var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+    var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+    var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+    return Math.sqrt(dx * dx + dy * dy) <= km;
+}
+
+// alert(arePointsNear(checkPoint, centerPoint, m))
 function punch() {
-    function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
-        var km = m / 1000;
-        var ky = 40000 / 360;
-        var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
-        var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
-        var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
-        return Math.sqrt(dx * dx + dy * dy) <= km;
-    }
-
-    // alert(arePointsNear(checkPoint, centerPoint, m))
-
     if (arePointsNear(checkPoint, centerPoint, m)) {
         alert("可以打卡")
     } else {
