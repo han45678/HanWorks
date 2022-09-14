@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>打卡定位</title>
+    <style type="text/css" media="screen">
+        #map {
+            height: 100%;
+        }
+
+        *{
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        header{
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            z-index: 5;
+            background-color: rgb(3, 179, 108);
+            color: #fff;
+            text-align: center;
+            line-height: 80px;
+        }
+        footer{
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 5;
+            background-color: rgb(3, 179, 108);
+            color: #fff;
+            text-align: center;
+            min-height: 80px;
+            line-height: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>定位打卡系統</h1>
+    </header>
+    <div id="map"></div>
+    <footer>
+
+    </footer>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_Za7RqKvUuEg2Nln0EcpUVN3k2fZtDuE&callback=initMap" async defer></script>
+    <script>
+        var map;
+        var marker;
+        var user = {
+            lat: 24.17424710202494,
+            lng: 120.67276112449782
+        }; //use this as user location
+        var diameter = 150; // change this to the preferred size in meters
+        function initMap() {
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: user,
+                zoom: 16
+            });
+
+            var user_marker = new google.maps.Marker({
+                map: map,
+                position: user
+            });
+
+            var cityCircle = new google.maps.Circle({ //created a circle to mark the radius
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.35,
+                map: map,
+                center: user,
+                radius: diameter,
+                clickable: false
+            });
+
+
+            google.maps.event.addListener(map, 'click', function (event) {
+                var click = event.latLng;
+                var locs = {
+                    lat: event.latLng.lat(),
+                    lng: event.latLng.lng()
+                };
+                var n = arePointsNear(user, locs, diameter);
+                console.log(locs);
+                if (n) {
+                    marker = new google.maps.Marker({
+                        map: map,
+                        position: locs,
+                        label: {
+                            text: "I", //marking all jobs inside radius with I
+                            color: "white"
+                        }
+                    });
+                } else {
+                    marker = new google.maps.Marker({
+                        map: map,
+                        position: locs,
+                        label: {
+                            text: "O", //marking all jobs outside radius with O
+                            color: "white"
+                        }
+                    });
+                }
+            });
+        }
+
+        function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
+            var km = m / 1000;
+            var ky = 40000 / 360;
+            var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+            var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+            var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+            return Math.sqrt(dx * dx + dy * dy) <= km;
+            console.log(arePointsNear)
+        }
+    </script>
+</body>
+
+</html>
