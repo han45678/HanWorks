@@ -1,3 +1,10 @@
+var map;
+var marker;
+var user = {
+    lat: 24.17424710202494,
+    lng: 120.6727611244978
+};
+var diameter = 150;
 
 function initMap() {
 
@@ -6,7 +13,7 @@ function initMap() {
         zoom: 16
     });
 
-    user_marker = new google.maps.Marker({
+    var user_marker = new google.maps.Marker({
         map: map,
         position: user
     });
@@ -30,8 +37,8 @@ function initMap() {
             x = position.coords.latitude
             y = position.coords.longitude
 
-            document.getElementById("x").innerHTML=position.coords.latitude
-            document.getElementById("y").innerHTML=position.coords.longitude
+            document.getElementById("x").innerHTML = position.coords.latitude
+            document.getElementById("y").innerHTML = position.coords.longitude
         });
 
     } else {
@@ -73,13 +80,10 @@ function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
     return Math.sqrt(dx * dx + dy * dy) <= km;
 }
 
-function punch(){
-    if(arePointsNear(checkPoint, centerPoint, m)){
+function punch() {
+    if (arePointsNear(checkPoint, centerPoint, m)) {
         alert("可以打卡")
-    }else{
+    } else {
         alert("不可以打卡")
     }
 }
-
-
-
