@@ -73,22 +73,21 @@ document.getElementById("yy").innerHTML = centerPoint.lng
 
 var m = 150 //打卡的範圍
 
-
-function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
-    var km = m / 1000;
-    var ky = 40000 / 360;
-    var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
-    var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
-    var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
-    return Math.sqrt(dx * dx + dy * dy) <= km;
-}
-
 function punch() {
-    alert(arePointsNear(checkPoint, centerPoint, m))
-    // if (arePointsNear(checkPoint, centerPoint, m)) {
-    //     alert("可以打卡")
-    // } else {
-    //     alert("不可以打卡")
-    // }
-    console.log(checkPoint)
+    function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
+        var km = m / 1000;
+        var ky = 40000 / 360;
+        var kx = Math.cos(Math.PI * centerPoint.lat / 180.0) * ky;
+        var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
+        var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
+        return Math.sqrt(dx * dx + dy * dy) <= km;
+    }
+
+    // alert(arePointsNear(checkPoint, centerPoint, m))
+
+    if (arePointsNear(checkPoint, centerPoint, m)) {
+        alert("可以打卡")
+    } else {
+        alert("不可以打卡")
+    }
 }
