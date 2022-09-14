@@ -55,7 +55,7 @@
     </header>
     <div id="map"></div>
     <footer>
-
+        <span id="x"></span>，<span id="y"></span>
     </footer>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_Za7RqKvUuEg2Nln0EcpUVN3k2fZtDuE&callback=initMap" async defer></script>
     <script>
@@ -66,6 +66,7 @@
             lng: 120.67276112449782
         }; //use this as user location
         var diameter = 150; // change this to the preferred size in meters
+        
         function initMap() {
 
             map = new google.maps.Map(document.getElementById('map'), {
@@ -77,6 +78,30 @@
                 map: map,
                 position: user
             });
+
+            var marker = new google.maps.Marker({
+                position: latlng,
+                map: map
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    var marker = new google.maps.Marker({
+                        position: pos,
+                        icon:'./location-dot-solid.svg',
+                        map: map
+                    });
+                    map.setZoom(17);
+                    map.setCenter(pos);
+                });
+            } else {
+                // Browser doesn't support Geolocation
+                alert("未允許或遭遇錯誤！");
+            }
 
             var cityCircle = new google.maps.Circle({ //created a circle to mark the radius
                 strokeColor: '#FF0000',
@@ -90,7 +115,9 @@
                 clickable: false
             });
 
-
+            document.getElementById('x').innerHTML=latlng.lat
+            document.getElementById('y').innerHTML=latlng.lng
+            /*
             google.maps.event.addListener(map, 'click', function (event) {
                 var click = event.latLng;
                 var locs = {
@@ -119,7 +146,20 @@
                     });
                 }
             });
+            */
         }
+        
+        var checkPoint = {
+            lat: 24.191108927150697,
+            lng: 120.6608564013975
+        }
+
+        var centerPoint={//打卡的座標
+            lat: 24.17424710202494,
+            lng: 120.67276112449782
+        }
+
+        var m = 150//打卡的範圍
 
         function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
             var km = m / 1000;
@@ -128,8 +168,9 @@
             var dx = Math.abs(centerPoint.lng - checkPoint.lng) * kx;
             var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
             return Math.sqrt(dx * dx + dy * dy) <= km;
-            console.log(arePointsNear)
         }
+        
+        console.log(arePointsNear(checkPoint, centerPoint, m))
     </script>
 </body>
 
