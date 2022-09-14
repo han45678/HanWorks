@@ -13,7 +13,7 @@ function initMap() {
         zoom: 16
     });
 
-    var user_marker = new google.maps.Marker({
+    user_marker = new google.maps.Marker({
         map: map,
         position: user
     });
@@ -34,10 +34,8 @@ function initMap() {
             alert(pos.lat)
             alert(pos.lng)
 
-            var checkPoint = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            }
+            x = position.coords.latitude
+            y = position.coords.longitude
 
             document.getElementById("x").innerHTML=position.coords.latitude
             document.getElementById("y").innerHTML=position.coords.longitude
@@ -47,7 +45,7 @@ function initMap() {
         alert("錯誤！");
     }
 
-    var cityCircle = new google.maps.Circle({ //created a circle to mark the radius
+    cityCircle = new google.maps.Circle({ //created a circle to mark the radius
         strokeColor: '#FF0000',
         strokeOpacity: 0.8,
         strokeWeight: 2,
@@ -58,6 +56,11 @@ function initMap() {
         radius: diameter,
         clickable: false
     });
+}
+
+var checkPoint = {
+    lat: x,
+    lng: y
 }
 
 var centerPoint = { //打卡的座標
@@ -75,6 +78,7 @@ function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
     var dy = Math.abs(centerPoint.lat - checkPoint.lat) * ky;
     return Math.sqrt(dx * dx + dy * dy) <= km;
 }
+
 if(arePointsNear(checkPoint, centerPoint, m)){
     alert("可以打卡")
 }else{
