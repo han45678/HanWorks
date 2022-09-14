@@ -79,10 +79,6 @@
                 position: user
             });
 
-            var marker = new google.maps.Marker({
-                position: latlng,
-                map: map
-            });
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -95,12 +91,17 @@
                         icon:'./location-dot-solid.svg',
                         map: map
                     });
-                    map.setZoom(17);
-                    map.setCenter(pos);
+
+                    alert(pos.lat)
+
+                    var checkPoint = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    }
                 });
+                
             } else {
-                // Browser doesn't support Geolocation
-                alert("未允許或遭遇錯誤！");
+                alert("錯誤！");
             }
 
             var cityCircle = new google.maps.Circle({ //created a circle to mark the radius
@@ -114,44 +115,6 @@
                 radius: diameter,
                 clickable: false
             });
-
-            document.getElementById('x').innerHTML=latlng.lat
-            document.getElementById('y').innerHTML=latlng.lng
-            /*
-            google.maps.event.addListener(map, 'click', function (event) {
-                var click = event.latLng;
-                var locs = {
-                    lat: event.latLng.lat(),
-                    lng: event.latLng.lng()
-                };
-                var n = arePointsNear(user, locs, diameter);
-                console.log(locs);
-                if (n) {
-                    marker = new google.maps.Marker({
-                        map: map,
-                        position: locs,
-                        label: {
-                            text: "I", //marking all jobs inside radius with I
-                            color: "white"
-                        }
-                    });
-                } else {
-                    marker = new google.maps.Marker({
-                        map: map,
-                        position: locs,
-                        label: {
-                            text: "O", //marking all jobs outside radius with O
-                            color: "white"
-                        }
-                    });
-                }
-            });
-            */
-        }
-        
-        var checkPoint = {
-            lat: 24.191108927150697,
-            lng: 120.6608564013975
         }
 
         var centerPoint={//打卡的座標
