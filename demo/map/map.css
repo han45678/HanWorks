@@ -1,0 +1,39 @@
+#map {
+    height: 100%;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+header{
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 5;
+    background-color: rgb(3, 179, 108);
+    color: #fff;
+    text-align: center;
+    line-height: 80px;
+}
+footer{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    background-color: rgb(3, 179, 108);
+    color: #fff;
+    text-align: center;
+    min-height: 80px;
+    line-height: 80px;
+}
