@@ -31,8 +31,8 @@ function initMap() {
                 map: map
             });
 
-            alert(pos.lat)
-            alert(pos.lng)
+            // alert(pos.lat)
+            // alert(pos.lng)
 
             x = position.coords.latitude
             y = position.coords.longitude
@@ -68,6 +68,9 @@ var centerPoint = { //打卡的座標
     lng: 120.67276112449782
 }
 
+document.getElementById("xx").innerHTML = centerPoint.lat
+document.getElementById("yy").innerHTML = centerPoint.lng
+
 var m = 150 //打卡的範圍
 
 
@@ -81,9 +84,11 @@ function arePointsNear(checkPoint, centerPoint, m) { // credits to user:69083
 }
 
 function punch() {
-    if (arePointsNear(checkPoint, centerPoint, m)) {
-        alert("可以打卡")
-    } else {
-        alert("不可以打卡")
-    }
+    alert(arePointsNear(checkPoint, centerPoint, m))
+    // if (arePointsNear(checkPoint, centerPoint, m)) {
+    //     alert("可以打卡")
+    // } else {
+    //     alert("不可以打卡")
+    // }
+    console.log(checkPoint)
 }
