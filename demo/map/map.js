@@ -27,7 +27,7 @@ function initMap() {
             };
             var marker = new google.maps.Marker({
                 position: pos,
-                icon: './location-dot-solid.svg',
+                icon: './user.png',
                 map: map
             });
 
