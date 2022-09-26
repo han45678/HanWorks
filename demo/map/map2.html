@@ -21,36 +21,36 @@
         lng: position.coords.longitude
     };
 
-    // alert(pos.lat)
-    // alert(pos.lng)
-
-    x = position.coords.latitude
-    y = position.coords.longitude
-
-    console.log(x,y)
-
-    document.getElementById("coordinate").innerHTML=x+','+y
-});
-
-setInterval(()=>{
-    navigator.geolocation.getCurrentPosition(function (position) {
-        var pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-        };
-    
         // alert(pos.lat)
         // alert(pos.lng)
-    
+
         x = position.coords.latitude
         y = position.coords.longitude
-    
+
         console.log(x,y)
-    
+
         document.getElementById("coordinate").innerHTML=x+','+y
-        
     });
-}, 5000);
+
+    setInterval(()=>{
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            // alert(pos.lat)
+            // alert(pos.lng)
+
+            x = position.coords.latitude
+            y = position.coords.longitude
+
+            console.log(x,y)
+
+            document.getElementById("coordinate").innerHTML=x+','+y
+
+        });
+    }, 5000);
     </script>
 </body>
 
