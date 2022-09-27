@@ -141,12 +141,18 @@
 </head>
 
 <body>
+    <div id="company"
+        style="z-index: 3; text-align: center;position: fixed;top: 0;width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
+        公司的座標<span id="cx"></span>,<span id="cy"></span>
+    </div>
+    <div id="gap" style="z-index: 3;text-align: center;position: fixed;top: 50%;transform: translateY(-50%);width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
+        
+    </div>
     <div id="coordinate"
         style="z-index: 3; text-align: center;position: fixed;bottom: 0;width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
+        你的座標<span id="ux"></span>,<span id="uy"></span>
     </div>
-    <iframe id="map" src="" style="border:0;width: 100%;height: 100vh;" allowfullscreen="" loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"></iframe>
-    <div id="mask"></div>
+    <!-- <div id="mask"></div> -->
     <script>
         navigator.geolocation.getCurrentPosition(function (position) {
             var pos = {
@@ -154,42 +160,40 @@
                 lng: position.coords.longitude
             };
 
-            // alert(pos.lat)
-            // alert(pos.lng)
-
             x = position.coords.latitude
             y = position.coords.longitude
 
-            console.log(x, y)
+            // console.log(x, y)
 
-            document.getElementById("coordinate").innerHTML = x + '，' + y
+            document.getElementById("ux").innerHTML = x;
+            document.getElementById("uy").innerHTML = y;
 
-            document.getElementById('map').src =
-                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3639.871744221137!2d" + y + "!3d" + x +
-                "!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x2d4dcdd09dc29b1a!2zMjTCsDEwJzM0LjQiTiAxMjDCsDQwJzE3LjIiRQ!5e0!3m2!1szh-TW!2stw!4v1664173818441!5m2!1szh-TW!2stw"
+            function GetDistance(lat1, lng1, lat2, lng2) {
+                var radLat1 = lat1 * Math.PI / 180.0;
+                var radLat2 = lat2 * Math.PI / 180.0;
+                var a = radLat1 - radLat2;
+                var b = lng1 * Math.PI / 180.0 - lng2 * Math.PI / 180.0;
+                var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+                    Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+                s = s * 6378.137; // EARTH_RADIUS;
+                s = Math.round(s * 10000) / 10000;
+                return s;
+            }
+
+            let ux = Number(document.getElementById("ux").innerHTML);
+            let uy = Number(document.getElementById("uy").innerHTML);
+
+            let cx = 24.17420668074744
+            let cy = 120.67295351771162
+
+            document.getElementById("cx").innerHTML = cx;
+            document.getElementById("cy").innerHTML = cy;
+
+            // 调用 return的距离单位为km
+            var xy = GetDistance(cx, cy, x, y)
+            console.log("離公司還"+xy+"公里")
+            document.getElementById("gap").innerHTML="離公司還"+xy+"公里"
         });
-
-        setInterval(() => {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                var pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-
-                x = position.coords.latitude
-                y = position.coords.longitude
-
-                console.log(x, y)
-
-                document.getElementById("coordinate").innerHTML = x + '，' + y
-
-                document.getElementById('map').src =
-                    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3639.871744221137!2d" + y +
-                    "!3d" + x +
-                    "!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x2d4dcdd09dc29b1a!2zMjTCsDEwJzM0LjQiTiAxMjDCsDQwJzE3LjIiRQ!5e0!3m2!1szh-TW!2stw!4v1664173818441!5m2!1szh-TW!2stw"
-
-            });
-        }, 5000);
     </script>
 </body>
 
