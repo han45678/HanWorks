@@ -171,6 +171,23 @@
     </div>
     <!-- <div id="mask"></div> -->
     <script>
+        var map = () => {
+            var greenIcon = L.icon({
+                iconUrl: './user.png',
+            });
+
+            var map = L.map('map').setView([x, y], 17);
+
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+
+            L.marker([x, y], {
+                    icon: greenIcon
+                })
+                .addTo(map)
+                .bindPopup('你現在的位置')
+                .openPopup();
+        }
+
         navigator.geolocation.getCurrentPosition(function (position) {
             var pos = {
                 lat: position.coords.latitude,
@@ -211,24 +228,12 @@
             console.log("離公司還" + xy + "公里")
 
             alert("離公司還" + xy + "公里")
-            
+
             // document.getElementById("gap").innerHTML = "離公司還" + xy + "公里"
-
-            var greenIcon = L.icon({
-                iconUrl: './user.png',
-            });
-
-            var map = L.map('map').setView([x, y], 17);
-
-            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-
-            L.marker([x, y], {
-                    icon: greenIcon
-                })
-                .addTo(map)
-                .bindPopup('你現在的位置')
-                .openPopup();
+            map();
         });
+
+        
     </script>
 </body>
 
