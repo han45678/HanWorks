@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
     <title>定位</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.css">
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.1/leaflet.js"></script>
     <style>
         html,
         body,
@@ -138,16 +140,31 @@
             border-spacing: 0;
         }
     </style>
+    <style>
+        .mapWrapper {
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .mapWrapper {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
+    <div id="map"></div>
     <div id="company"
         style="z-index: 3; text-align: center;position: fixed;top: 0;width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
         公司的座標<span id="cx"></span>,<span id="cy"></span>
     </div>
-    <div id="gap" style="z-index: 3;text-align: center;position: fixed;top: 50%;transform: translateY(-50%);width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
-        
-    </div>
+    <!-- <div id="gap"
+        style="z-index: 3;text-align: center;position: fixed;top: 50%;transform: translateY(-50%);width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
+    </div> -->
     <div id="coordinate"
         style="z-index: 3; text-align: center;position: fixed;bottom: 0;width: 100%;left: 0;background-color: #000;color: #fff;line-height: 45px;font-size: 20px;">
         你的座標<span id="ux"></span>,<span id="uy"></span>
@@ -191,8 +208,26 @@
 
             // 调用 return的距离单位为km
             var xy = GetDistance(cx, cy, x, y)
-            console.log("離公司還"+xy+"公里")
-            document.getElementById("gap").innerHTML="離公司還"+xy+"公里"
+            console.log("離公司還" + xy + "公里")
+
+            alert("離公司還" + xy + "公里")
+            
+            // document.getElementById("gap").innerHTML = "離公司還" + xy + "公里"
+
+            var greenIcon = L.icon({
+                iconUrl: './user.png',
+            });
+
+            var map = L.map('map').setView([x, y], 17);
+
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+
+            L.marker([x, y], {
+                    icon: greenIcon
+                })
+                .addTo(map)
+                .bindPopup('你現在的位置')
+                .openPopup();
         });
     </script>
 </body>
