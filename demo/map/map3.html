@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <title>定位</title>
+    <script src="./leaflet.js"></script>
+    <link href="./leaflet.css" rel="stylesheet" />
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        #mapid {
+            height: 690px;
+            width: 1525px
+        }
+
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: #c30b82;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -10px 0 0 -13px;
+        }
+
+        .marker-pin::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            margin: 3px 0 0 3px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .custom-div-icon i {
+            position: absolute;
+            width: 22px;
+            font-size: 22px;
+            left: 0;
+            right: 0;
+            margin: 10px auto;
+            text-align: center;
+        }
+
+        .custom-div-icon i.awesome {
+            margin: 12px auto;
+            font-size: 17px;
+        }
+
+        .another-popup .leaflet-popup-content-wrapper {
+            background: #FFCC22;
+            color: black;
+            font-size: 12px;
+            line-height: 10px;
+            border-radius: 10px;
+        }
+
+        .another-popup .leaflet-popup-tip {
+            background: #FFCC22;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mapid"></div>
+
+    <script type="text/javascript">
+        //社區群資料
+        var LocsA = [{
+                "record_id": 1,
+                "lat": "25.079995",
+                "lon": " 121.568004",
+                "title": "虛擬社區",
+                "html": "台北市內湖區瑞光路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 2,
+                "lat": "25.048092",
+                "lon": " 121.557293",
+                "title": "XX經貿廣場",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 3,
+                "lat": "25.051343",
+                "lon": " 121.578258",
+                "title": "信X臻品",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 4,
+                "lat": "25.051470",
+                "lon": " 121.554456",
+                "title": "敦北X蘭大廈",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 5,
+                "lat": "25.048916",
+                "lon": " 121.552769",
+                "title": "敦X峰尚",
+                "html": "台北市松山區北寧路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 6,
+                "lat": "25.048099",
+                "lon": " 121.549372",
+                "title": "XX大廈",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 7,
+                "lat": "25.051206",
+                "lon": " 121.564433",
+                "title": "珍X大樓",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 8,
+                "lat": "25.051292",
+                "lon": " 121.561706",
+                "title": "欣X世貿大廈",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 9,
+                "lat": "25.051684",
+                "lon": " 121.563245",
+                "title": "X運南京X民站",
+                "html": "台北市松山區X台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 10,
+                "lat": "25.051731",
+                "lon": " 121.563236",
+                "title": "環X門第",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 11,
+                "lat": "25.067478",
+                "lon": " 121.591640",
+                "title": "海X御璽",
+                "html": "台北市內湖區民權東路X段X巷X弄X號 ",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 12,
+                "lat": "25.032932",
+                "lon": " 121.556142",
+                "title": "大安X華",
+                "html": "台北市大安區信義路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 13,
+                "lat": "25.051833",
+                "lon": " 121.556947",
+                "title": "國X龍吉",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 14,
+                "lat": "25.028257",
+                "lon": " 121.550118",
+                "title": "全X便利商店_樂和店(阿良店長)",
+                "html": "台北市大安區安和路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 15,
+                "lat": "25.036637",
+                "lon": " 121.499215",
+                "title": "X立生活百貨",
+                "html": "台北市萬華區廣州街X號",
+                "priority_no": 2,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 16,
+                "lat": "25.048081",
+                "lon": " 121.554794",
+                "title": "X佳生活百貨",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 7,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 17,
+                "lat": "25.048575",
+                "lon": " 121.559793",
+                "title": "50X",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 18,
+                "lat": "25.037464",
+                "lon": " 121.505833",
+                "title": "桂X苑",
+                "html": "台北市萬華區桂林路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 19,
+                "lat": "25.051625",
+                "lon": " 121.569811",
+                "title": "自X仕",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 9,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 20,
+                "lat": "25.051381",
+                "lon": " 121.558924",
+                "title": "X(X東)",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 21,
+                "lat": "",
+                "lon": "",
+                "title": "虛擬社區2號",
+                "html": "台北市中正區XXXX",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            }, //異常資料
+            {
+                "record_id": 54,
+                "lat": "25.051382",
+                "lon": " 121.558910",
+                "title": "X舖",
+                "html": "台北市松山區南京東路XX段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 55,
+                "lat": "25.051737",
+                "lon": " 121.543264",
+                "title": "大X大樓",
+                "html": "台北市中山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 56,
+                "lat": "25.025960",
+                "lon": " 121.530539",
+                "title": "禮X",
+                "html": "台北市大安區和平東路X段X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 57,
+                "lat": "25.031523",
+                "lon": " 121.546650",
+                "title": "忠X鳳盤",
+                "html": "台北市大安區大安路X段X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 58,
+                "lat": "24.954322",
+                "lon": " 121.353806",
+                "title": "勝X生活百貨鶯歌店",
+                "html": "新北市鶯歌區X新北市鶯歌區建國路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 59,
+                "lat": "25.051823",
+                "lon": " 121.559096",
+                "title": "噶X蘭展售中心",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 60,
+                "lat": "25.058549",
+                "lon": " 121.551358",
+                "title": "民X社區公寓",
+                "html": "台北市松山區民生東路X段X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 61,
+                "lat": "25.057872",
+                "lon": " 121.552248",
+                "title": "立赫X生藥局",
+                "html": "台北市松山區民生東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 62,
+                "lat": "25.056477",
+                "lon": " 121.582051",
+                "title": "將X酒",
+                "html": "台北市內湖區內湖新明路X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 63,
+                "lat": "24.948733",
+                "lon": " 121.379577",
+                "title": "名X尊品",
+                "html": "新北市樹林區大雅路X號",
+                "priority_no": 1,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 64,
+                "lat": "25.041627",
+                "lon": " 121.564937",
+                "title": "春X大廈",
+                "html": "台北市信義區忠孝東路X段X號",
+                "priority_no": 11,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 65,
+                "lat": "25.050942",
+                "lon": " 121.580304",
+                "title": "萬X廣場",
+                "html": "台北市南港區X德路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 66,
+                "lat": "25.031092",
+                "lon": " 121.552215",
+                "title": "悠X盒子",
+                "html": "台北市大安區安和路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 67,
+                "lat": null,
+                "lon": null,
+                "title": "XX實業",
+                "html": "台北市信義區松仁路X巷X號X樓",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            }, //異常資料
+            {
+                "record_id": 68,
+                "lat": "25.047917",
+                "lon": " 121.546079",
+                "title": "漢X實業大樓",
+                "html": "台北市松山區X德路X段X號XF",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 69,
+                "lat": "25.051587",
+                "lon": " 121.569959",
+                "title": "城X商旅",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 10,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 70,
+                "lat": "25.044191",
+                "lon": " 121.543590",
+                "title": "X家懷生店",
+                "html": "台北市大安區復興南路X段X號",
+                "priority_no": 3,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 71,
+                "lat": "25.080816",
+                "lon": " 121.546511",
+                "title": "全X直學店",
+                "html": "台北市中山區大直街X號",
+                "priority_no": 13,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 72,
+                "lat": "25.059544",
+                "lon": " 121.547628",
+                "title": "立X藥局敦北店",
+                "html": "台北市松山區敦化北路X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 73,
+                "lat": "25.058253",
+                "lon": " 121.556542",
+                "title": "柑X店民生店",
+                "html": "台北市松山區民生東路X段X號",
+                "priority_no": 12,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 74,
+                "lat": "25.051180",
+                "lon": " 121.562969",
+                "title": "158X商辦",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 8,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 75,
+                "lat": "25.049235",
+                "lon": " 121.546690",
+                "title": "音X花園",
+                "html": "台北市松山區X德路X段X巷X弄X號",
+                "priority_no": 5,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 76,
+                "lat": "25.085646",
+                "lon": " 121.496002",
+                "title": "永恆之X",
+                "html": "新北市X重區集賢路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 77,
+                "lat": "25.051500",
+                "lon": " 121.553879",
+                "title": "56號商X",
+                "html": "台北市松山區南京東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 78,
+                "lat": "25.049924",
+                "lon": " 121.539458",
+                "title": "教X部體育署",
+                "html": "台北市中山區朱崙街X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 79,
+                "lat": "25.033739",
+                "lon": " 121.542053",
+                "title": "X會大樓",
+                "html": "台北市信義區信義路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 80,
+                "lat": "25.033837",
+                "lon": " 121.527910",
+                "title": "信義X華苑",
+                "html": "台北市信義區信義路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 81,
+                "lat": "25.082192",
+                "lon": " 121.546569",
+                "title": "X家大直店",
+                "html": "台北市中山區大直街X巷X號",
+                "priority_no": 15,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 82,
+                "lat": "25.080944",
+                "lon": " 121.546514",
+                "title": "X家新橫山店",
+                "html": "台北市中山區大直街X號",
+                "priority_no": 14,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 83,
+                "lat": "25.049063",
+                "lon": " 121.543729",
+                "title": "貝森X夫",
+                "html": "台北市中山區復興北路X號",
+                "priority_no": 4,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 84,
+                "lat": "25.009371",
+                "lon": " 121.502004",
+                "title": "仁X國寶",
+                "html": "新北市永和區仁愛路X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 85,
+                "lat": "25.045825",
+                "lon": " 121.524262",
+                "title": "鳳X大廈",
+                "html": "台北市中正區林森北路X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 86,
+                "lat": "25.045059",
+                "lon": " 121.523522",
+                "title": "X高時尚",
+                "html": "台北市中正區林森北路X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 87,
+                "lat": "25.097905",
+                "lon": " 121.272718",
+                "title": "凊X有限公司",
+                "html": "桃園市蘆竹區7鄰後壁厝X之X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 88,
+                "lat": "25.083237",
+                "lon": " 121.552617",
+                "title": "艾X爾大廈",
+                "html": "台北市中山區台北市敬業X路X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 89,
+                "lat": "25.027074",
+                "lon": " 121.526257",
+                "title": "和平X苑",
+                "html": "台北市大安區台北市和平東路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 90,
+                "lat": "25.048139",
+                "lon": " 121.551097",
+                "title": "台X大樓",
+                "html": "台北市松山區X德路X段X號",
+                "priority_no": 6,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 91,
+                "lat": "25.057052",
+                "lon": " 121.634960",
+                "title": "HY",
+                "html": "新北市汐止區大同路X段X巷X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 92,
+                "lat": "25.041622",
+                "lon": " 121.554618",
+                "title": "新東X通商",
+                "html": "台北市大安區延吉街X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 93,
+                "lat": "25.061068",
+                "lon": " 121.522722",
+                "title": "中XTED",
+                "html": "台北市中山區中山北路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            },
+            {
+                "record_id": 94,
+                "lat": "25.034983",
+                "lon": " 121.545900",
+                "title": "仁XA+",
+                "html": "台北市大安區大安路X段X號",
+                "priority_no": 0,
+                "colorcode": "#FF3333"
+            }
+        ];
+
+        // 建立 Leaflet 地圖
+        var map = L.map('mapid', {
+            closePopupOnClick: false
+        }).on('click', function () {
+            /*this.closePopup();*/ });
+
+        var PositionX0 = 25.071885;
+        var PositionY0 = 121.548988;
+        // 設定經緯度座標
+        map.setView(new L.LatLng(PositionX0, PositionY0), 16);
+
+        // 設定圖資來源
+        var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        var osm = new L.TileLayer(osmUrl /*, {minZoom: 8, maxZoom: 20}*/ );
+        map.addLayer(osm);
+
+        var myIcon = L.icon({
+            iconUrl: './user.png',
+            iconSize: [50, 50], // size of the icon
+            //shadowSize: [50, 64], // size of the shadow
+            //iconAnchor: [PositionX0, PositionY0], // point of the icon which will correspond to marker's location
+            //shadowAnchor: [4, 62],  // the same for the shadow
+            //popupAnchor: [PositionX0, PositionY0-220] // point from which the popup should open relative to the iconAnchor
+        });
+
+        var marker0 = L.marker([PositionX0, PositionY0], {
+            icon: myIcon
+        }).addTo(map);
+        //popup0 跟 marker0 各自獨立(兩者沒用bindPopup()做綁定)
+        var popup0 = L.popup({
+                className: 'another-popup',
+                closeButton: false, //closeButton若改為true，則一旦popup0被關掉了，就沒辦法透過marker0打開
+                //autoClose: false
+            })
+            .setLatLng([PositionX0, PositionY0])
+            .setContent('<p style="text-align:center">收樂舍</p>')
+            .openOn(map);
+
+        var circle = L.circle([PositionX0, PositionY0], // 圓心座標
+            5000, // 半徑（公尺）
+            {
+                color: 'red', // 線條顏色
+                fillColor: '#f03', // 填充顏色
+                fillOpacity: 0.1 // 透明度
+            }
+        ).addTo(map);
+
+        var marker;
+        var custom_icon;
+        var polyPos = [];
+        $.each(LocsA.sort(function (a, b) {
+            return a.priority_no - b.priority_no
+        }), function (index, element) {
+            if (element.lat != "" && element.lat != null && element.lon != "" && element.lon !=
+                null) { //沒加這X行就會把有問題GPS座標加入，整個地圖會壞掉(無法縮放及拖拉)
+                if (element.priority_no == 0) //使用預設圖標
+                {
+                    marker = L.marker([element.lat, element.lon]).addTo(map);
+                    marker.bindPopup(element.title);
+                } else {
+                    polyPos.push([parseFloat(element.lat), parseFloat(element.lon)]);
+                    custom_icon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: "<div style='background-color:" + element.colorcode +
+                            ";' class='marker-pin'></div><i class='fa-alph'>" + element.priority_no +
+                            "</i>",
+                        iconSize: [30, 42],
+                        //iconAnchor: [15, 42],
+                        popupAnchor: [element.lon - 120, element.lon - 130] //popup的顯示座標
+                    });
+                    marker = L.marker([element.lat, element.lon], {
+                        icon: custom_icon
+                    }).addTo(map);
+                    marker.bindPopup(element.title, {
+                        closeOnClick: false
+                    }).openPopup();
+                }
+            }
+        });
+
+        var polyline = L.polygon(polyPos, {
+            color: 'blue', // 線條顏色
+            fillColor: 'blue', // 填充顏色
+            fillOpacity: 0.1 // 透明度 
+        }).addTo(map);
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@ var user = {
     lat: 24.17424710202494,
     lng: 120.6727611244978
 };
-var diameter = 500;
+var diameter = 100; //半徑 單位公尺
 
 function initMap() {
 
