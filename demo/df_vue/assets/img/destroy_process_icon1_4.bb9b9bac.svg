@@ -1,0 +1,23 @@
+<svg id="组_6518" data-name="组 6518" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="79.193" height="68.466" viewBox="0 0 79.193 68.466">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="矩形_2762" data-name="矩形 2762" width="79.193" height="68.466" fill="none" stroke="rgba(0,0,0,0)" stroke-width="1"/>
+    </clipPath>
+  </defs>
+  <g id="组_6515" data-name="组 6515">
+    <g id="组_6514" data-name="组 6514" clip-path="url(#clip-path)">
+      <path id="路径_34431" data-name="路径 34431" d="M77.855,53.634H1.708V1.708H66.925L77.855,12.784Z" transform="translate(-0.185 -0.185)" fill="none" stroke="#1a1311" stroke-miterlimit="10" stroke-width="3.416"/>
+    </g>
+  </g>
+  <line id="直线_205" data-name="直线 205" x2="47.047" transform="translate(13.005 13.957)" fill="none" stroke="#1a1311" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3.416"/>
+  <line id="直线_206" data-name="直线 206" x2="47.047" transform="translate(13.005 26.471)" fill="none" stroke="#1a1311" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3.416"/>
+  <line id="直线_207" data-name="直线 207" x2="26.492" transform="translate(13.005 38.985)" fill="none" stroke="#1a1311" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3.416"/>
+  <g id="组_6517" data-name="组 6517">
+    <g id="组_6516" data-name="组 6516" clip-path="url(#clip-path)">
+      <path id="路径_34432" data-name="路径 34432" d="M77.646,54.487A11.728,11.728,0,1,1,65.918,42.76,11.727,11.727,0,0,1,77.646,54.487" transform="translate(-5.866 -4.629)" fill="#1a1311" stroke="rgba(0,0,0,0)" stroke-width="1"/>
+      <path id="路径_34433" data-name="路径 34433" d="M73.625,51.836l-8.568,8.853-4.348-4.427" transform="translate(-6.572 -5.612)" fill="none" stroke="#fff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3.416"/>
+      <path id="路径_34434" data-name="路径 34434" d="M71.344,66.346V74.7l-4.555-2.527L62.233,74.7v-8.35" transform="translate(-6.737 -7.183)" fill="none" stroke="#1a1311" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.135"/>
+      <path id="路径_34435" data-name="路径 34435" d="M86.176,13.186H74.709V2.109" transform="translate(-8.088 -0.229)" fill="none" stroke="#1a1311" stroke-miterlimit="10" stroke-width="3.416"/>
+    </g>
+  </g>
+</svg>

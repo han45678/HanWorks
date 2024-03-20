@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="99.524" height="83.495" viewBox="0 0 99.524 83.495">
+  <g id="组_7011" data-name="组 7011" transform="translate(-448.408 -5910)">
+    <path id="路径_34436" data-name="路径 34436" d="M82.252,24H11.277C5.049,24,0,18.627,0,12S5.049,0,11.277,0H82.252C88.48,0,93.529,5.373,93.529,12S88.48,24,82.252,24" transform="translate(448.408 5934)" fill="#14100e"/>
+    <path id="路径_34437" data-name="路径 34437" d="M54.957,2.359H87.506a9.641,9.641,0,0,1,.005,19.282H54.957" transform="translate(442.408 5934)" fill="#fff"/>
+    <g id="组_6893" data-name="组 6893" transform="translate(518.253 5946)">
+      <path id="路径_34686" data-name="路径 34686" d="M2.5,43.865V6.441L28.079,34.533l-12.023.009L21.71,47.161,17.2,49.074,11.222,36.16Z" transform="translate(-1.245 -3.208)" fill="#fff"/>
+      <path id="路径_34687" data-name="路径 34687" d="M2.313,5.959l22.124,24.21L13.1,30.177,19.069,43.46l-2.445,1.035L10.385,31.075l-8.072,7.1ZM0,0V43.3l9.591-8.443,5.876,12.641,6.68-2.827L16.67,32.488l13.009-.011Z"/>
+    </g>
+    <text id="Install" transform="translate(468 5929)" fill="#282828" font-size="16" font-family="NotoSansTC-Medium, Noto Sans TC" font-weight="500"><tspan x="0" y="0">INSTALL</tspan></text>
+  </g>
+</svg>
