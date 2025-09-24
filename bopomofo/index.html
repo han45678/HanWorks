@@ -4,62 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>ㄅㄆㄇ</title>
     <link rel="stylesheet" href="./css/ul.css">
 </head>
 
 <body>
     <h1>注音符號學習</h1>
-    <div class="container">
-        <h2 class="category-title">聲母</h2>
-        <div class="symbol" data-audio="ㄅ">ㄅ</div>
-        <div class="symbol" data-audio="ㄆ">ㄆ</div>
-        <div class="symbol" data-audio="ㄇ">ㄇ</div>
-        <div class="symbol" data-audio="ㄈ">ㄈ</div>
-        <div class="symbol" data-audio="ㄉ">ㄉ</div>
-        <div class="symbol" data-audio="ㄊ">ㄊ</div>
-        <div class="symbol" data-audio="ㄋ">ㄋ</div>
-        <div class="symbol" data-audio="ㄌ">ㄌ</div>
-        <div class="symbol" data-audio="ㄍ">ㄍ</div>
-        <div class="symbol" data-audio="ㄎ">ㄎ</div>
-        <div class="symbol" data-audio="ㄏ">ㄏ</div>
-        <div class="symbol" data-audio="ㄐ">ㄐ</div>
-        <div class="symbol" data-audio="ㄑ">ㄑ</div>
-        <div class="symbol" data-audio="ㄒ">ㄒ</div>
-        <div class="symbol" data-audio="ㄓ">ㄓ</div>
-        <div class="symbol" data-audio="ㄔ">ㄔ</div>
-        <div class="symbol" data-audio="ㄕ">ㄕ</div>
-        <div class="symbol" data-audio="ㄖ">ㄖ</div>
-        <div class="symbol" data-audio="ㄗ">ㄗ</div>
-        <div class="symbol" data-audio="ㄘ">ㄘ</div>
-        <div class="symbol" data-audio="ㄙ">ㄙ</div>
 
-        <h2 class="category-title">介母</h2>
-        <div class="symbol" data-audio="ㄧ">ㄧ</div>
-        <div class="symbol" data-audio="ㄨ">ㄨ</div>
-        <div class="symbol" data-audio="ㄩ">ㄩ</div>
+    <div id="base">
+        <div class="container">
+            <h2 class="category-title">聲母</h2>
+            <div class="symbol" data-audio="ㄅ">ㄅ</div>
+            <div class="symbol" data-audio="ㄆ">ㄆ</div>
+            <div class="symbol" data-audio="ㄇ">ㄇ</div>
+            <div class="symbol" data-audio="ㄈ">ㄈ</div>
+            <div class="symbol" data-audio="ㄉ">ㄉ</div>
+            <div class="symbol" data-audio="ㄊ">ㄊ</div>
+            <div class="symbol" data-audio="ㄋ">ㄋ</div>
+            <div class="symbol" data-audio="ㄌ">ㄌ</div>
+            <div class="symbol" data-audio="ㄍ">ㄍ</div>
+            <div class="symbol" data-audio="ㄎ">ㄎ</div>
+            <div class="symbol" data-audio="ㄏ">ㄏ</div>
+            <div class="symbol" data-audio="ㄐ">ㄐ</div>
+            <div class="symbol" data-audio="ㄑ">ㄑ</div>
+            <div class="symbol" data-audio="ㄒ">ㄒ</div>
+            <div class="symbol" data-audio="ㄓ">ㄓ</div>
+            <div class="symbol" data-audio="ㄔ">ㄔ</div>
+            <div class="symbol" data-audio="ㄕ">ㄕ</div>
+            <div class="symbol" data-audio="ㄖ">ㄖ</div>
+            <div class="symbol" data-audio="ㄗ">ㄗ</div>
+            <div class="symbol" data-audio="ㄘ">ㄘ</div>
+            <div class="symbol" data-audio="ㄙ">ㄙ</div>
 
-        <h2 class="category-title">韻母</h2>
-        <div class="symbol" data-audio="ㄚ">ㄚ</div>
-        <div class="symbol" data-audio="ㄛ">ㄛ</div>
-        <div class="symbol" data-audio="ㄜ">ㄜ</div>
-        <div class="symbol" data-audio="ㄝ">ㄝ</div>
-        <div class="symbol" data-audio="ㄞ">ㄞ</div>
-        <div class="symbol" data-audio="ㄟ">ㄟ</div>
-        <div class="symbol" data-audio="ㄠ">ㄠ</div>
-        <div class="symbol" data-audio="ㄡ">ㄡ</div>
-        <div class="symbol" data-audio="ㄢ">ㄢ</div>
-        <div class="symbol" data-audio="ㄣ">ㄣ</div>
-        <div class="symbol" data-audio="ㄤ">ㄤ</div>
-        <div class="symbol" data-audio="ㄥ">ㄥ</div>
-        <div class="symbol" data-audio="ㄦ">ㄦ</div>
+            <h2 class="category-title">介母</h2>
+            <div class="symbol" data-audio="ㄧ">ㄧ</div>
+            <div class="symbol" data-audio="ㄨ">ㄨ</div>
+            <div class="symbol" data-audio="ㄩ">ㄩ</div>
 
-        <!-- <h2 class="category-title">聲調</h2>
-        <div class="symbol voice" data-audio="一聲">ˉ</div>
-        <div class="symbol voice" data-audio="二聲">ˊ</div>
-        <div class="symbol voice" data-audio="三聲">ˇ</div>
-        <div class="symbol voice" data-audio="四聲">ˋ</div>
-        <div class="symbol voice" data-audio="輕聲">˙</div> -->
+            <h2 class="category-title">韻母</h2>
+            <div class="symbol" data-audio="ㄚ">ㄚ</div>
+            <div class="symbol" data-audio="ㄛ">ㄛ</div>
+            <div class="symbol" data-audio="ㄜ">ㄜ</div>
+            <div class="symbol" data-audio="ㄝ">ㄝ</div>
+            <div class="symbol" data-audio="ㄞ">ㄞ</div>
+            <div class="symbol" data-audio="ㄟ">ㄟ</div>
+            <div class="symbol" data-audio="ㄠ">ㄠ</div>
+            <div class="symbol" data-audio="ㄡ">ㄡ</div>
+            <div class="symbol" data-audio="ㄢ">ㄢ</div>
+            <div class="symbol" data-audio="ㄣ">ㄣ</div>
+            <div class="symbol" data-audio="ㄤ">ㄤ</div>
+            <div class="symbol" data-audio="ㄥ">ㄥ</div>
+            <div class="symbol" data-audio="ㄦ">ㄦ</div>
+        </div>
+    </div>
+
+    <div id="spell" style="display: none;">
+        <div class="container">
+            <h2 class="category-title">聲母</h2>
+            <div class="symbol" data-type="shengmu" data-audio="ㄅ">ㄅ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄆ">ㄆ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄇ">ㄇ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄈ">ㄈ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄉ">ㄉ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄊ">ㄊ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄋ">ㄋ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄌ">ㄌ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄍ">ㄍ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄎ">ㄎ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄏ">ㄏ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄐ">ㄐ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄑ">ㄑ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄒ">ㄒ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄓ">ㄓ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄔ">ㄔ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄕ">ㄕ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄖ">ㄖ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄗ">ㄗ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄘ">ㄘ</div>
+            <div class="symbol" data-type="shengmu" data-audio="ㄙ">ㄙ</div>
+
+            <h2 class="category-title">介母</h2>
+            <div class="symbol" data-type="jiemu" data-audio="ㄧ">ㄧ</div>
+            <div class="symbol" data-type="jiemu" data-audio="ㄨ">ㄨ</div>
+            <div class="symbol" data-type="jiemu" data-audio="ㄩ">ㄩ</div>
+
+            <h2 class="category-title">韻母</h2>
+            <div class="symbol" data-type="yunmu" data-audio="ㄚ">ㄚ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄛ">ㄛ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄜ">ㄜ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄝ">ㄝ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄞ">ㄞ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄟ">ㄟ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄠ">ㄠ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄡ">ㄡ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄢ">ㄢ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄣ">ㄣ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄤ">ㄤ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄥ">ㄥ</div>
+            <div class="symbol" data-type="yunmu" data-audio="ㄦ">ㄦ</div>
+        </div>
+        <div class="spell_content">
+            <div class="symbol_"></div>
+            <div class="symbol_"></div>
+            <div class="symbol_"></div>
+            <span>+</span>
+            <div class="symbol_">ˉ</div>
+            <div class="symbol_">ˊ</div>
+            <div class="symbol_">ˇ</div>
+            <div class="symbol_">ˋ</div>
+            <div class="symbol_">•</div>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <script src="./js/ul.js"></script>
