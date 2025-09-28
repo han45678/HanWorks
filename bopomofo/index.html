@@ -1,122 +1,187 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ㄅㄆㄇ</title>
-    <link rel="stylesheet" href="./css/ul.css">
+    <meta charset="UTF-8" />
+    <title>台灣注音拼音表</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- howler.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <style>
+        .container {
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button.active {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>注音符號學習</h1>
+    <div id="app" class="container">
+        <h1>台灣注音拼音表</h1>
 
-    <div id="base" class="wrapper">
-        <div class="container">
-            <h2 class="category-title">聲母</h2>
-            <div class="symbol" data-audio="ㄅ">ㄅ</div>
-            <div class="symbol" data-audio="ㄆ">ㄆ</div>
-            <div class="symbol" data-audio="ㄇ">ㄇ</div>
-            <div class="symbol" data-audio="ㄈ">ㄈ</div>
-            <div class="symbol" data-audio="ㄉ">ㄉ</div>
-            <div class="symbol" data-audio="ㄊ">ㄊ</div>
-            <div class="symbol" data-audio="ㄋ">ㄋ</div>
-            <div class="symbol" data-audio="ㄌ">ㄌ</div>
-            <div class="symbol" data-audio="ㄍ">ㄍ</div>
-            <div class="symbol" data-audio="ㄎ">ㄎ</div>
-            <div class="symbol" data-audio="ㄏ">ㄏ</div>
-            <div class="symbol" data-audio="ㄐ">ㄐ</div>
-            <div class="symbol" data-audio="ㄑ">ㄑ</div>
-            <div class="symbol" data-audio="ㄒ">ㄒ</div>
-            <div class="symbol" data-audio="ㄓ">ㄓ</div>
-            <div class="symbol" data-audio="ㄔ">ㄔ</div>
-            <div class="symbol" data-audio="ㄕ">ㄕ</div>
-            <div class="symbol" data-audio="ㄖ">ㄖ</div>
-            <div class="symbol" data-audio="ㄗ">ㄗ</div>
-            <div class="symbol" data-audio="ㄘ">ㄘ</div>
-            <div class="symbol" data-audio="ㄙ">ㄙ</div>
+        <!-- 聲母 -->
+        <div class="onsets">
+            <h2>聲母 (Onset)</h2>
+            <div class="buttons">
+                <button v-for="onset in onsets" :key="onset.name" @click="selectOnset(onset)"
+                    :class="{ active: onset.name === selectedOnset?.name }">
+                    {{ onset.name }}
+                </button>
+            </div>
+        </div>
 
-            <h2 class="category-title">介母</h2>
-            <div class="symbol" data-audio="ㄧ">ㄧ</div>
-            <div class="symbol" data-audio="ㄨ">ㄨ</div>
-            <div class="symbol" data-audio="ㄩ">ㄩ</div>
+        <!-- 介音 -->
+        <div v-if="selectedOnset" class="medials">
+            <h2>介音 (Medial) for {{ selectedOnset.name }}</h2>
+            <div class="buttons">
+                <button v-for="medial in selectedOnset['medial-link']" :key="medial.name" @click="selectMedial(medial)"
+                    :class="{ active: medial.name === selectedMedial?.name }">
+                    {{ medial.name }}
+                </button>
+            </div>
+        </div>
 
-            <h2 class="category-title">韻母</h2>
-            <div class="symbol" data-audio="ㄚ">ㄚ</div>
-            <div class="symbol" data-audio="ㄛ">ㄛ</div>
-            <div class="symbol" data-audio="ㄜ">ㄜ</div>
-            <div class="symbol" data-audio="ㄝ">ㄝ</div>
-            <div class="symbol" data-audio="ㄞ">ㄞ</div>
-            <div class="symbol" data-audio="ㄟ">ㄟ</div>
-            <div class="symbol" data-audio="ㄠ">ㄠ</div>
-            <div class="symbol" data-audio="ㄡ">ㄡ</div>
-            <div class="symbol" data-audio="ㄢ">ㄢ</div>
-            <div class="symbol" data-audio="ㄣ">ㄣ</div>
-            <div class="symbol" data-audio="ㄤ">ㄤ</div>
-            <div class="symbol" data-audio="ㄥ">ㄥ</div>
-            <div class="symbol" data-audio="ㄦ">ㄦ</div>
+        <!-- 韻母 -->
+        <div v-if="selectedMedial" class="finals">
+            <h2>韻母 (Finals) for {{ selectedOnset.name }} + {{ selectedMedial.name }}</h2>
+            <div class="buttons">
+                <button v-for="final in selectedMedial['finals-link']" :key="final.name" @click="selectFinal(final)">
+                    {{ final.name }}
+                </button>
+            </div>
+        </div>
+
+        <!-- 顯示組合拼音 -->
+        <div v-if="selectedFinal" class="result">
+            <h2>組合拼音:</h2>
+            <p>{{ selectedOnset.name }}{{ selectedMedial.name }}{{ selectedFinal.name }}</p>
         </div>
     </div>
 
-    <div id="spell" class="wrapper" style="display: none;">
-        <div class="container">
-            <h2 class="category-title">聲母</h2>
-            <div class="symbol" data-type="shengmu" data-audio="ㄅ">ㄅ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄆ">ㄆ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄇ">ㄇ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄈ">ㄈ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄉ">ㄉ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄊ">ㄊ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄋ">ㄋ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄌ">ㄌ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄍ">ㄍ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄎ">ㄎ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄏ">ㄏ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄐ">ㄐ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄑ">ㄑ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄒ">ㄒ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄓ">ㄓ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄔ">ㄔ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄕ">ㄕ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄖ">ㄖ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄗ">ㄗ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄘ">ㄘ</div>
-            <div class="symbol" data-type="shengmu" data-audio="ㄙ">ㄙ</div>
+    <script>
+        const { createApp, ref } = Vue
 
-            <h2 class="category-title">介母</h2>
-            <div class="symbol" data-type="jiemu" data-audio="ㄧ">ㄧ</div>
-            <div class="symbol" data-type="jiemu" data-audio="ㄨ">ㄨ</div>
-            <div class="symbol" data-type="jiemu" data-audio="ㄩ">ㄩ</div>
+        createApp({
+            setup() {
+                // ✅ 簡化版 JSON，請依需求擴充
+                const onsets = ref([
+                    {
+                        "name": "ㄅ",
+                        "type": "onset",
+                        "onset-link": null,
+                        "medial-link": [
+                            {
+                                "name": "ㄧ",
+                                "finals-link": [
+                                    { "name": "ㄚ", "finals-link": null },
+                                    { "name": "ㄛ", "finals-link": null },
+                                    { "name": "ㄞ", "finals-link": null }
+                                ]
+                            },
+                            {
+                                "name": "ㄨ",
+                                "finals-link": [
+                                    { "name": "ㄚ", "finals-link": null },
+                                    { "name": "ㄛ", "finals-link": null },
+                                    { "name": "ㄨㄛ", "finals-link": null }
+                                ]
+                            }
+                        ],
+                        "finals-link": []
+                    },
+                    {
+                        "name": "ㄆ",
+                        "type": "onset",
+                        "onset-link": null,
+                        "medial-link": [
+                            {
+                                "name": "ㄧ",
+                                "finals-link": [
+                                    { "name": "ㄚ", "finals-link": null },
+                                    { "name": "ㄛ", "finals-link": null }
+                                ]
+                            },
+                            {
+                                "name": "ㄨ",
+                                "finals-link": [
+                                    { "name": "ㄚ", "finals-link": null },
+                                    { "name": "ㄨㄛ", "finals-link": null }
+                                ]
+                            }
+                        ],
+                        "finals-link": []
+                    }
+                ])
 
-            <h2 class="category-title">韻母</h2>
-            <div class="symbol" data-type="yunmu" data-audio="ㄚ">ㄚ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄛ">ㄛ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄜ">ㄜ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄝ">ㄝ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄞ">ㄞ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄟ">ㄟ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄠ">ㄠ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄡ">ㄡ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄢ">ㄢ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄣ">ㄣ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄤ">ㄤ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄥ">ㄥ</div>
-            <div class="symbol" data-type="yunmu" data-audio="ㄦ">ㄦ</div>
-        </div>
-        <div class="spell_content">
-            <div class="symbol_"></div>
-            <div class="symbol_"></div>
-            <div class="symbol_"></div>
-            <span>+</span>
-            <div class="symbol_">ˉ</div>
-            <div class="symbol_">ˊ</div>
-            <div class="symbol_">ˇ</div>
-            <div class="symbol_">ˋ</div>
-            <div class="symbol_">•</div>
-        </div>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-    <script src="./js/ul.js"></script>
+                const selectedOnset = ref(null)
+                const selectedMedial = ref(null)
+                const selectedFinal = ref(null)
+
+                // ✅ 播放聲音
+                function playSound(name) {
+                    const sound = new Howl({
+                        src: [`./audio/${name}.mp3`],
+                        volume: 1.0
+                    })
+                    sound.play()
+                }
+
+                function selectOnset(onset) {
+                    selectedOnset.value = onset
+                    selectedMedial.value = null
+                    selectedFinal.value = null
+                    playSound(onset.name)
+                }
+
+                function selectMedial(medial) {
+                    selectedMedial.value = medial
+                    selectedFinal.value = null
+                    playSound(medial.name)
+                }
+
+                function selectFinal(final) {
+                    selectedFinal.value = final
+                    playSound(final.name)
+                }
+
+                return {
+                    onsets,
+                    selectedOnset,
+                    selectedMedial,
+                    selectedFinal,
+                    selectOnset,
+                    selectMedial,
+                    selectFinal
+                }
+            }
+        }).mount('#app')
+    </script>
 </body>
 
 </html>
