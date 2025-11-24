@@ -1914,7 +1914,9 @@ header.header-sticky {
   display: flex;
 }
 .logo-site img {
-  aspect-ratio: 2.5094339623;
+  width: 100%;
+  max-width: 133px;
+  /* aspect-ratio: 2.5094339623; */
 }
 
 .tf-topbar {
