@@ -1,36 +1,3 @@
-/* ---------------------------------------------------------
-    * Name: Ochaka - Multipurpose eCommerce HTML Template
-    * Version: 1.0.2
-    * Author: Themesflat
-    * Author URI: http://themesflat.com 
-
-	* Abstracts variable
-
-    * Reset css styles
-
-    * Components
-
-        * header
-        * footer
-        * accordion
-        * animation
-        * blog
-        * box icon
-        * button
-        * carousel
-        * avatar
-        * form
-        * hover
-        * nice select
-        * popup
-        * product
-        * shop
-        * slider
-        * testimonial
-        * zoom
-
-    * Section
- ------------------------------------------------------------------------------ */
 /*--------- Abstracts variable ---------- */
 @import url(./bootstrap-select.min.css);
 :root {
@@ -231,7 +198,7 @@ video {
   font-size: 100%;
   font: inherit;
   vertical-align: baseline;
-  font-family: inherit;
+  /* font-family: inherit; */
   font-size: 100%;
   font-style: inherit;
   font-weight: inherit;
@@ -265,7 +232,7 @@ html {
 }
 
 body {
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
   font-size: 16px;
   line-height: 22px;
   font-weight: 400;
@@ -463,7 +430,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
   text-rendering: optimizeLegibility;
   font-weight: 500;
   margin-bottom: 0;
@@ -477,7 +444,7 @@ h6 {
 .h4,
 .h5,
 .h6 {
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
   text-rendering: optimizeLegibility;
   font-weight: 400;
   margin-bottom: 0;
@@ -561,11 +528,11 @@ h6,
 }
 
 .font-main {
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
 }
 
 .font-2 {
-  font-family: "Ballet", cursive !important;
+  /* font-family: "Ballet", cursive !important; */
 }
 
 b,
@@ -580,7 +547,7 @@ video {
 }
 
 .font-sora {
-  font-family: "Sora", sans-serif !important;
+  /* font-family: "Sora", sans-serif !important; */
 }
 
 .fw-3 {
@@ -954,7 +921,7 @@ a {
   text-decoration: none;
   cursor: pointer;
   display: inline-block;
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
   color: var(--black);
 }
 a:focus, a:hover {
@@ -5704,7 +5671,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 .sib-form {
   padding: 0;
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
 }
 
 #sib-container {
@@ -9532,7 +9499,7 @@ input[type=number]::-webkit-outer-spin-button {
   font-weight: 400;
   border-radius: 8px;
   text-align: center;
-  font-family: "Afacad", sans-serif;
+  /* font-family: "Afacad", sans-serif; */
   display: none;
 }
 .hover-tooltip .tooltip::before {
@@ -11851,7 +11818,7 @@ input[type=number]::-webkit-outer-spin-button {
   background-color: transparent;
   border: 0;
   text-align: center;
-  font-family: "Sora";
+  /* font-family: "Sora"; */
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
@@ -15527,7 +15494,7 @@ html:not([dir=rtl]) .noUi-horizontal .noUi-handle {
   padding: 17px 25px;
   border: 1px solid var(--line);
   border-radius: 99px;
-  font-family: "Sora", sans-serif;
+  /* font-family: "Sora", sans-serif; */
   color: var(--text);
 }
 .widget-size .box-title-size .number-size .max-size {
@@ -21130,4 +21097,8 @@ html:not([dir=rtl]) .noUi-horizontal .noUi-handle {
   }
 }
 
-/*# sourceMappingURL=styles.css.map */
+@import url('https://fonts.googleapis.com/css2?family=Honk&family=ZCOOL+QingKe+HuangYou&display=swap');
+
+body {
+  font-family:"Honk", "ZCOOL QingKe HuangYou",  system-ui, sans-serif !important;
+}
