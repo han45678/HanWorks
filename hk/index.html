@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
-  <title>🇭🇰 香港三天兩夜：演唱會與城市精華行程｜完整圖文 & 導航地圖</title>
-  <!-- Leaflet CSS (Free & Open Source) -->
+  <title>🇭🇰 香港三天兩夜：演唱會與城市精華行程｜互動圖文 & 彈窗導航地圖</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,11 +28,7 @@
       --radius-md: 12px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -42,15 +38,69 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Header */
+    /* Collapsible Top Header */
     .app-header {
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
       color: #ffffff;
-      padding: 24px 32px 18px;
+      padding: 20px 24px 14px;
       position: sticky;
       top: 0;
       z-index: 1000;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: padding 0.25s ease;
+    }
+    .app-header.collapsed { padding: 10px 16px; }
+
+    .header-bar-compact {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 12px;
+    }
+    .compact-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f8fafc;
+      display: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .app-header.collapsed .compact-title { display: block; }
+
+    .header-toggle-btn {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .header-toggle-btn:hover { background: rgba(255, 255, 255, 0.24); }
+
+    .header-collapsible-content {
+      max-width: 1100px;
+      margin: 8px auto 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
+      max-height: 500px;
+      opacity: 1;
+    }
+    .app-header.collapsed .header-collapsible-content {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      pointer-events: none;
     }
 
     .header-top {
@@ -58,13 +108,11 @@
       justify-content: space-between;
       align-items: flex-end;
       flex-wrap: wrap;
-      gap: 16px;
-      max-width: 1600px;
-      margin: 0 auto 16px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
-
     .title-group h1 {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 800;
       letter-spacing: 0.5px;
       display: flex;
@@ -72,7 +120,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .title-badge {
       font-size: 12px;
       font-weight: 600;
@@ -82,23 +129,12 @@
       border-radius: 999px;
       color: #f8fafc;
     }
-
-    .title-group p {
-      font-size: 13.5px;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
-    .header-stats {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
+    .title-group p { font-size: 13.5px; color: #94a3b8; margin-top: 4px; }
+    .header-stats { display: flex; gap: 10px; flex-wrap: wrap; }
     .stat-pill {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 10px;
       font-size: 12.5px;
       color: #e2e8f0;
@@ -107,73 +143,41 @@
       gap: 6px;
     }
 
-    /* Date Tabs */
     .date-tabs {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      max-width: 1600px;
-      margin: 0 auto;
       padding-bottom: 4px;
       scrollbar-width: none;
     }
-
-    .date-tabs::-webkit-scrollbar {
-      display: none;
-    }
-
+    .date-tabs::-webkit-scrollbar { display: none; }
     .date-tab {
       background: rgba(255, 255, 255, 0.08);
       color: #cbd5e1;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 16px;
+      padding: 8px 15px;
       border-radius: 999px;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
-
-    .date-tab:hover {
-      background: rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-    }
-
+    .date-tab:hover { background: rgba(255, 255, 255, 0.16); color: #ffffff; }
     .date-tab.active {
       background: #ffffff;
       color: #0f172a;
       border-color: #ffffff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    /* Main Split Layout */
-    .main-container {
-      max-width: 1600px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 540px;
-      gap: 24px;
-      padding: 24px 32px 60px;
-      align-items: start;
-    }
-
-    .itinerary-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 32px;
-    }
-
+    /* Main Container */
+    .main-container { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+    .itinerary-feed { display: flex; flex-direction: column; gap: 28px; }
     .day-section {
       background: var(--bg-card);
       border-radius: var(--radius-lg);
@@ -181,9 +185,8 @@
       box-shadow: var(--shadow-sm);
       overflow: hidden;
     }
-
     .day-header {
-      padding: 20px 24px;
+      padding: 18px 24px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
@@ -192,13 +195,7 @@
       gap: 12px;
       background: #fafbfc;
     }
-
-    .day-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
+    .day-title-wrap { display: flex; align-items: center; gap: 14px; }
     .day-badge {
       padding: 6px 14px;
       border-radius: 10px;
@@ -206,79 +203,40 @@
       font-weight: 800;
       font-size: 14px;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
-
-    .day-title-text h2 {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-
-    .day-title-text p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-
+    .day-title-text h2 { font-size: 18.5px; font-weight: 800; color: var(--text-primary); }
+    .day-title-text p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
     .day-map-btn {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: #334155;
-      padding: 7px 14px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 6px;
     }
+    .day-map-btn:hover { background: #dbeafe; }
 
-    .day-map-btn:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    /* Special Info Banner (For Day 3 Airport Breakfast Overview) */
+    /* Day 3 Special Banner */
     .day-Highlight-banner {
-      margin: 24px 24px 0;
+      margin: 22px 22px 0;
       padding: 18px 20px;
       background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
       border: 1px solid #a7f3d0;
       border-left: 5px solid #059669;
       border-radius: var(--radius-md);
     }
+    .day-Highlight-banner h3 { font-size: 16.5px; font-weight: 800; color: #065f46; margin-bottom: 10px; }
+    .day-Highlight-banner p { font-size: 13.5px; color: #1e293b; margin-bottom: 8px; line-height: 1.65; }
+    .day-Highlight-banner p:last-child { margin-bottom: 0; }
 
-    .day-Highlight-banner h3 {
-      font-size: 16.5px;
-      font-weight: 800;
-      color: #065f46;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .day-Highlight-banner p {
-      font-size: 13.5px;
-      color: #1e293b;
-      margin-bottom: 8px;
-      line-height: 1.65;
-    }
-
-    .day-Highlight-banner p:last-child {
-      margin-bottom: 0;
-    }
-
-    .cards-container {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      position: relative;
-    }
-
+    .cards-container { padding: 22px; display: flex; flex-direction: column; gap: 18px; }
     .place-card {
       display: grid;
       grid-template-columns: 230px 1fr;
@@ -289,38 +247,12 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       cursor: pointer;
     }
+    .place-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: #cbd5e1; }
+    .place-card.highlighted { border: 2px solid #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
 
-    .place-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-      border-color: #cbd5e1;
-    }
-
-    .place-card.highlighted {
-      border: 2px solid #2563eb;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-    }
-
-    .card-media {
-      position: relative;
-      height: 100%;
-      min-height: 175px;
-      background-color: #1e293b;
-      overflow: hidden;
-    }
-
-    .card-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.4s ease;
-    }
-
-    .place-card:hover .card-media img {
-      transform: scale(1.05);
-    }
-
+    .card-media { position: relative; height: 100%; min-height: 175px; background-color: #1e293b; overflow: hidden; }
+    .card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+    .place-card:hover .card-media img { transform: scale(1.05); }
     .time-tag {
       position: absolute;
       top: 12px;
@@ -332,10 +264,8 @@
       border-radius: 6px;
       font-size: 12.5px;
       font-weight: 800;
-      letter-spacing: 0.3px;
       z-index: 2;
     }
-
     .step-number {
       position: absolute;
       bottom: 12px;
@@ -354,58 +284,12 @@
       z-index: 2;
     }
 
-    .card-body {
-      padding: 16px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .place-title-group h3 {
-      font-size: 17.5px;
-      font-weight: 800;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .place-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      flex-wrap: wrap;
-    }
-
-    .category-pill {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 11.5px;
-    }
-
-    .stay-tag {
-      background: #fef3c7;
-      color: #b45309;
-      border: 1px solid #fde68a;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11.5px;
-      font-weight: 700;
-    }
-
-    .place-desc {
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.6;
-    }
+    .card-body { padding: 16px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .place-title-group h3 { font-size: 17.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .place-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12.5px; color: var(--text-secondary); flex-wrap: wrap; }
+    .category-pill { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11.5px; }
+    .stay-tag { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 700; }
+    .place-desc { font-size: 14px; color: #334155; line-height: 1.6; }
 
     .tips-list {
       list-style: none;
@@ -417,12 +301,7 @@
       border-radius: 8px;
       border-left: 3px solid #94a3b8;
     }
-
-    .tips-list li {
-      font-size: 13px;
-      color: #334155;
-      line-height: 1.55;
-    }
+    .tips-list li { font-size: 13px; color: #334155; line-height: 1.55; }
 
     .card-actions {
       display: flex;
@@ -433,25 +312,13 @@
       padding-top: 8px;
       border-top: 1px dashed var(--border-color);
     }
-
-    .address-text {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .action-btns {
-      display: flex;
-      gap: 8px;
-    }
-
+    .address-text { font-size: 12px; color: var(--text-muted); }
+    .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn-sm {
-      padding: 5px 11px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 12.5px;
+      font-weight: 700;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -462,75 +329,110 @@
       color: #334155;
       transition: all 0.15s;
     }
-
-    .btn-sm:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-      color: #0f172a;
-    }
-
+    .btn-sm:hover { background: #f1f5f9; color: #0f172a; }
     .btn-locate {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-      color: #1d4ed8;
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
+    .btn-locate:hover { background: #1d4ed8; color: #ffffff; }
 
-    .btn-locate:hover {
-      background: #dbeafe;
-    }
-
-    /* Sticky Map Panel */
-    .map-sidebar {
-      position: sticky;
-      top: 132px;
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 156px);
-      min-height: 520px;
-    }
-
-    .map-sidebar-header {
-      padding: 14px 18px;
+    /* Floating Overview Map Button */
+    .floating-map-btn {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 990;
       background: #0f172a;
-      color: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .map-sidebar-header h3 {
-      font-size: 14.5px;
-      font-weight: 700;
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35);
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: transform 0.2s ease, background 0.2s ease;
     }
+    .floating-map-btn:hover { transform: translateY(-2px); background: #1e293b; }
 
+    /* Map Modal Popup Window */
+    .map-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .map-modal-backdrop.open { display: flex; }
+    .map-modal-dialog {
+      width: 100%;
+      max-width: 960px;
+      height: 82vh;
+      max-height: 760px;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      animation: modalPop 0.22s ease-out;
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .map-modal-header {
+      padding: 14px 18px;
+      background: #0f172a;
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .map-modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .map-modal-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .map-reset-btn {
       background: rgba(255,255,255,0.14);
       border: 1px solid rgba(255,255,255,0.25);
       color: #fff;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
       cursor: pointer;
     }
-
-    .map-reset-btn:hover {
-      background: rgba(255,255,255,0.25);
+    .map-reset-btn:hover { background: rgba(255,255,255,0.25); }
+    .map-close-btn {
+      background: #ef4444;
+      border: none;
+      color: #ffffff;
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
     }
-
-    #map {
-      flex: 1;
-      width: 100%;
-      z-index: 1;
-    }
-
+    .map-close-btn:hover { background: #dc2626; }
+    #map { flex: 1; width: 100%; z-index: 1; }
     .map-legend {
       padding: 10px 16px;
       background: #f8fafc;
@@ -541,14 +443,7 @@
       font-size: 12px;
       color: var(--text-secondary);
     }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-weight: 600; cursor: pointer; }
 
     .custom-pin {
       width: 30px;
@@ -561,7 +456,6 @@
       border: 2px solid #ffffff;
       box-shadow: 0 3px 8px rgba(0,0,0,0.35);
     }
-
     .custom-pin span {
       transform: rotate(45deg);
       color: #ffffff;
@@ -569,30 +463,10 @@
       font-size: 11.5px;
       font-family: 'Noto Sans TC', sans-serif;
     }
-
-    .leaflet-popup-content-wrapper {
-      border-radius: 12px;
-      padding: 2px;
-    }
-
-    .popup-box h4 {
-      font-size: 14.5px;
-      font-weight: 800;
-      margin-bottom: 4px;
-      color: #0f172a;
-    }
-
-    .popup-box p {
-      font-size: 12px;
-      color: #475569;
-      margin: 0 0 8px;
-    }
-
-    .popup-links {
-      display: flex;
-      gap: 6px;
-    }
-
+    .leaflet-popup-content-wrapper { border-radius: 12px; padding: 2px; }
+    .popup-box h4 { font-size: 14.5px; font-weight: 800; margin-bottom: 4px; color: #0f172a; }
+    .popup-box p { font-size: 12px; color: #475569; margin: 0 0 8px; }
+    .popup-links { display: flex; gap: 6px; }
     .popup-links a {
       font-size: 11.5px;
       padding: 4px 8px;
@@ -603,96 +477,93 @@
       font-weight: 600;
     }
 
-    @media (max-width: 1100px) {
-      .main-container {
-        grid-template-columns: 1fr;
-        padding: 16px;
-      }
-
-      .map-sidebar {
-        position: relative;
-        top: 0;
-        height: 420px;
-        min-height: 360px;
-        order: -1;
-      }
-    }
-
     @media (max-width: 768px) {
-      .app-header {
-        padding: 16px;
-      }
-
-      .title-group h1 {
-        font-size: 19px;
-      }
-
-      .place-card {
-        grid-template-columns: 1fr;
-      }
-
-      .card-media {
-        height: 180px;
-      }
-
-      .cards-container {
-        padding: 16px;
-      }
+      .app-header { padding: 12px 14px 10px; }
+      .title-group h1 { font-size: 18px; }
+      .main-container { padding: 14px 12px 80px; }
+      .place-card { grid-template-columns: 1fr; }
+      .card-media { height: 180px; }
+      .cards-container { padding: 14px; }
+      .day-Highlight-banner { margin: 14px 14px 0; }
+      .map-modal-backdrop { padding: 8px; }
+      .map-modal-dialog { height: 86vh; }
     }
   </style>
 </head>
 <body>
 
-  <header class="app-header">
-    <div class="header-top">
-      <div class="title-group">
-        <h1>
-          🇭🇰 香港三天兩夜：演唱會與城市精華行程
-          <span class="title-badge">完整時間軸 1:1 對應版</span>
-        </h1>
-        <p>DAY 1 抵達、取票與演唱會 ｜ DAY 2 九龍信仰與港島精華 ｜ DAY 3 機場觀光與返程</p>
-      </div>
-      <div class="header-stats">
-        <div class="stat-pill">✈️ DAY 1：09:00 臺中機場（10:10 起飛）➔ 12:00 香港機場</div>
-        <div class="stat-pill">✈️ DAY 3：10:50 登機口（班機起飛）</div>
-      </div>
+  <!-- Collapsible Header -->
+  <header class="app-header" id="appHeader">
+    <div class="header-bar-compact">
+      <div class="compact-title">🇭🇰 香港三天兩夜：演唱會與城市精華行程</div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">
+        ▲ 收合頂部欄
+      </button>
     </div>
 
-    <nav class="date-tabs" id="dateTabs">
-      <button class="date-tab active" onclick="filterDay('all', this)">
-        <span>🗺️ 全部行程總覽（33 個時段節點）</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d1', this)">
-        <span class="dot" style="background: var(--accent-d1)"></span>
-        <span>📅 DAY 1：抵達、取票與演唱會（10 節點）</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d2', this)">
-        <span class="dot" style="background: var(--accent-d2)"></span>
-        <span>📅 DAY 2：九龍信仰與港島精華（18 節點）</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d3', this)">
-        <span class="dot" style="background: var(--accent-d3)"></span>
-        <span>📅 DAY 3：機場觀光與返程（5 節點）</span>
-      </button>
-    </nav>
+    <div class="header-collapsible-content" id="headerContent">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>
+            🇭🇰 香港三天兩夜：演唱會與城市精華行程
+            <span class="title-badge">完整時間軸 1:1 對應版</span>
+          </h1>
+          <p>DAY 1 抵達、取票與演唱會 ｜ DAY 2 九龍信仰與港島精華 ｜ DAY 3 機場觀光與返程</p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-pill">✈️ DAY 1：09:00 臺中機場（10:10 起飛）➔ 12:00 香港機場</div>
+          <div class="stat-pill">✈️ DAY 3：10:50 登機口（班機起飛）</div>
+        </div>
+      </div>
+
+      <nav class="date-tabs" id="dateTabs">
+        <button class="date-tab active" onclick="filterDay('all', this)">
+          <span>🗺️ 全部行程總覽（33 個時段節點）</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d1', this)">
+          <span class="dot" style="background: var(--accent-d1)"></span>
+          <span>📅 DAY 1：抵達、取票與演唱會（10 節點）</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d2', this)">
+          <span class="dot" style="background: var(--accent-d2)"></span>
+          <span>📅 DAY 2：九龍信仰與港島精華（18 節點）</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d3', this)">
+          <span class="dot" style="background: var(--accent-d3)"></span>
+          <span>📅 DAY 3：機場觀光與返程（5 節點）</span>
+        </button>
+      </nav>
+    </div>
   </header>
 
+  <!-- Main Content -->
   <main class="main-container">
     <div class="itinerary-feed" id="itineraryFeed"></div>
+  </main>
 
-    <aside class="map-sidebar">
-      <div class="map-sidebar-header">
-        <h3>📍 香港行程動態路線圖（點擊任一時段卡片可定位）</h3>
-        <button class="map-reset-btn" onclick="resetMapView()">顯示全港路線</button>
+  <!-- Floating Quick Map Button -->
+  <button class="floating-map-btn" onclick="openFullMapModal()">
+    🗺️ 開啟全港路線地圖
+  </button>
+
+  <!-- Map Modal Popup -->
+  <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
+    <div class="map-modal-dialog" onclick="event.stopPropagation()">
+      <div class="map-modal-header">
+        <div class="map-modal-title" id="mapModalTitle">📍 香港行程動態路線圖</div>
+        <div class="map-modal-controls">
+          <button class="map-reset-btn" onclick="resetMapView()">顯示全港路線</button>
+          <button class="map-close-btn" onclick="closeMapModal()">✕ 關閉</button>
+        </div>
       </div>
       <div id="map"></div>
       <div class="map-legend">
-        <div class="legend-item" onclick="filterDayByCode('d1')"><span class="dot" style="background: var(--accent-d1)"></span>DAY 1 抵達、取票與演唱會</div>
-        <div class="legend-item" onclick="filterDayByCode('d2')"><span class="dot" style="background: var(--accent-d2)"></span>DAY 2 九龍信仰與港島精華</div>
-        <div class="legend-item" onclick="filterDayByCode('d3')"><span class="dot" style="background: var(--accent-d3)"></span>DAY 3 機場觀光與返程</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d1')"><span class="dot" style="background: var(--accent-d1)"></span>DAY 1 抵達、取票與演唱會</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d2')"><span class="dot" style="background: var(--accent-d2)"></span>DAY 2 九龍信仰與港島精華</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d3')"><span class="dot" style="background: var(--accent-d3)"></span>DAY 3 機場觀光與返程</div>
       </div>
-    </aside>
-  </main>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
@@ -1224,12 +1095,8 @@
       }
     ];
 
-    // Initialize Leaflet Map centered on Hong Kong
-    const map = L.map('map', {
-      zoomControl: true
-    }).setView([22.305, 114.120], 11);
+    const map = L.map('map', { zoomControl: true }).setView([22.305, 114.120], 11);
 
-    // 3 Free, No-API-Key Tile Layers
     const googleLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}', {
       attribution: '&copy; Google Maps',
       subdomains: ['0', '1', '2', '3'],
@@ -1257,6 +1124,50 @@
     const markersBySpotId = {};
     const layerGroupsByDay = {};
     const allHkBounds = [];
+
+    function toggleHeader() {
+      const header = document.getElementById('appHeader');
+      const btn = document.getElementById('headerToggleBtn');
+      header.classList.toggle('collapsed');
+      if (header.classList.contains('collapsed')) {
+        btn.innerHTML = '▼ 展開日期選單';
+      } else {
+        btn.innerHTML = '▲ 收合頂部欄';
+      }
+    }
+
+    function openMapModal(titleText) {
+      const modal = document.getElementById('mapModalBackdrop');
+      if (titleText) {
+        document.getElementById('mapModalTitle').textContent = titleText;
+      }
+      modal.classList.add('open');
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 60);
+    }
+
+    function closeMapModal() {
+      document.getElementById('mapModalBackdrop').classList.remove('open');
+    }
+
+    function closeMapModalOnBackdrop(e) {
+      if (e.target.id === 'mapModalBackdrop') {
+        closeMapModal();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMapModal();
+    });
+
+    function openFullMapModal() {
+      openMapModal('📍 香港三天兩夜行程總覽地圖');
+      setTimeout(() => {
+        map.invalidateSize();
+        resetMapView();
+      }, 150);
+    }
 
     function initApp() {
       const feed = document.getElementById('itineraryFeed');
@@ -1316,7 +1227,7 @@
             </div>
           `);
 
-          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng };
+          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng, name: spot.name, date: day.date, time: spot.time };
 
           const tipsBlockHtml = spot.tips && spot.tips.length > 0
             ? `<ul class="tips-list" style="border-left-color:${day.color}">${spot.tips.map(t => `<li>${t}</li>`).join('')}</ul>`
@@ -1375,7 +1286,7 @@
               </div>
             </div>
             <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">
-              🗺️ 在地圖查看當日路線
+              🗺️ 彈出當日路線地圖
             </button>
           </div>
           ${bannerHtml}
@@ -1386,10 +1297,6 @@
 
         feed.appendChild(section);
       });
-
-      if (allHkBounds.length > 0) {
-        map.fitBounds(allHkBounds, { padding: [40, 40] });
-      }
     }
 
     function focusSpot(spotId) {
@@ -1399,29 +1306,46 @@
 
       const item = markersBySpotId[spotId];
       if (item) {
+        openMapModal(`📍 ${item.date} (${item.time})｜${item.name}`);
         if (!map.hasLayer(layerGroupsByDay[item.dayId])) {
           layerGroupsByDay[item.dayId].addTo(map);
         }
-        map.flyTo(item.latLng, 15, { duration: 0.8 });
         setTimeout(() => {
-          item.marker.openPopup();
-        }, 400);
-      }
-
-      if (window.innerWidth <= 1100) {
-        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          map.invalidateSize();
+          map.flyTo(item.latLng, 15, { duration: 0.7 });
+          setTimeout(() => {
+            item.marker.openPopup();
+          }, 350);
+        }, 120);
       }
     }
 
     function zoomToDay(dayId) {
       const day = itineraryData.find(d => d.dayId === dayId);
       if (!day) return;
+      openMapModal(`🗺️ ${day.date}｜${day.title}`);
+      zoomToDayInModal(dayId);
+    }
+
+    function zoomToDayInModal(dayId) {
+      const day = itineraryData.find(d => d.dayId === dayId);
+      if (!day) return;
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (k === dayId) {
+          if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map);
+        } else {
+          if (map.hasLayer(layerGroupsByDay[k])) map.removeLayer(layerGroupsByDay[k]);
+        }
+      });
       const bounds = day.spots.filter(s => !s.skipBounds).map(s => [s.lat, s.lng]);
-      if (bounds.length === 1) {
-        map.flyTo(bounds[0], 14, { duration: 0.8 });
-      } else if (bounds.length > 1) {
-        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.8 });
-      }
+      setTimeout(() => {
+        map.invalidateSize();
+        if (bounds.length === 1) {
+          map.flyTo(bounds[0], 14, { duration: 0.7 });
+        } else if (bounds.length > 1) {
+          map.flyToBounds(bounds, { padding: [50, 50], duration: 0.7 });
+        }
+      }, 120);
     }
 
     function filterDay(dayId, btnEl) {
@@ -1439,34 +1363,23 @@
         }
       });
 
-      Object.keys(layerGroupsByDay).forEach(k => {
-        if (dayId === 'all' || k === dayId) {
-          if (!map.hasLayer(layerGroupsByDay[k])) {
-            layerGroupsByDay[k].addTo(map);
-          }
-        } else {
-          if (map.hasLayer(layerGroupsByDay[k])) {
-            map.removeLayer(layerGroupsByDay[k]);
-          }
+      if (window.innerWidth <= 768 && dayId !== 'all') {
+        const header = document.getElementById('appHeader');
+        if (!header.classList.contains('collapsed')) {
+          toggleHeader();
         }
-      });
-
-      if (dayId === 'all') {
-        resetMapView();
-      } else {
-        zoomToDay(dayId);
       }
     }
 
-    function filterDayByCode(dayId) {
-      const buttons = document.querySelectorAll('.date-tab');
-      const idxMap = { 'all': 0, 'd1': 1, 'd2': 2, 'd3': 3 };
-      filterDay(dayId, buttons[idxMap[dayId]]);
-    }
-
     function resetMapView() {
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (!map.hasLayer(layerGroupsByDay[k])) {
+          layerGroupsByDay[k].addTo(map);
+        }
+      });
       if (allHkBounds.length > 0) {
-        map.flyToBounds(allHkBounds, { padding: [40, 40], duration: 0.8 });
+        map.invalidateSize();
+        map.flyToBounds(allHkBounds, { padding: [40, 40], duration: 0.7 });
       }
     }
 
