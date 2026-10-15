@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <title>🇰🇷 釜山三天兩夜：獨旅友善・網紅美食醫美行程表｜Base64圖文 & 左右滑動彈窗地圖</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg-main:#f6f7f9; --bg-card:#ffffff; --text-primary:#181a1f; --text-secondary:#5a6270; --text-muted:#8c95a4; --border-color:#e4e7ec; --accent-d1:#0284c7; --accent-d2:#db2777; --accent-d3:#0d9488; --shadow-sm:0 2px 8px rgba(15,23,42,0.05); --shadow-md:0 8px 24px rgba(15,23,42,0.08); --radius-lg:16px; --radius-md:12px; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-main); color:var(--text-primary); line-height:1.6; -webkit-font-smoothing:antialiased; }
+    .app-header { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%); color:#fff; padding:18px 24px 14px; position:sticky; top:0; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.18); transition:padding 0.25s ease; }
+    .app-header.collapsed { padding:10px 16px; }
+    .header-bar-compact { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; gap:12px; }
+    .compact-title { font-size:15px; font-weight:800; color:#f8fafc; display:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .app-header.collapsed .compact-title { display:block; }
+    .header-toggle-btn { margin-left:auto; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .header-collapsible-content { max-width:1100px; margin:8px auto 0; overflow:hidden; transition:max-height 0.3s ease,opacity 0.25s ease,margin 0.25s ease; max-height:500px; opacity:1; }
+    .app-header.collapsed .header-collapsible-content { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
+    .header-top { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; margin-bottom:14px; }
+    .title-group h1 { font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .title-badge { font-size:12px; font-weight:600; padding:3px 10px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); border-radius:999px; }
+    .title-group p { font-size:13px; color:#bae6fd; margin-top:4px; }
+    .header-stats { display:flex; gap:10px; flex-wrap:wrap; }
+    .stat-pill { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); padding:5px 12px; border-radius:10px; font-size:12px; color:#f0f9ff; }
+    .date-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .date-tabs::-webkit-scrollbar { display:none; }
+    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.14); padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+    .date-tab.active { background:#fff; color:#0f172a; border-color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+    .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .main-container { max-width:1100px; margin:0 auto; padding:20px 18px 80px; }
+    .reminder-banner { background:linear-gradient(135deg,#fff1f2 0%,#ffe4e6 100%); border:1px solid #fecdd3; border-left:5px solid #e11d48; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:24px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-sm); }
+    .reminder-icon { font-size:22px; flex-shrink:0; }
+    .reminder-text { font-size:13.5px; color:#881337; font-weight:600; line-height:1.55; }
+    .reminder-text strong { color:#be123c; font-weight:800; }
+    .itinerary-feed { display:flex; flex-direction:column; gap:26px; }
+    .day-section { background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .day-header { padding:16px 22px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#fafbfc; }
+    .day-title-wrap { display:flex; align-items:center; gap:12px; }
+    .day-badge { padding:5px 12px; border-radius:10px; color:#fff; font-weight:800; font-size:13.5px; white-space:nowrap; }
+    .day-title-text h2 { font-size:18px; font-weight:800; }
+    .day-title-text p { font-size:12.5px; color:var(--text-secondary); margin-top:2px; }
+    .day-map-btn { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:7px 13px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .cards-container { padding:20px; display:flex; flex-direction:column; gap:16px; }
+    .place-card { display:grid; grid-template-columns:230px 1fr; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:#fff; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+    .place-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+    .place-card.highlighted { border:2px solid #0284c7; box-shadow:0 0 0 4px rgba(2,132,199,0.12); }
+    .card-media { position:relative; height:100%; min-height:175px; background:#1e293b; overflow:hidden; }
+    .card-media img { width:100%; height:100%; object-fit:cover; display:block; }
+    .time-tag { position:absolute; top:10px; left:10px; background:rgba(15,23,42,0.88); color:#fff; padding:3px 9px; border-radius:6px; font-size:12px; font-weight:800; z-index:2; }
+    .step-number { position:absolute; bottom:10px; left:10px; width:28px; height:28px; border-radius:50%; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:2; }
+    .card-body { padding:15px 18px; display:flex; flex-direction:column; justify-content:space-between; gap:9px; }
+    .place-title-group h3 { font-size:17px; font-weight:800; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .place-meta { display:flex; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; }
+    .category-pill { background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:4px; font-weight:600; }
+    .solo-tag { background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:4px; font-weight:700; }
+    .place-desc { font-size:13.5px; color:#334155; }
+    .tips-list { list-style:none; display:flex; flex-direction:column; gap:5px; background:#f8fafc; padding:9px 13px; border-radius:8px; border-left:3px solid #94a3b8; }
+    .tips-list li { font-size:12.5px; color:#334155; }
+    .card-actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px; border-top:1px dashed var(--border-color); }
+    .address-text { font-size:12px; color:var(--text-muted); }
+    .action-btns { display:flex; gap:6px; flex-wrap:wrap; }
+    .btn-sm { padding:5px 11px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; cursor:pointer; border:1px solid var(--border-color); background:#fff; color:#334155; }
+    .btn-locate { background:#0284c7; border-color:#0284c7; color:#fff; }
+    .floating-map-btn { position:fixed; bottom:20px; right:20px; z-index:990; background:#0f172a; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:800; box-shadow:0 8px 24px rgba(15,23,42,0.35); cursor:pointer; display:flex; align-items:center; gap:8px; }
+    /* Modal & Swipe Switcher */
+    .map-modal-backdrop { position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(4px); z-index:2000; display:none; align-items:center; justify-content:center; padding:12px; }
+    .map-modal-backdrop.open { display:flex; }
+    .map-modal-dialog { width:100%; max-width:960px; height:88vh; max-height:800px; background:#fff; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 50px rgba(0,0,0,0.45); }
+    .map-modal-header { padding:12px 16px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center; gap:10px; touch-action:pan-y; }
+    .map-modal-title { font-size:14px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .map-modal-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .map-reset-btn { background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; }
+    .map-close-btn { background:#ef4444; border:none; color:#fff; padding:5px 12px; border-radius:7px; font-size:12.5px; font-weight:800; cursor:pointer; }
+    .map-canvas-wrap { position:relative; flex:1; width:100%; overflow:hidden; display:flex; }
+    #map { flex:1; width:100%; height:100%; z-index:1; }
+    .map-side-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:500; width:40px; height:40px; border-radius:50%; background:rgba(15,23,42,0.82); color:#fff; border:2px solid rgba(255,255,255,0.7); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.3); }
+    .map-side-arrow.left { left:12px; }
+    .map-side-arrow.right { right:12px; }
+    .map-swipe-bar { background:#0f172a; color:#fff; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.12); user-select:none; touch-action:pan-y; }
+    .swipe-hint { font-size:11px; color:#94a3b8; text-align:center; margin-bottom:8px; }
+    .swipe-card-inner { display:grid; grid-template-columns:76px 1fr auto; gap:12px; align-items:center; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:10px 12px; transition:transform 0.2s ease; }
+    .swipe-thumb { width:76px; height:60px; border-radius:8px; object-fit:cover; border:1px solid rgba(255,255,255,0.2); }
+    .swipe-info { overflow:hidden; }
+    .swipe-step-badge { font-size:11px; font-weight:800; color:#38bdf8; margin-bottom:2px; }
+    .swipe-spot-name { font-size:15px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .swipe-spot-sub { font-size:12px; color:#cbd5e1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+    .swipe-nav-btns { display:flex; gap:6px; align-items:center; }
+    .swipe-btn { background:#0284c7; color:#fff; border:none; padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:800; cursor:pointer; white-space:nowrap; }
+    .swipe-btn.prev { background:#334155; }
+    .custom-pin { width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,0.35); }
+    .custom-pin span { transform:rotate(45deg); color:#fff; font-weight:800; font-size:11.5px; }
+    .popup-box h4 { font-size:14px; font-weight:800; margin-bottom:4px; color:#0f172a; }
+    .popup-box p { font-size:12px; color:#475569; margin:0 0 8px; }
+    .popup-links { display:flex; gap:6px; }
+    .popup-links a { font-size:11.5px; padding:4px 8px; border-radius:4px; background:#eff6ff; color:#1d4ed8; text-decoration:none; font-weight:600; }
+    @media (max-width:768px) {
+      .app-header { padding:12px 14px 10px; }
+      .title-group h1 { font-size:18px; }
+      .main-container { padding:14px 12px 80px; }
+      .place-card { grid-template-columns:1fr; }
+      .card-media { height:170px; }
+      .cards-container { padding:14px; }
+      .map-modal-backdrop { padding:6px; }
+      .map-modal-dialog { height:92vh; }
+      .swipe-card-inner { grid-template-columns:64px 1fr; }
+      .swipe-nav-btns { grid-column:1 / -1; justify-content:space-between; width:100%; padding-top:4px; }
+      .swipe-btn { flex:1; text-align:center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header" id="appHeader">
+    <div class="header-bar-compact">
+      <div class="compact-title">🇰🇷 釜山三天兩夜｜獨旅友善・網紅美食醫美行程表</div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">▲ 收合頂部欄</button>
+    </div>
+    <div class="header-collapsible-content" id="headerContent">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>🇰🇷 釜山三天兩夜 <span class="title-badge">獨旅友善・網紅美食醫美行程表</span></h1>
+          <p>DAY 1 週五：汗蒸幕充電・海雲台網紅線 ｜ DAY 2 週六：彩繪村美照・西面醫美＋爆買 ｜ DAY 3：海鮮市場・伴手禮採購・返程</p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-pill">✈️ DAY 1：06:00 抵達金海機場 ➔ 西面寄放行李</div>
+          <div class="stat-pill">✈️ DAY 3：19:15 抵達金海機場（辦理退稅 & 22:00 起飛）</div>
+        </div>
+      </div>
+      <nav class="date-tabs" id="dateTabs">
+        <button class="date-tab active" onclick="filterDay('all', this)"><span>🗺️ 全部行程總覽（18 節點）</span></button>
+        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>DAY 1｜週五・汗蒸幕＆海雲台網紅線</span></button>
+        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>DAY 2｜週六・彩繪村美照＆西面醫美爆買</span></button>
+        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>DAY 3｜海鮮市場・伴手禮採購・返程</span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Top Reminder Banner from Image -->
+    <div class="reminder-banner">
+      <div class="reminder-icon">❗</div>
+      <div class="reminder-text">
+        <strong>貼心提醒：</strong>醫美前拍完網紅照＆泡汗蒸幕 ｜ 術後加強保濕防曬・<strong>2026起醫美無退稅</strong>（購物滿 15,000 韓元可退稅）
+      </div>
+    </div>
+
+    <div class="itinerary-feed" id="itineraryFeed"></div>
+  </main>
+
+  <button class="floating-map-btn" onclick="openFullMapModal()">🗺️ 開啟釜山全區路線地圖</button>
+
+  <!-- Map Modal with Left/Right Swipe Switcher -->
+  <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
+    <div class="map-modal-dialog" onclick="event.stopPropagation()">
+      <div class="map-modal-header" id="mapModalHeader">
+        <div class="map-modal-title" id="mapModalTitle">📍 釜山行程動態路線圖</div>
+        <div class="map-modal-controls">
+          <button class="map-reset-btn" onclick="resetMapView()">顯示全區</button>
+          <button class="map-close-btn" onclick="closeMapModal()">✕ 關閉</button>
+        </div>
+      </div>
+      <div class="map-canvas-wrap">
+        <button class="map-side-arrow left" onclick="stepSpot(-1)" title="上一站">❮</button>
+        <div id="map"></div>
+        <button class="map-side-arrow right" onclick="stepSpot(1)" title="下一站">❯</button>
+      </div>
+      <div class="map-swipe-bar" id="mapSwipeBar">
+        <div class="swipe-hint">👆 手機可在此區「左滑／右滑」或點擊按鈕切換上、下一站</div>
+        <div class="swipe-card-inner" id="swipeCardInner">
+          <img class="swipe-thumb" id="swipeThumb" src="" alt="" />
+          <div class="swipe-info">
+            <div class="swipe-step-badge" id="swipeBadge"></div>
+            <div class="swipe-spot-name" id="swipeName"></div>
+            <div class="swipe-spot-sub" id="swipeSub"></div>
+          </div>
+          <div class="swipe-nav-btns">
+            <button class="swipe-btn prev" onclick="stepSpot(-1)">◀ 上一站</button>
+            <button class="swipe-btn next" onclick="stepSpot(1)">下一站 ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 動態產生每個釜山景點專屬主題插畫並轉成 Base64 Data URI (data:image/svg+xml;base64,...)
+    function makeBusanBase64(theme, title, subtitle, c1, c2) {
+      const artMap = {
+        plane: `<path d="M95 145 L305 95 L285 125 L115 162 Z" fill="#f8fafc"/><path d="M175 125 L140 75 L168 72 L215 118 Z" fill="#38bdf8"/><path d="M115 142 L90 112 L108 108 L132 136 Z" fill="#f43f5e"/><rect x="235" y="115" width="42" height="52" rx="6" fill="#fbbf24"/>`,
+        soup: `<path d="M120 118 A80 58 0 0 0 280 118 Z" fill="#1e293b" stroke="#cbd5e1" stroke-width="5"/><ellipse cx="200" cy="118" rx="76" ry="18" fill="#fef3c7"/><circle cx="175" cy="116" r="10" fill="#ef4444"/><circle cx="215" cy="120" r="12" fill="#f97316"/><path d="M175 72 Q165 88 180 98 M205 68 Q195 85 210 95" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`,
+        spaland: `<path d="M115 170 A85 75 0 0 1 285 170 Z" fill="#d97706" stroke="#fef3c7" stroke-width="4"/><rect x="178" y="128" width="44" height="42" rx="22" fill="#451a03"/><path d="M155 75 Q145 55 160 45 M200 70 Q190 50 205 40 M245 75 Q235 55 250 45" fill="none" stroke="#fda4af" stroke-width="5" stroke-linecap="round"/>`,
+        crab: `<ellipse cx="200" cy="125" rx="55" ry="35" fill="#ea580c"/><circle cx="180" cy="98" r="6" fill="#fff"/><circle cx="220" cy="98" r="6" fill="#fff"/><path d="M142 115 Q108 85 128 68 M258 115 Q292 85 272 68" fill="none" stroke="#ea580c" stroke-width="9" stroke-linecap="round"/><path d="M138 138 L102 155 M262 138 L298 155" stroke="#ea580c" stroke-width="6" stroke-linecap="round"/>`,
+        capsule: `<line x1="50" y1="162" x2="350" y2="162" stroke="#94a3b8" stroke-width="6"/><rect x="130" y="78" width="140" height="76" rx="18" fill="#fbbf24" stroke="#fff" stroke-width="4"/><rect x="148" y="92" width="45" height="32" rx="6" fill="#bae6fd"/><rect x="207" y="92" width="45" height="32" rx="6" fill="#bae6fd"/><circle cx="165" cy="158" r="10" fill="#334155"/><circle cx="235" cy="158" r="10" fill="#334155"/>`,
+        sky: `<rect x="155" y="45" width="42" height="135" rx="4" fill="#38bdf8"/><rect x="205" y="68" width="38" height="112" rx="4" fill="#60a5fa"/><path d="M145 95 H210" stroke="#fde047" stroke-width="5"/><circle cx="110" cy="70" r="18" fill="#fb923c" opacity="0.85"/>`,
+        noodles: `<path d="M60 155 Q200 135 340 155" fill="none" stroke="#38bdf8" stroke-width="5"/><path d="M130 125 A70 50 0 0 0 270 125 Z" fill="#f8fafc"/><path d="M155 120 Q200 95 245 120" fill="none" stroke="#fde047" stroke-width="8"/><circle cx="295" cy="68" r="16" fill="#fde047"/>`,
+        prince: `<rect x="95" y="115" width="45" height="55" fill="#f472b6"/><rect x="148" y="95" width="50" height="75" fill="#38bdf8"/><rect x="205" y="108" width="48" height="62" fill="#facc15"/><polygon points="165,58 178,78 192,58 206,78 219,58 215,88 169,88" fill="#fde047"/>`,
+        cafe: `<path d="M50 165 Q200 145 350 165" fill="none" stroke="#7dd3fc" stroke-width="6"/><rect x="155" y="82" width="80" height="68" rx="10" fill="#fff"/><path d="M235 96 H252 A14 14 0 0 1 252 128 H235" fill="none" stroke="#fff" stroke-width="7"/><ellipse cx="195" cy="82" rx="40" ry="8" fill="#b45309"/>`,
+        octopus: `<circle cx="200" cy="118" r="54" fill="#1e293b" stroke="#94a3b8" stroke-width="6"/><circle cx="200" cy="118" r="42" fill="#dc2626"/><circle cx="185" cy="110" r="10" fill="#fca5a5"/><circle cx="215" cy="122" r="11" fill="#fed7aa"/><circle cx="195" cy="132" r="8" fill="#fef08a"/>`,
+        clinic: `<g transform="rotate(-35 200 115)"><rect x="178" y="65" width="44" height="90" rx="6" fill="#f8fafc" stroke="#38bdf8" stroke-width="4"/><rect x="184" y="95" width="32" height="54" fill="#bae6fd"/><line x1="200" y1="35" x2="200" y2="65" stroke="#e2e8f0" stroke-width="4"/><rect x="185" y="155" width="30" height="18" fill="#94a3b8"/></g><polygon points="275,70 280,82 292,87 280,92 275,104 270,92 258,87 270,82" fill="#fde047"/>`,
+        shopping: `<rect x="115" y="78" width="82" height="92" rx="8" fill="#f43f5e"/><path d="M136 78 A20 20 0 0 1 176 78" fill="none" stroke="#fff" stroke-width="5"/><rect x="188" y="90" width="92" height="82" rx="8" fill="#10b981"/><path d="M214 90 A20 20 0 0 1 254 90" fill="none" stroke="#fff" stroke-width="5"/>`,
+        fish: `<path d="M105 120 Q190 72 265 120 Q190 168 105 120 Z" fill="#f59e0b"/><polygon points="260,120 302,92 298,148" fill="#d97706"/><circle cx="138" cy="114" r="6" fill="#1e293b"/><line x1="168" y1="96" x2="158" y2="144" stroke="#78350f" stroke-width="4"/><line x1="200" y1="94" x2="190" y2="146" stroke="#78350f" stroke-width="4"/>`,
+        hotteok: `<circle cx="200" cy="115" r="46" fill="#d97706" stroke="#fde68a" stroke-width="5"/><circle cx="185" cy="105" r="18" fill="#92400e" opacity="0.6"/><path d="M162 128 L238 128 L225 172 L175 172 Z" fill="#f8fafc"/>`
+      };
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>
+        <rect width="400" height="250" fill="url(#g)"/>
+        <circle cx="345" cy="45" r="80" fill="#ffffff" opacity="0.07"/>
+        <circle cx="50" cy="205" r="90" fill="#ffffff" opacity="0.05"/>
+        ${artMap[theme] || artMap.sky}
+        <rect x="0" y="192" width="400" height="58" fill="#0f172a" opacity="0.78"/>
+        <text x="200" y="216" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="15.5" font-weight="bold">${title}</text>
+        <text x="200" y="237" text-anchor="middle" fill="#cbd5e1" font-family="sans-serif" font-size="12">${subtitle}</text>
+      </svg>`;
+      return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+    }
+
+    const itineraryData = [
+      {
+        dayId: 'd1', date: 'DAY 1｜週五', title: '汗蒸幕充電・海雲台網紅線',
+        subtitle: '06:00 金海機場➔西面寄行李 ➔ 07:30 豬肉湯飯 ➔ 09:00 Spa Land 汗蒸幕 ➔ 12:30 李夏姃醬蟹 ➔ 15:00 天空膠囊列車➔青沙浦 ➔ 17:30 X the SKY ➔ 19:30 廣安里 Nasari 食堂',
+        color: '#0284c7',
+        spots: [
+          {
+            id: 'd1-1', step: 1, time: '06:00', name: '抵達金海機場 ➔ 西面寄放行李',
+            solo: '紅眼班機落地・輕裝出發', category: '機場抵達＆寄行李', lat: 35.1732, lng: 128.9465,
+            address: '釜山金海國際機場 ➔ 西面站飯店寄放行李', naverQuery: '김해국제공항',
+            img: makeBusanBase64('plane', '06:00 抵達金海機場', '前往西面飯店寄放行李', '#0f172a', '#0284c7'),
+            desc: '06:00 抵達釜山金海國際機場，入境後搭乘輕軌轉地鐵前往西面飯店寄放行李，一身輕便展開第一天行程。',
+            tips: ['💡 <strong>交通銜接：</strong>金海機場搭乘「釜山金海輕軌」至沙上站，轉乘地鐵 2 號線直達「西面站」。']
+          },
+          {
+            id: 'd1-2', step: 2, time: '07:30', name: '西面浦項 / 松亭3代豬肉湯飯',
+            solo: '1人友善早餐', category: '釜山代表美食・豬肉湯飯', lat: 35.1561, lng: 129.0586,
+            address: '釜山廣域市釜山鎮區西面豬肉湯飯一條街（西面站 1 號出口步行 3 分鐘）', naverQuery: '서면 포항돼지국밥',
+            img: makeBusanBase64('soup', '07:30 浦項 / 松亭3代豬肉湯飯', '1人友善早餐｜西面豬肉湯飯一條街', '#78350f', '#0369a1'),
+            desc: '在西面市場內的豬肉湯飯一條街享用熱騰騰的濃白大骨豬肉湯飯，24 小時營業且對獨旅 1 人用餐極度友善。',
+            tips: ['💡 <strong>調味秘訣：</strong>湯頭本身較清淡，記得依個人口味加入蝦醬（새우젓）、韭菜與辣醬調味。']
+          },
+          {
+            id: 'd1-3', step: 3, time: '09:00', name: '新世界 Spa Land 汗蒸幕',
+            solo: '補眠泡湯', category: '五星級豪華汗蒸幕', lat: 35.1689, lng: 129.1296,
+            address: '釜山海雲台區新世界百貨 Centum City 店 1樓（Centum City 站）', naverQuery: '신세계 센텀시티 스파랜드',
+            img: makeBusanBase64('spaland', '09:00 新世界 Spa Land 汗蒸幕', '補眠泡湯｜醫美前先享受頂級汗蒸幕', '#9a3412', '#0284c7'),
+            desc: '搭紅眼班機後的最佳充電站！擁有天然溫泉湯池與多種主題汗蒸房，記得在週六做醫美前先泡完汗蒸幕並補眠。',
+            tips: ['💡 <strong>必吃體驗：</strong>換上汗蒸服後，到休息區買顆烤雞蛋配甜米露（식혜），躺平補眠 3 小時。']
+          },
+          {
+            id: 'd1-4', step: 4, time: '12:30', name: '水營站李夏姃醬蟹',
+            solo: '1人份生醃醬蟹套餐', category: '獨旅友善・生醃醬油螃蟹', lat: 35.1653, lng: 129.1132,
+            address: '釜山廣域市水營區光南路120號2樓（水營站 2 號出口步行約 5 分鐘）', naverQuery: '이하정간장게장',
+            img: makeBusanBase64('crab', '12:30 水營站李夏姃醬蟹', '1人份生醃醬蟹套餐｜爆膏白飯小偷', '#991b1b', '#d97706'),
+            desc: '從 Centum City 搭地鐵僅 2 站即達水營站。主打新鮮無腥味的飽滿蟹膏，最大亮點是可單點「1人份生醃醬蟹套餐」。',
+            tips: ['💡 <strong>必試吃法：</strong>將熱白飯拌入蟹殼內的濃郁蟹膏，再淋一點麻油包海苔吃！']
+          },
+          {
+            id: 'd1-5', step: 5, time: '15:00', name: '藍線公園天空膠囊列車 ➔ 青沙浦踏石觀景台',
+            solo: '海雲台網紅海岸線', category: '空中膠囊小火車・韓版灌籃高手平交道', lat: 35.1612, lng: 129.1965,
+            address: '海雲台藍線公園（尾浦站 ➔ 青沙浦站 ➔ 青沙浦踏石觀景台）', naverQuery: '해운대블루라인파크 청사포정거장',
+            img: makeBusanBase64('capsule', '15:00 藍線公園天空膠囊列車', '尾浦 ➔ 青沙浦踏石觀景台', '#0369a1', '#0d9488'),
+            desc: '搭乘造型可愛的高空彩色膠囊列車沿著海雲台絕美海岸線慢行，抵達青沙浦後前往透明步道「踏石觀景台」與紅白雙燈塔拍照。',
+            tips: ['💡 <strong>預約提醒：</strong>天空膠囊列車（尾浦➔青沙浦段）極度搶手，務必提前在官網預訂下午時段車票。']
+          },
+          {
+            id: 'd1-6', step: 6, time: '17:30', name: 'BUSAN X the SKY 觀景台',
+            solo: '100樓高空日落海景', category: '海雲台摩天地標・高空觀景台', lat: 35.1599, lng: 129.1696,
+            address: '釜山海雲台區迎月路30 LCT Landmark Tower 98–100樓', naverQuery: '부산엑스더스카이',
+            img: makeBusanBase64('sky', '17:30 BUSAN X the SKY', '98-100樓俯瞰海雲台日落與海岸線', '#1e1b4b', '#0284c7'),
+            desc: '登上韓國第二高樓（LCT 98–100 樓），在透明玻璃步道「Shocking Bridge」與全球最高星巴克飽覽海雲台日落與華燈初上的海灣美景。',
+            tips: ['💡 <strong>順遊提醒：</strong>支援使用 VISIT BUSAN PASS 或事先購買門票入場。']
+          },
+          {
+            id: 'd1-7', step: 7, time: '19:30', name: '廣安里 Nasari 食堂',
+            solo: '海景海鮮刀削麵+夜景', category: '廣安大橋第一排夜景餐廳', lat: 35.1538, lng: 129.1189,
+            address: '釜山水營區廣安海邊路145號（廣安里海水浴場正對面）', naverQuery: '나사리식당 광안점',
+            img: makeBusanBase64('noodles', '19:30 廣安里 Nasari 食堂', '海景海鮮刀削麵＋廣安大橋百萬夜景', '#1e1b4b', '#be185d'),
+            desc: '正對廣安大橋海景第一排的高人氣餐廳，一邊品嚐鋪滿海鮮的熱湯刀削麵與忠武飯捲，一邊欣賞夜間點燈後的廣安大橋。',
+            tips: ['💡 <strong>選位建議：</strong>入座靠窗吧台區視野最佳，單人看海吃麵完全不尷尬。']
+          }
+        ]
+      },
+      {
+        dayId: 'd2', date: 'DAY 2｜週六', title: '彩繪村美照・西面醫美＋爆買',
+        subtitle: '08:30 甘川洞文化村 ➔ 10:30 影島白淺灘文化村 ➔ 12:30 西面螞蟻家 ➔ 14:00 西面醫美診所 ➔ 17:00 Olive Young+西面地下街+樂天免稅店 ➔ 20:00 濟州家西面店',
+        color: '#db2777',
+        spots: [
+          {
+            id: 'd2-1', step: 1, time: '08:30', name: '甘川洞文化村',
+            solo: '小王子彩繪村打卡', category: '釜山馬丘比丘・醫美前拍美照', lat: 35.0975, lng: 129.0106,
+            address: '釜山沙下區甘內2路203（土城站轉乘小巴）', naverQuery: '감천문화마을',
+            img: makeBusanBase64('prince', '08:30 甘川洞文化村', '小王子與沙漠狐狸彩繪村早鳥打卡', '#be185d', '#d97706'),
+            desc: '趁著下午做醫美前，早上 08:30 搶先抵達甘川洞文化村！這個時間點小王子與沙漠狐狸打卡點幾乎不用排長隊，光線柔和最出片。',
+            tips: ['💡 <strong>早鳥優勢：</strong>09:00 前抵達可省去小王子動輒 40 分鐘以上的排隊時間。']
+          },
+          {
+            id: 'd2-2', step: 2, time: '10:30', name: '影島白淺灘文化村',
+            solo: '海景咖啡廳', category: '韓版聖托里尼・懸崖海景步道', lat: 35.0789, lng: 129.0452,
+            address: '釜山影島區白淺灘街379（從甘川洞搭計程車約 15 分鐘直達）', naverQuery: '흰여울문화마을',
+            img: makeBusanBase64('cafe', '10:30 影島白淺灘文化村', '絕美海景咖啡廳＆海岸隧道打卡', '#0284c7', '#db2777'),
+            desc: '依山傍海的純白海岸聚落，沿著絕美海濱長廊散步拍網紅照，並挑間懸崖海景咖啡廳看著大船入港喝杯冰美式。',
+            tips: ['💡 <strong>省力轉場：</strong>從甘川洞直接叫計程車（或 Uber / Kakao T）跨橋到影島白淺灘僅約 15 分鐘，便宜又省時。']
+          },
+          {
+            id: 'd2-3', step: 3, time: '12:30', name: '西面螞蟻家',
+            solo: '1人份辣炒章魚蝦仁牛腸', category: '釜山必吃辣炒章魚鍋（낙곱새）', lat: 35.1552, lng: 129.0596,
+            address: '釜山釜山鎮區新川大路62番街73（西面站 1 號或 2 號出口周邊）', naverQuery: '개미집 서면점',
+            img: makeBusanBase64('octopus', '12:30 西面螞蟻家', '1人份辣炒章魚蝦仁牛腸（Nak-Gop-Sae）', '#991b1b', '#be185d'),
+            desc: '返回西面商圈享用釜山道地名物「辣炒章魚＋蝦仁＋牛腸（낙곱새）」，鹹甜微辣的醬汁拌入白飯與海苔絲超級開胃，支援 1 人開鍋。',
+            tips: ['💡 <strong>點餐提醒：</strong>若怕太辣可向店員點小辣（순한맛）。']
+          },
+          {
+            id: 'd2-4', step: 4, time: '14:00', name: '西面醫美診所',
+            solo: '黃金微針 + 麗珠蘭 + 肉毒', category: '韓國皮膚管理＆醫美療程', lat: 35.1572, lng: 129.0591,
+            address: '釜山釜山鎮區西面醫療街／中央大路周邊醫美診所', naverQuery: '서면 피부과',
+            img: makeBusanBase64('clinic', '14:00 西面醫美診所', '黃金微針＋麗珠蘭＋肉毒｜術後加強保濕防曬', '#831843', '#db2777'),
+            desc: '西面是釜山最密集的醫美集散地，安排在拍完所有戶外美照與泡完汗蒸幕後的週六下午進行「黃金微針＋麗珠蘭＋肉毒」療程最完美。',
+            tips: [
+              '⚠️ <strong>重要退稅新制提醒：</strong>2026 起韓國醫美已取消退稅（購物滿 15,000 韓元仍可退稅）。',
+              '💡 <strong>術後照護：</strong>做完黃金微針與麗珠蘭後臉部會泛紅微腫，務必戴口罩、帽子並加強保濕防曬。'
+            ]
+          },
+          {
+            id: 'd2-5', step: 5, time: '17:00', name: 'Olive Young ＋ 西面地下街 ＋ 樂天百貨免稅店',
+            solo: '術後室內爆買行程', category: '美妝保養・服飾・免稅血拼', lat: 35.1568, lng: 129.0566,
+            address: '釜山釜山鎮區伽倻大路772（西面樂天百貨、西面地下街、Olive Young 旗艦店）', naverQuery: '롯데백화점 부산본점',
+            img: makeBusanBase64('shopping', '17:00 西面商圈大爆買', 'Olive Young＋西面地下街＋樂天百貨免稅店', '#701a75', '#e11d48'),
+            desc: '醫美結束後直接轉入室內吹冷氣逛街！先去 Olive Young 補齊術後修復面膜與再生霜，再一路逛西面地下街與樂天百貨免稅店。',
+            tips: ['💡 <strong>退稅提醒：</strong>Olive Young 單筆滿 15,000 韓元出示護照即可直接辦理現場即時退稅（Immediate Tax Refund）。']
+          },
+          {
+            id: 'd2-6', step: 6, time: '20:00', name: '濟州家西面店',
+            solo: '1人份鮑魚粥 / 海膽海帶湯', category: '溫潤海味・術後修復晚餐', lat: 35.1562, lng: 129.0558,
+            address: '釜山釜山鎮區釜田路66番街36（西面樂天百貨後門巷弄）', naverQuery: '제주가 서면점',
+            img: makeBusanBase64('soup', '20:00 濟州家西面店', '1人份濃郁鮑魚粥／海膽海帶湯', '#0f766e', '#be185d'),
+            desc: '醫美與大採購後的溫補晚餐首選！以鮑魚內臟熬煮出的濃郁綠金鮑魚粥，搭配鮮甜海膽海帶湯，清淡營養且不刺激剛做完醫美的皮膚。',
+            tips: ['💡 <strong>位置便利：</strong>就在西面樂天百貨後方，吃完可直接散步回西面飯店敷面膜休息。']
+          }
+        ]
+      },
+      {
+        dayId: 'd3', date: 'DAY 3｜週日', title: '海鮮市場・伴手禮採購・返程',
+        subtitle: '09:30 札嘎其烤魚一條街 ➔ 13:00 BIFF廣場(黑糖餅)+國際市場 ➔ 15:00 樂天百貨光復店&樂天超市 ➔ 18:00 回西面飯店領行李 ➔ 19:15 抵達金海機場(退稅&22:00起飛)',
+        color: '#0d9488',
+        spots: [
+          {
+            id: 'd3-1', step: 1, time: '09:30', name: '札嘎其烤魚一條街（韓月食堂）',
+            solo: '韓月食堂1人綜合烤魚定食', category: '炭火現烤鮮魚・豐盛韓式定食', lat: 35.0971, lng: 129.0298,
+            address: '釜山中區札嘎其路（地鐵札嘎其站 7 號或 10 號出口對面巷弄）', naverQuery: '자갈치 생선구이 골목 한월식당',
+            img: makeBusanBase64('fish', '09:30 札嘎其烤魚一條街', '韓月食堂｜1人綜合烤魚定食', '#78350f', '#0d9488'),
+            desc: '早安南浦洞！走進香氣四溢的札嘎其烤魚一條街，到老字號「韓月食堂」點一份 1 人綜合烤魚定食（含白帶魚、青花魚、比目魚與滿桌小菜大醬湯）。',
+            tips: ['💡 <strong>順遊看點：</strong>吃完可順道去旁邊的札嘎其市場海濱平台看海鷗與魚市場風景。']
+          },
+          {
+            id: 'd3-2', step: 2, time: '13:00', name: 'BIFF 廣場（黑糖餅）＋ 國際市場',
+            solo: '元祖堅果黑糖餅・傳統市集', category: '南浦洞經典小吃＆日用品挖寶', lat: 35.0989, lng: 129.0285,
+            address: '釜山中區 BIFF 廣場路 ＆ 國際市場（札嘎其烤魚街北側步行 3 分鐘）', naverQuery: 'BIFF광장',
+            img: makeBusanBase64('hotteok', '13:00 BIFF 廣場 ＋ 國際市場', '必吃元祖堅果黑糖餅＆傳統市場漫遊', '#92400e', '#0f766e'),
+            desc: '從烤魚街過馬路即達 BIFF 廣場，必吃塞滿葵花籽與堅果的現炸「元祖黑糖餅」，接著一路逛進國際市場與富平罐頭市場。',
+            tips: ['💡 <strong>採買推薦：</strong>國際市場適合買韓國棉被、搓澡巾、紫菜與傳統雜貨。']
+          },
+          {
+            id: 'd3-3', step: 3, time: '15:00', name: '樂天百貨光復店 ＆ 樂天超市',
+            solo: '伴手禮採購', category: '大型超市採買・頂樓免費港灣觀景台', lat: 35.0982, lng: 129.0365,
+            address: '釜山中區中央大路2（地鐵南浦站 8/10 號出口連通）', naverQuery: '롯데마트 광복점',
+            img: makeBusanBase64('shopping', '15:00 樂天百貨光復店＆樂天超市', '伴手禮零食採購・滿15,000韓元現場退稅', '#065f46', '#0284c7'),
+            desc: '回國前的最後一站伴手禮大採購！在樂天超市光復店一次買齊韓國海苔、HBAF 杏仁果、Zero 軟糖、拉麵與咖啡，結帳櫃檯可直接現場退稅。',
+            tips: ['💡 <strong>隱藏景點：</strong>若有時間可搭電梯上樂天百貨光復店 13 樓頂樓空中花園，免費俯瞰釜山港大橋與影島全景！']
+          },
+          {
+            id: 'd3-4', step: 4, time: '18:00', name: '回西面飯店領行李',
+            solo: '整理戰利品・準備去機場', category: '領取行李・最後打包', lat: 35.1578, lng: 129.0600,
+            address: '釜山廣域市釜山鎮區西面站周邊飯店', naverQuery: '서면역',
+            img: makeBusanBase64('plane', '18:00 回西面飯店領行李', '整理樂天超市與醫美保養戰利品入箱', '#1e293b', '#0d9488'),
+            desc: '搭乘地鐵 1 號線返回西面飯店領取行李，將剛剛在樂天超市與 Olive Young 採買的液體保養品與伴手禮收進行李箱準備托運。',
+            tips: ['💡 <strong>打包提醒：</strong>超過 100ml 的醫美保濕噴霧、面膜液體與泡菜醬料務必放進托運行李箱。']
+          },
+          {
+            id: 'd3-5', step: 5, time: '19:15', name: '抵達金海機場（辦理退稅 & 22:00 起飛）',
+            solo: '辦理退稅 & 22:00 起飛', category: '機場退稅・平安返航', lat: 35.1732, lng: 128.9465,
+            address: '釜山廣域市江西區空港進入路108（金海國際機場國際線航廈）', naverQuery: '김해국제공항 국제선',
+            img: makeBusanBase64('plane', '19:15 抵達金海機場', '辦理退稅 ＆ 22:00 起飛返程', '#0f172a', '#0f766e'),
+            desc: '19:15 抵達金海國際機場，先使用自助退稅機（Kiosk）掃描護照與尚未現場退稅的單據，完成航空公司報到托運後入關領取退稅金，搭乘 22:00 班機起飛返台。',
+            tips: ['💡 <strong>退稅流程：</strong>出境大廳先掃描退稅單 ➔ 辦理行李托運 ➔ 過安檢與海關入關 ➔ 至禁區內 4 號登機門旁退稅櫃檯領取現金。']
+          }
+        ]
+      }
+    ];
+
+    const map = L.map('map', { zoomControl: true }).setView([35.135, 129.085], 12);
+    const googleLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}', { attribution: '&copy; Google Maps', subdomains: ['0','1','2','3'], maxZoom: 20 });
+    const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 });
+    googleLayer.addTo(map);
+    L.control.layers({ '🗺️ Google 地圖（繁中推薦）': googleLayer, '🌐 OpenStreetMap': osmLayer }, null, { position: 'topright' }).addTo(map);
+
+    const markersBySpotId = {};
+    const layerGroupsByDay = {};
+    const allBounds = [];
+    let activeSpotIds = [];
+    let currentSpotIdx = 0;
+
+    function toggleHeader() {
+      const header = document.getElementById('appHeader');
+      const btn = document.getElementById('headerToggleBtn');
+      header.classList.toggle('collapsed');
+      btn.innerHTML = header.classList.contains('collapsed') ? '▼ 展開日期選單' : '▲ 收合頂部欄';
+    }
+
+    function openMapModal(titleText) {
+      const modal = document.getElementById('mapModalBackdrop');
+      if (titleText) document.getElementById('mapModalTitle').textContent = titleText;
+      modal.classList.add('open');
+      setTimeout(() => map.invalidateSize(), 60);
+    }
+
+    function closeMapModal() {
+      document.getElementById('mapModalBackdrop').classList.remove('open');
+    }
+
+    function closeMapModalOnBackdrop(e) {
+      if (e.target.id === 'mapModalBackdrop') closeMapModal();
+    }
+
+    function updateSwipeBar(spotId) {
+      const item = markersBySpotId[spotId];
+      if (!item) return;
+      document.getElementById('swipeThumb').src = item.img;
+      document.getElementById('swipeBadge').textContent = `${item.date} · 第 ${currentSpotIdx + 1} / ${activeSpotIds.length} 站 · ${item.time}`;
+      document.getElementById('swipeName').textContent = item.name;
+      document.getElementById('swipeSub').textContent = '📍 ' + item.address;
+      document.getElementById('mapModalTitle').textContent = `📍 ${item.date} (${item.time})｜${item.name} (${currentSpotIdx + 1}/${activeSpotIds.length})`;
+    }
+
+    function stepSpot(delta) {
+      if (!activeSpotIds.length) return;
+      currentSpotIdx = (currentSpotIdx + delta + activeSpotIds.length) % activeSpotIds.length;
+      const nextId = activeSpotIds[currentSpotIdx];
+      const inner = document.getElementById('swipeCardInner');
+      inner.style.transform = `translateX(${delta > 0 ? '-12px' : '12px'})`;
+      setTimeout(() => { inner.style.transform = 'translateX(0)'; }, 160);
+      focusSpot(nextId, activeSpotIds);
+    }
+
+    function initSwipeGestures() {
+      let startX = 0, startY = 0;
+      ['mapSwipeBar', 'mapModalHeader'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', e => {
+          startX = e.changedTouches[0].screenX;
+          startY = e.changedTouches[0].screenY;
+        }, { passive: true });
+        el.addEventListener('touchend', e => {
+          const dx = e.changedTouches[0].screenX - startX;
+          const dy = e.changedTouches[0].screenY - startY;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) stepSpot(1);
+            else stepSpot(-1);
+          }
+        }, { passive: true });
+      });
+      document.addEventListener('keydown', e => {
+        if (!document.getElementById('mapModalBackdrop').classList.contains('open')) return;
+        if (e.key === 'Escape') closeMapModal();
+        if (e.key === 'ArrowLeft') stepSpot(-1);
+        if (e.key === 'ArrowRight') stepSpot(1);
+      });
+    }
+
+    function initApp() {
+      const feed = document.getElementById('itineraryFeed');
+      feed.innerHTML = '';
+      itineraryData.forEach(day => {
+        const dayLayer = L.layerGroup().addTo(map);
+        layerGroupsByDay[day.dayId] = dayLayer;
+        const dayLatLngs = [];
+        const section = document.createElement('section');
+        section.className = 'day-section';
+        section.dataset.dayId = day.dayId;
+        let cardsHtml = '';
+
+        day.spots.forEach(spot => {
+          const latLng = [spot.lat, spot.lng];
+          dayLatLngs.push(latLng);
+          allBounds.push(latLng);
+
+          const pinIcon = L.divIcon({
+            className: '',
+            html: `<div class="custom-pin" style="background:${day.color}"><span>${spot.step}</span></div>`,
+            iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28]
+          });
+
+          const gmapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('釜山 ' + spot.name)}`;
+          const naverUrl = `https://map.naver.com/p/search/${encodeURIComponent(spot.naverQuery || spot.name)}`;
+
+          const marker = L.marker(latLng, { icon: pinIcon }).addTo(dayLayer);
+          marker.bindPopup(`
+            <div class="popup-box">
+              <div style="font-size:11px;font-weight:700;color:${day.color};margin-bottom:2px;">${day.date} · ${spot.time}</div>
+              <h4>${spot.name}</h4>
+              <p>${spot.address}</p>
+              <div class="popup-links">
+                <a href="${gmapUrl}" target="_blank" rel="noopener">🗺️ Google Maps</a>
+                <a href="${naverUrl}" target="_blank" rel="noopener">🟢 Naver Map 導航</a>
+              </div>
+            </div>
+          `);
+
+          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng, name: spot.name, date: day.date, time: spot.time, address: spot.address, img: spot.img };
+          activeSpotIds.push(spot.id);
+
+          const tipsBlockHtml = spot.tips && spot.tips.length > 0
+            ? `<ul class="tips-list" style="border-left-color:${day.color}">${spot.tips.map(t => `<li>${t}</li>`).join('')}</ul>`
+            : '';
+
+          cardsHtml += `
+            <article class="place-card" id="card-${spot.id}" onclick="focusSpot('${spot.id}')">
+              <div class="card-media">
+                <span class="time-tag">${spot.time}</span>
+                <span class="step-number" style="background:${day.color}">${spot.step}</span>
+                <img src="${spot.img}" alt="${spot.name}" />
+              </div>
+              <div class="card-body">
+                <div>
+                  <div class="place-title-group">
+                    <h3>${spot.time} ｜ ${spot.name}</h3>
+                    <div class="place-meta">
+                      <span class="category-pill">${spot.category}</span>
+                      <span class="solo-tag">✨ ${spot.solo}</span>
+                    </div>
+                  </div>
+                  <p class="place-desc" style="margin-top:8px;">${spot.desc}</p>
+                </div>
+                ${tipsBlockHtml}
+                <div class="card-actions" onclick="event.stopPropagation()">
+                  <span class="address-text">📍 ${spot.address}</span>
+                  <div class="action-btns">
+                    <button class="btn-sm btn-locate" onclick="focusSpot('${spot.id}')">🎯 地圖定位</button>
+                    <a class="btn-sm" href="${gmapUrl}" target="_blank" rel="noopener">Google 地圖</a>
+                    <a class="btn-sm" href="${naverUrl}" target="_blank" rel="noopener">🟢 Naver Map</a>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        });
+
+        if (dayLatLngs.length > 1) {
+          L.polyline(dayLatLngs, { color: day.color, weight: 3.5, opacity: 0.75, dashArray: '8, 8' }).addTo(dayLayer);
+        }
+
+        section.innerHTML = `
+          <div class="day-header">
+            <div class="day-title-wrap">
+              <span class="day-badge" style="background:${day.color}">${day.date}</span>
+              <div class="day-title-text"><h2>${day.title}</h2><p>${day.subtitle}</p></div>
+            </div>
+            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 彈出當日路線地圖</button>
+          </div>
+          <div class="cards-container">${cardsHtml}</div>
+        `;
+        feed.appendChild(section);
+      });
+      initSwipeGestures();
+    }
+
+    function focusSpot(spotId, customList) {
+      activeSpotIds = customList || Object.keys(markersBySpotId);
+      currentSpotIdx = activeSpotIds.indexOf(spotId);
+      if (currentSpotIdx === -1) { activeSpotIds = Object.keys(markersBySpotId); currentSpotIdx = activeSpotIds.indexOf(spotId); }
+
+      document.querySelectorAll('.place-card').forEach(c => c.classList.remove('highlighted'));
+      const cardEl = document.getElementById(`card-${spotId}`);
+      if (cardEl) cardEl.classList.add('highlighted');
+
+      const item = markersBySpotId[spotId];
+      if (item) {
+        openMapModal();
+        updateSwipeBar(spotId);
+        if (!map.hasLayer(layerGroupsByDay[item.dayId])) layerGroupsByDay[item.dayId].addTo(map);
+        setTimeout(() => {
+          map.invalidateSize();
+          map.flyTo(item.latLng, 15, { duration: 0.6 });
+          setTimeout(() => item.marker.openPopup(), 300);
+        }, 100);
+      }
+    }
+
+    function zoomToDay(dayId) {
+      const day = itineraryData.find(d => d.dayId === dayId);
+      if (!day) return;
+      activeSpotIds = day.spots.map(s => s.id);
+      currentSpotIdx = 0;
+      openMapModal();
+      updateSwipeBar(activeSpotIds[0]);
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (k === dayId) { if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map); }
+        else { if (map.hasLayer(layerGroupsByDay[k])) map.removeLayer(layerGroupsByDay[k]); }
+      });
+      const bounds = day.spots.map(s => [s.lat, s.lng]);
+      setTimeout(() => {
+        map.invalidateSize();
+        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.6 });
+      }, 100);
+    }
+
+    function openFullMapModal() {
+      activeSpotIds = Object.keys(markersBySpotId);
+      currentSpotIdx = 0;
+      openMapModal('📍 釜山三天兩夜行程總覽地圖');
+      updateSwipeBar(activeSpotIds[0]);
+      setTimeout(() => resetMapView(), 120);
+    }
+
+    function filterDay(dayId, btnEl) {
+      if (btnEl) {
+        document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('active'));
+        btnEl.classList.add('active');
+      }
+      document.querySelectorAll('.day-section').forEach(sec => {
+        sec.style.display = (dayId === 'all' || sec.dataset.dayId === dayId) ? 'block' : 'none';
+      });
+      if (window.innerWidth <= 768 && dayId !== 'all') {
+        const header = document.getElementById('appHeader');
+        if (!header.classList.contains('collapsed')) toggleHeader();
+      }
+    }
+
+    function resetMapView() {
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map);
+      });
+      if (allBounds.length > 0) {
+        map.invalidateSize();
+        map.flyToBounds(allBounds, { padding: [40, 40], duration: 0.6 });
+      }
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
