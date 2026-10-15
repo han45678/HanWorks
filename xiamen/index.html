@@ -4,1210 +4,486 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
-  <title>2026 廈門五日山海漫遊｜互動圖文行程表 & 彈窗導航地圖</title>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>🇭🇰 香港三天兩夜：演唱會與城市精華行程｜Base64圖文 & 左右滑動彈窗地圖</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-main: #f4f5f7;
-      --bg-card: #ffffff;
-      --text-primary: #181a1f;
-      --text-secondary: #5a6270;
-      --text-muted: #8c95a4;
-      --border-color: #e4e7ec;
-      --accent-d1: #d97706;
-      --accent-d2: #2563eb;
-      --accent-d3: #059669;
-      --accent-d4: #7c3aed;
-      --accent-d5: #dc2626;
-      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --radius-lg: 16px;
-      --radius-md: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Collapsible Top Header */
-    .app-header {
-      background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
-      color: #ffffff;
-      padding: 20px 24px 14px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
-      transition: padding 0.25s ease;
-    }
-
-    .app-header.collapsed {
-      padding: 10px 16px;
-    }
-
-    .header-bar-compact {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1100px;
-      margin: 0 auto;
-      gap: 12px;
-    }
-
-    .compact-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: #f8fafc;
-      display: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .app-header.collapsed .compact-title {
-      display: block;
-    }
-
-    .header-toggle-btn {
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
-    .header-toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.24);
-    }
-
-    .header-collapsible-content {
-      max-width: 1100px;
-      margin: 8px auto 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
-      max-height: 500px;
-      opacity: 1;
-    }
-
-    .app-header.collapsed .header-collapsible-content {
-      max-height: 0;
-      opacity: 0;
-      margin-top: 0;
-      pointer-events: none;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .title-group h1 {
-      font-size: 23px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .title-badge {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 999px;
-      color: #f8fafc;
-    }
-
-    .title-group p {
-      font-size: 13.5px;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
-    .header-stats {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .stat-pill {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 5px 12px;
-      border-radius: 10px;
-      font-size: 12.5px;
-      color: #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .date-tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: none;
-    }
-
-    .date-tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .date-tab {
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 15px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .date-tab:hover {
-      background: rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-    }
-
-    .date-tab.active {
-      background: #ffffff;
-      color: #0f172a;
-      border-color: #ffffff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    /* Single-Column Centered Main Layout */
-    .main-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 20px 80px;
-    }
-
-    .itinerary-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-
-    .day-section {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-    }
-
-    .day-header {
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: #fafbfc;
-    }
-
-    .day-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .day-badge {
-      padding: 6px 14px;
-      border-radius: 10px;
-      color: #fff;
-      font-weight: 800;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
-
-    .day-title-text h2 {
-      font-size: 18.5px;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-
-    .day-title-text p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-
-    .day-map-btn {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .day-map-btn:hover {
-      background: #dbeafe;
-    }
-
-    .cards-container {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .place-card {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: #ffffff;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-      cursor: pointer;
-    }
-
-    .place-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-      border-color: #cbd5e1;
-    }
-
-    .place-card.highlighted {
-      border: 2px solid #2563eb;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-    }
-
-    .card-media {
-      position: relative;
-      height: 100%;
-      min-height: 195px;
-      background-color: #1e293b;
-      overflow: hidden;
-    }
-
-    .card-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.4s ease;
-    }
-
-    .place-card:hover .card-media img {
-      transform: scale(1.05);
-    }
-
-    .time-tag {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: rgba(15, 23, 42, 0.86);
-      backdrop-filter: blur(6px);
-      color: #fff;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      z-index: 2;
-    }
-
-    .step-number {
-      position: absolute;
-      bottom: 12px;
-      left: 12px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #ffffff;
-      color: #0f172a;
-      font-weight: 800;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      z-index: 2;
-    }
-
-    .card-body {
-      padding: 18px 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .place-title-group h3 {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .place-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      flex-wrap: wrap;
-    }
-
-    .rating-stars {
-      color: #f59e0b;
-      font-weight: 700;
-    }
-
-    .category-pill {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 11.5px;
-    }
-
-    .new-tag {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11.5px;
-      font-weight: 700;
-    }
-
-    .place-desc {
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.6;
-    }
-
-    .tips-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: #f8fafc;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border-left: 3px solid #94a3b8;
-    }
-
-    .tips-list li {
-      font-size: 13px;
-      color: #475569;
-      line-height: 1.5;
-    }
-
-    .tips-list li strong {
-      color: #0f172a;
-    }
-
-    .card-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--border-color);
-    }
-
-    .address-text {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .action-btns {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      border: 1px solid var(--border-color);
-      background: #fff;
-      color: #334155;
-      transition: all 0.15s;
-    }
-
-    .btn-sm:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-    }
-
-    .btn-locate {
-      background: #2563eb;
-      border-color: #2563eb;
-      color: #ffffff;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
-    }
-
-    .btn-locate:hover {
-      background: #1d4ed8;
-      color: #ffffff;
-    }
-
-    /* Floating Overview Map Button */
-    .floating-map-btn {
-      position: fixed;
-      bottom: 22px;
-      right: 22px;
-      z-index: 990;
-      background: #0f172a;
-      color: #ffffff;
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 12px 18px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 800;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .floating-map-btn:hover {
-      transform: translateY(-2px);
-      background: #1e293b;
-    }
-
-    /* Map Modal Popup Window */
-    .map-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.72);
-      backdrop-filter: blur(4px);
-      z-index: 2000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .map-modal-backdrop.open {
-      display: flex;
-    }
-
-    .map-modal-dialog {
-      width: 100%;
-      max-width: 960px;
-      height: 82vh;
-      max-height: 760px;
-      background: #ffffff;
-      border-radius: 16px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-      animation: modalPop 0.22s ease-out;
-    }
-
-    @keyframes modalPop {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .map-modal-header {
-      padding: 14px 18px;
-      background: #0f172a;
-      color: #ffffff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .map-modal-title {
-      font-size: 15px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .map-modal-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .map-reset-btn {
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .map-reset-btn:hover {
-      background: rgba(255,255,255,0.25);
-    }
-
-    .map-close-btn {
-      background: #ef4444;
-      border: none;
-      color: #ffffff;
-      padding: 6px 13px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .map-close-btn:hover {
-      background: #dc2626;
-    }
-
-    #map {
-      flex: 1;
-      width: 100%;
-      z-index: 1;
-    }
-
-    .map-legend {
-      padding: 10px 16px;
-      background: #f8fafc;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .custom-pin {
-      width: 30px;
-      height: 30px;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #ffffff;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.35);
-    }
-
-    .custom-pin span {
-      transform: rotate(45deg);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 12px;
-      font-family: 'Noto Sans TC', sans-serif;
-    }
-
-    .leaflet-popup-content-wrapper {
-      border-radius: 12px;
-      padding: 2px;
-    }
-
-    .popup-box h4 {
-      font-size: 14.5px;
-      font-weight: 800;
-      margin-bottom: 4px;
-      color: #0f172a;
-    }
-
-    .popup-box p {
-      font-size: 12px;
-      color: #475569;
-      margin: 0 0 8px;
-    }
-
-    .popup-links {
-      display: flex;
-      gap: 6px;
-    }
-
-    .popup-links a {
-      font-size: 11.5px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    @media (max-width: 768px) {
-      .app-header {
-        padding: 12px 14px 10px;
-      }
-
-      .title-group h1 {
-        font-size: 18px;
-      }
-
-      .main-container {
-        padding: 14px 12px 80px;
-      }
-
-      .place-card {
-        grid-template-columns: 1fr;
-      }
-
-      .card-media {
-        height: 185px;
-      }
-
-      .cards-container {
-        padding: 14px;
-      }
-
-      .map-modal-backdrop {
-        padding: 8px;
-      }
-
-      .map-modal-dialog {
-        height: 86vh;
-      }
+    :root { --bg-main:#f4f5f7; --bg-card:#ffffff; --text-primary:#181a1f; --text-secondary:#5a6270; --text-muted:#8c95a4; --border-color:#e4e7ec; --accent-d1:#e11d48; --accent-d2:#2563eb; --accent-d3:#059669; --shadow-sm:0 2px 8px rgba(15,23,42,0.05); --shadow-md:0 8px 24px rgba(15,23,42,0.08); --radius-lg:16px; --radius-md:12px; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-main); color:var(--text-primary); line-height:1.6; -webkit-font-smoothing:antialiased; }
+    .app-header { background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%); color:#fff; padding:18px 24px 14px; position:sticky; top:0; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.2); transition:padding 0.25s ease; }
+    .app-header.collapsed { padding:10px 16px; }
+    .header-bar-compact { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; gap:12px; }
+    .compact-title { font-size:15px; font-weight:800; color:#f8fafc; display:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .app-header.collapsed .compact-title { display:block; }
+    .header-toggle-btn { margin-left:auto; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .header-collapsible-content { max-width:1100px; margin:8px auto 0; overflow:hidden; transition:max-height 0.3s ease,opacity 0.25s ease,margin 0.25s ease; max-height:500px; opacity:1; }
+    .app-header.collapsed .header-collapsible-content { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
+    .header-top { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; margin-bottom:14px; }
+    .title-group h1 { font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .title-badge { font-size:12px; font-weight:600; padding:3px 10px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22); border-radius:999px; }
+    .title-group p { font-size:13px; color:#94a3b8; margin-top:4px; }
+    .header-stats { display:flex; gap:10px; flex-wrap:wrap; }
+    .stat-pill { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); padding:5px 12px; border-radius:10px; font-size:12px; color:#e2e8f0; }
+    .date-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .date-tabs::-webkit-scrollbar { display:none; }
+    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+    .date-tab.active { background:#fff; color:#0f172a; border-color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+    .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .main-container { max-width:1100px; margin:0 auto; padding:22px 18px 80px; }
+    .itinerary-feed { display:flex; flex-direction:column; gap:26px; }
+    .day-section { background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .day-header { padding:16px 22px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#fafbfc; }
+    .day-title-wrap { display:flex; align-items:center; gap:12px; }
+    .day-badge { padding:5px 12px; border-radius:10px; color:#fff; font-weight:800; font-size:13.5px; white-space:nowrap; }
+    .day-title-text h2 { font-size:18px; font-weight:800; }
+    .day-title-text p { font-size:12.5px; color:var(--text-secondary); margin-top:2px; }
+    .day-map-btn { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:7px 13px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; }
+    .day-Highlight-banner { margin:20px 20px 0; padding:16px 18px; background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%); border:1px solid #a7f3d0; border-left:5px solid #059669; border-radius:var(--radius-md); }
+    .day-Highlight-banner h3 { font-size:16px; font-weight:800; color:#065f46; margin-bottom:8px; }
+    .day-Highlight-banner p { font-size:13px; color:#1e293b; margin-bottom:6px; }
+    .cards-container { padding:20px; display:flex; flex-direction:column; gap:16px; }
+    .place-card { display:grid; grid-template-columns:230px 1fr; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:#fff; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+    .place-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+    .place-card.highlighted { border:2px solid #2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.12); }
+    .card-media { position:relative; height:100%; min-height:175px; background:#1e293b; overflow:hidden; }
+    .card-media img { width:100%; height:100%; object-fit:cover; display:block; }
+    .time-tag { position:absolute; top:10px; left:10px; background:rgba(15,23,42,0.88); color:#fff; padding:3px 9px; border-radius:6px; font-size:12px; font-weight:800; z-index:2; }
+    .step-number { position:absolute; bottom:10px; left:10px; width:28px; height:28px; border-radius:50%; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:2; }
+    .card-body { padding:15px 18px; display:flex; flex-direction:column; justify-content:space-between; gap:9px; }
+    .place-title-group h3 { font-size:17px; font-weight:800; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .place-meta { display:flex; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; }
+    .category-pill { background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:4px; font-weight:600; }
+    .stay-tag { background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:4px; font-weight:700; }
+    .place-desc { font-size:13.5px; color:#334155; }
+    .tips-list { list-style:none; display:flex; flex-direction:column; gap:5px; background:#f8fafc; padding:9px 13px; border-radius:8px; border-left:3px solid #94a3b8; }
+    .tips-list li { font-size:12.5px; color:#334155; }
+    .card-actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px; border-top:1px dashed var(--border-color); }
+    .address-text { font-size:12px; color:var(--text-muted); }
+    .action-btns { display:flex; gap:6px; flex-wrap:wrap; }
+    .btn-sm { padding:5px 11px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; cursor:pointer; border:1px solid var(--border-color); background:#fff; color:#334155; }
+    .btn-locate { background:#2563eb; border-color:#2563eb; color:#fff; }
+    .floating-map-btn { position:fixed; bottom:20px; right:20px; z-index:990; background:#0f172a; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:800; box-shadow:0 8px 24px rgba(15,23,42,0.35); cursor:pointer; display:flex; align-items:center; gap:8px; }
+    /* Modal & Swipe Switcher */
+    .map-modal-backdrop { position:fixed; inset:0; background:rgba(15,23,42,0.75); backdrop-filter:blur(4px); z-index:2000; display:none; align-items:center; justify-content:center; padding:12px; }
+    .map-modal-backdrop.open { display:flex; }
+    .map-modal-dialog { width:100%; max-width:960px; height:88vh; max-height:800px; background:#fff; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 50px rgba(0,0,0,0.45); }
+    .map-modal-header { padding:12px 16px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center; gap:10px; touch-action:pan-y; }
+    .map-modal-title { font-size:14px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .map-modal-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .map-reset-btn { background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 10px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; }
+    .map-close-btn { background:#ef4444; border:none; color:#fff; padding:5px 12px; border-radius:7px; font-size:12.5px; font-weight:800; cursor:pointer; }
+    .map-canvas-wrap { position:relative; flex:1; width:100%; overflow:hidden; display:flex; }
+    #map { flex:1; width:100%; height:100%; z-index:1; }
+    .map-side-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:500; width:40px; height:40px; border-radius:50%; background:rgba(15,23,42,0.82); color:#fff; border:2px solid rgba(255,255,255,0.7); font-size:18px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.3); }
+    .map-side-arrow.left { left:12px; }
+    .map-side-arrow.right { right:12px; }
+    .map-swipe-bar { background:#0f172a; color:#fff; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.12); user-select:none; touch-action:pan-y; }
+    .swipe-hint { font-size:11px; color:#94a3b8; text-align:center; margin-bottom:8px; }
+    .swipe-card-inner { display:grid; grid-template-columns:76px 1fr auto; gap:12px; align-items:center; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:10px 12px; transition:transform 0.2s ease; }
+    .swipe-thumb { width:76px; height:60px; border-radius:8px; object-fit:cover; border:1px solid rgba(255,255,255,0.2); }
+    .swipe-info { overflow:hidden; }
+    .swipe-step-badge { font-size:11px; font-weight:800; color:#38bdf8; margin-bottom:2px; }
+    .swipe-spot-name { font-size:15px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .swipe-spot-sub { font-size:12px; color:#cbd5e1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+    .swipe-nav-btns { display:flex; gap:6px; align-items:center; }
+    .swipe-btn { background:#2563eb; color:#fff; border:none; padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:800; cursor:pointer; white-space:nowrap; }
+    .swipe-btn.prev { background:#334155; }
+    .custom-pin { width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,0.35); }
+    .custom-pin span { transform:rotate(45deg); color:#fff; font-weight:800; font-size:11.5px; }
+    .popup-box h4 { font-size:14px; font-weight:800; margin-bottom:4px; color:#0f172a; }
+    .popup-box p { font-size:12px; color:#475569; margin:0 0 8px; }
+    .popup-links { display:flex; gap:6px; }
+    .popup-links a { font-size:11.5px; padding:4px 8px; border-radius:4px; background:#eff6ff; color:#1d4ed8; text-decoration:none; font-weight:600; }
+    @media (max-width:768px) {
+      .app-header { padding:12px 14px 10px; }
+      .title-group h1 { font-size:18px; }
+      .main-container { padding:14px 12px 80px; }
+      .place-card { grid-template-columns:1fr; }
+      .card-media { height:170px; }
+      .cards-container { padding:14px; }
+      .day-Highlight-banner { margin:14px 14px 0; }
+      .map-modal-backdrop { padding:6px; }
+      .map-modal-dialog { height:92vh; }
+      .swipe-card-inner { grid-template-columns:64px 1fr; }
+      .swipe-nav-btns { grid-column:1 / -1; justify-content:space-between; width:100%; padding-top:4px; }
+      .swipe-btn { flex:1; text-align:center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Collapsible Header -->
   <header class="app-header" id="appHeader">
     <div class="header-bar-compact">
-      <div class="compact-title">🏝️ 2026 廈門五日山海漫遊（11/18 – 11/22）</div>
-      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">
-        ▲ 收合頂部欄
-      </button>
+      <div class="compact-title">🇭🇰 香港三天兩夜：演唱會與城市精華行程</div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">▲ 收合頂部欄</button>
     </div>
-
     <div class="header-collapsible-content" id="headerContent">
       <div class="header-top">
         <div class="title-group">
-          <h1>
-            2026 廈門五日山海漫遊
-            <span class="title-badge">小三通・思明區＆湖里區順遊版</span>
-          </h1>
-          <p>11/18 (三) – 11/22 (日) ｜ 下榻：麓閣・伴山禪舍（思明區軟件園二期店）</p>
+          <h1>🇭🇰 香港三天兩夜：演唱會與城市精華行程 <span class="title-badge">Base64 離線圖文・滑動地圖版</span></h1>
+          <p>DAY 1 抵達、取票與演唱會 ｜ DAY 2 九龍信仰與港島精華 ｜ DAY 3 機場觀光與返程</p>
         </div>
         <div class="header-stats">
-          <div class="stat-pill">🚢 去程：11/18 抵達五通碼頭</div>
-          <div class="stat-pill">✈️ 回程：11/22 11:30搭船 ➔ 13:30金門飛台中</div>
+          <div class="stat-pill">✈️ DAY 1：09:00 臺中機場（10:10 起飛）➔ 12:00 香港機場</div>
+          <div class="stat-pill">✈️ DAY 3：10:50 登機口（班機起飛）</div>
         </div>
       </div>
-
       <nav class="date-tabs" id="dateTabs">
-        <button class="date-tab active" onclick="filterDay('all', this)">
-          <span>🗺️ 全部行程總覽</span>
-        </button>
-        <button class="date-tab" onclick="filterDay('d1', this)">
-          <span class="dot" style="background: var(--accent-d1)"></span>
-          <span>11/18 (三) 抵達・九九木眼鏡・八市</span>
-        </button>
-        <button class="date-tab" onclick="filterDay('d2', this)">
-          <span class="dot" style="background: var(--accent-d2)"></span>
-          <span>11/19 (四) 鼓浪嶼・雙子塔・白城酒吧</span>
-        </button>
-        <button class="date-tab" onclick="filterDay('d3', this)">
-          <span class="dot" style="background: var(--accent-d3)"></span>
-          <span>11/20 (五) 鯨宴自助・嶼見閩南・商場</span>
-        </button>
-        <button class="date-tab" onclick="filterDay('d4', this)">
-          <span class="dot" style="background: var(--accent-d4)"></span>
-          <span>11/21 (六) 南普陀・植物園・鐘鼓索道</span>
-        </button>
-        <button class="date-tab" onclick="filterDay('d5', this)">
-          <span class="dot" style="background: var(--accent-d5)"></span>
-          <span>11/22 (日) 小三通返程台中</span>
-        </button>
+        <button class="date-tab active" onclick="filterDay('all', this)"><span>🗺️ 全部行程總覽（33 節點）</span></button>
+        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>📅 DAY 1：抵達、取票與演唱會（10 節點）</span></button>
+        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>📅 DAY 2：九龍信仰與港島精華（18 節點）</span></button>
+        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>📅 DAY 3：機場觀光與返程（5 節點）</span></button>
       </nav>
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main-container">
     <div class="itinerary-feed" id="itineraryFeed"></div>
   </main>
 
-  <!-- Floating Quick Map Button -->
-  <button class="floating-map-btn" onclick="openFullMapModal()">
-    🗺️ 開啟全島路線地圖
-  </button>
+  <button class="floating-map-btn" onclick="openFullMapModal()">🗺️ 開啟全港路線地圖</button>
 
-  <!-- Map Modal Popup -->
+  <!-- Map Modal with Left/Right Swipe Switcher -->
   <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
     <div class="map-modal-dialog" onclick="event.stopPropagation()">
-      <div class="map-modal-header">
-        <div class="map-modal-title" id="mapModalTitle">📍 廈門行程動態路線圖</div>
+      <div class="map-modal-header" id="mapModalHeader">
+        <div class="map-modal-title" id="mapModalTitle">📍 香港行程動態路線圖</div>
         <div class="map-modal-controls">
-          <button class="map-reset-btn" onclick="resetMapView()">顯示全島路線</button>
+          <button class="map-reset-btn" onclick="resetMapView()">顯示全港</button>
           <button class="map-close-btn" onclick="closeMapModal()">✕ 關閉</button>
         </div>
       </div>
-      <div id="map"></div>
-      <div class="map-legend">
-        <div class="legend-item" onclick="zoomToDayInModal('d1')"><span class="dot" style="background: var(--accent-d1)"></span>11/18 九九木＆八市</div>
-        <div class="legend-item" onclick="zoomToDayInModal('d2')"><span class="dot" style="background: var(--accent-d2)"></span>11/19 鼓浪嶼＆雙子塔</div>
-        <div class="legend-item" onclick="zoomToDayInModal('d3')"><span class="dot" style="background: var(--accent-d3)"></span>11/20 鯨宴＆嶼見閩南</div>
-        <div class="legend-item" onclick="zoomToDayInModal('d4')"><span class="dot" style="background: var(--accent-d4)"></span>11/21 南普陀＆植物園索道</div>
-        <div class="legend-item" onclick="zoomToDayInModal('d5')"><span class="dot" style="background: var(--accent-d5)"></span>11/22 返程碼頭</div>
+      <div class="map-canvas-wrap">
+        <button class="map-side-arrow left" onclick="stepSpot(-1)" title="上一站">❮</button>
+        <div id="map"></div>
+        <button class="map-side-arrow right" onclick="stepSpot(1)" title="下一站">❯</button>
+      </div>
+      <div class="map-swipe-bar" id="mapSwipeBar">
+        <div class="swipe-hint">👆 手機可在此區「左滑／右滑」或點擊按鈕切換上、下一站</div>
+        <div class="swipe-card-inner" id="swipeCardInner">
+          <img class="swipe-thumb" id="swipeThumb" src="" alt="" />
+          <div class="swipe-info">
+            <div class="swipe-step-badge" id="swipeBadge"></div>
+            <div class="swipe-spot-name" id="swipeName"></div>
+            <div class="swipe-spot-sub" id="swipeSub"></div>
+          </div>
+          <div class="swipe-nav-btns">
+            <button class="swipe-btn prev" onclick="stepSpot(-1)">◀ 上一站</button>
+            <button class="swipe-btn next" onclick="stepSpot(1)">下一站 ▶</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // 動態產生每個香港景點專屬主題插畫並轉成 Base64 Data URI (data:image/svg+xml;base64,...)
+    function makeHkBase64(theme, title, subtitle, c1, c2) {
+      const artMap = {
+        plane: `<path d="M95 145 L305 95 L285 125 L115 162 Z" fill="#f8fafc"/><path d="M175 125 L140 75 L168 72 L215 118 Z" fill="#38bdf8"/><path d="M115 142 L90 112 L108 108 L132 136 Z" fill="#f43f5e"/><ellipse cx="290" cy="158" rx="45" ry="12" fill="#fff" opacity="0.25"/>`,
+        hotel: `<rect x="120" y="65" width="75" height="110" rx="6" fill="#38bdf8"/><rect x="205" y="82" width="75" height="93" rx="6" fill="#60a5fa"/><rect x="135" y="80" width="45" height="8" fill="#fff"/><rect x="135" y="100" width="45" height="8" fill="#fff"/><rect x="220" y="98" width="45" height="8" fill="#fff"/>`,
+        ticket: `<rect x="105" y="78" width="190" height="88" rx="10" fill="#fbbf24"/><circle cx="105" cy="122" r="14" fill="${c1}"/><circle cx="295" cy="122" r="14" fill="${c2}"/><line x1="235" y1="78" x2="235" y2="166" stroke="#78350f" stroke-width="3" stroke-dasharray="6,6"/><polygon points="165,102 172,116 188,118 176,128 179,144 165,136 151,144 154,128 142,118 158,116" fill="#78350f"/>`,
+        mall: `<rect x="115" y="75" width="85" height="95" rx="8" fill="#f43f5e"/><path d="M138 75 A20 20 0 0 1 178 75" fill="none" stroke="#fff" stroke-width="5"/><rect x="185" y="90" width="95" height="85" rx="8" fill="#3b82f6"/><path d="M212 90 A20 20 0 0 1 252 90" fill="none" stroke="#fff" stroke-width="5"/>`,
+        concert: `<path d="M85 175 Q200 75 315 175 Z" fill="#f43f5e" opacity="0.85"/><polygon points="130,175 85,55 125,55" fill="#fde047" opacity="0.35"/><polygon points="270,175 275,55 315,55" fill="#38bdf8" opacity="0.35"/><circle cx="200" cy="135" r="22" fill="#fff"/>`,
+        streetfood: `<line x1="125" y1="165" x2="215" y2="75" stroke="#fde047" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="140" r="16" fill="#f97316"/><circle cx="175" cy="115" r="16" fill="#fb923c"/><circle cx="200" cy="90" r="16" fill="#f59e0b"/><rect x="235" y="78" width="75" height="42" rx="6" fill="none" stroke="#f43f5e" stroke-width="4"/><text x="272" y="105" text-anchor="middle" fill="#fde047" font-size="16" font-weight="bold">香港</text>`,
+        dessert: `<path d="M125 115 A75 58 0 0 0 275 115 Z" fill="#f8fafc"/><ellipse cx="200" cy="115" rx="75" ry="16" fill="#334155"/><path d="M235 110 L275 72" stroke="#fbbf24" stroke-width="7" stroke-linecap="round"/><rect x="145" y="168" width="110" height="8" rx="4" fill="#cbd5e1"/>`,
+        temple: `<path d="M115 95 Q200 68 285 95 Z" fill="#eab308"/><path d="M95 130 Q200 102 305 130 Z" fill="#ca8a04"/><rect x="135" y="130" width="130" height="50" fill="#991b1b"/><rect x="182" y="142" width="36" height="38" fill="#fef08a"/>`,
+        cafe: `<path d="M120 135 Q200 68 280 135 Z" fill="#f59e0b"/><rect x="108" y="128" width="184" height="18" rx="6" fill="#fde047"/><path d="M130 146 Q200 175 270 146 Z" fill="#d97706"/>`,
+        ferry: `<path d="M85 140 L315 140 L290 175 L110 175 Z" fill="#047857"/><rect x="130" y="102" width="140" height="38" rx="6" fill="#f8fafc"/><polygon points="200,72 206,88 222,88 209,97 214,112 200,103 186,112 191,97 178,88 194,88" fill="#f59e0b"/><path d="M50 182 Q125 168 200 182 T350 182" fill="none" stroke="#7dd3fc" stroke-width="6"/>`,
+        roast: `<path d="M125 125 A75 52 0 0 0 275 125 Z" fill="#f8fafc"/><ellipse cx="200" cy="122" rx="68" ry="20" fill="#b91c1c"/><ellipse cx="185" cy="118" rx="42" ry="12" fill="#ea580c"/><line x1="160" y1="82" x2="265" y2="105" stroke="#fde68a" stroke-width="5"/>`,
+        heritage: `<rect x="105" y="75" width="190" height="100" rx="4" fill="#b91c1c"/><path d="M128 175 V125 A22 22 0 0 1 172 125 V175 M228 175 V125 A22 22 0 0 1 272 125 V175" fill="#1e293b"/><rect x="100" y="68" width="200" height="12" fill="#f8fafc"/>`,
+        cablecar: `<line x1="65" y1="165" x2="335" y2="65" stroke="#cbd5e1" stroke-width="5"/><g transform="rotate(-20 200 115)"><rect x="145" y="88" width="110" height="48" rx="10" fill="#15803d"/><rect x="155" y="96" width="90" height="20" rx="4" fill="#bae6fd"/></g>`,
+        peak: `<path d="M115 115 Q200 165 285 115 L265 165 L135 165 Z" fill="#f8fafc"/><rect x="85" y="145" width="18" height="35" fill="#38bdf8"/><rect x="112" y="132" width="20" height="48" fill="#60a5fa"/><rect x="275" y="138" width="22" height="42" fill="#818cf8"/><circle cx="315" cy="65" r="18" fill="#fde047"/>`,
+        wheel: `<circle cx="200" cy="112" r="54" fill="none" stroke="#f43f5e" stroke-width="7"/><circle cx="200" cy="112" r="40" fill="none" stroke="#38bdf8" stroke-width="3"/><line x1="200" y1="112" x2="170" y2="178" stroke="#f8fafc" stroke-width="6"/><line x1="200" y1="112" x2="230" y2="178" stroke="#f8fafc" stroke-width="6"/>`,
+        transit: `<rect x="115" y="78" width="170" height="85" rx="14" fill="#f8fafc"/><rect x="130" y="92" width="140" height="36" rx="6" fill="#1e293b"/><circle cx="148" cy="146" r="8" fill="#ef4444"/><circle cx="252" cy="146" r="8" fill="#ef4444"/><line x1="85" y1="172" x2="315" y2="172" stroke="#94a3b8" stroke-width="6"/>`
+      };
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>
+        <rect width="400" height="250" fill="url(#g)"/>
+        <circle cx="345" cy="45" r="80" fill="#ffffff" opacity="0.06"/>
+        <circle cx="50" cy="205" r="90" fill="#ffffff" opacity="0.05"/>
+        ${artMap[theme] || artMap.peak}
+        <rect x="0" y="192" width="400" height="58" fill="#0f172a" opacity="0.78"/>
+        <text x="200" y="216" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="15.5" font-weight="bold">${title}</text>
+        <text x="200" y="237" text-anchor="middle" fill="#cbd5e1" font-family="sans-serif" font-size="12">${subtitle}</text>
+      </svg>`;
+      return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+    }
+
     const itineraryData = [
       {
-        dayId: 'd1',
-        date: '11/18（三）',
-        title: '抵達廈門・九九木眼鏡配鏡與老城煙火氣',
-        subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 麓閣・伴山禪舍放行李 ➔ 九九木眼鏡（五緣灣天虹B1） ➔ 八市 ➔ 中山路步行街',
-        color: '#d97706',
+        dayId: 'd1', date: '📅 DAY 1', title: '抵達、取票與演唱會',
+        subtitle: '09:00 臺中機場 ➔ 12:00 香港機場 ➔ 12:30 麗豪航天城酒店 ➔ 13:40 西九龍高鐵順豐站 ➔ 14:20 AIRSIDE ➔ 15:30 啟德體育館 ➔ 19:30 地道小吃與李小龍銅像 ➔ 21:00 返回啟德 ➔ 22:00 佳佳甜品 ➔ 23:00 麗豪航天城酒店',
+        color: '#e11d48',
         spots: [
           {
-            id: 'd1-1',
-            step: 1,
-            time: '15:30 – 16:00',
-            name: '瑞幸咖啡（砂之船奧特萊斯店）',
-            category: '咖啡小憩',
-            rating: '4.8',
-            isNew: false,
-            lat: 24.5328,
-            lng: 118.1925,
-            address: '福建省廈門市湖里區環島東路2488號砂之船奧特萊斯（五通客運碼頭對面）',
-            img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
-            desc: '從五通客運碼頭下船出關後，直接過馬路走到對面砂之船奧特萊斯來杯冰美式或生椰拿鐵提神，開啟廈門行程。',
+            id: 'd1-1', step: 1, time: '09:00', name: '臺中國際機場', stay: '10:10 起飛', category: '出發機場',
+            lat: 24.2647, lng: 120.6206, skipBounds: true, address: '臺中國際機場（清泉崗機場）',
+            img: makeHkBase64('plane', '09:00 臺中國際機場', '10:10 起飛前往香港', '#1e3a8a', '#be123c'),
+            desc: '09:00 抵達臺中國際機場辦理報到與出境手續，搭乘 10:10 起飛班機前往香港。', tips: []
+          },
+          {
+            id: 'd1-2', step: 2, time: '12:00', name: '香港國際機場', stay: '抵達、通關與領取行李', category: '抵達香港',
+            lat: 22.3080, lng: 113.9185, address: '香港大嶼山赤鱲角香港國際機場',
+            img: makeHkBase64('plane', '12:00 香港國際機場', '抵達、通關與領取行李', '#0f172a', '#1d4ed8'),
+            desc: '12:00 抵達香港國際機場，辦理入境通關與領取行李。', tips: []
+          },
+          {
+            id: 'd1-3', step: 3, time: '12:30', name: '麗豪航天城酒店', stay: '寄放行李', category: '飯店寄放行李',
+            lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
+            img: makeHkBase64('hotel', '12:30 麗豪航天城酒店', '寄放行李｜免費接駁車（路線1）', '#1e293b', '#3b82f6'),
+            desc: '前往麗豪航天城酒店寄放行李。',
+            tips: ['💡 <strong>交通建議：</strong>前往二號客運大樓 9-11 號停車位，搭乘 12:45 的免費接駁車（路線1）前往酒店。']
+          },
+          {
+            id: 'd1-4', step: 4, time: '13:40', name: '順豐速運 尖沙咀西九龍高鐵順豐站', stay: '領取演唱會門票', category: '門票領取',
+            lat: 22.3039, lng: 114.1652, address: '香港西九龍高鐵站順豐站（港鐵九龍站／柯士甸站）',
+            img: makeHkBase64('ticket', '13:40 西九龍高鐵順豐站', '領取演唱會門票', '#881337', '#d97706'),
+            desc: '前往順豐速運尖沙咀西九龍高鐵順豐站領取演唱會門票。',
             tips: [
-              '<strong>點餐方式：</strong>建議直接用微信「瑞幸咖啡」小程式線上下單取餐，免排隊且常有折扣券。',
-              '<strong>動線銜接：</strong>喝完咖啡直接在砂之船門口叫網約車前往軟件園二期酒店（車程約 15 分鐘）。'
+              '💡 <strong>交通建議：</strong>搭乘 13:05 的免費接駁車（路線2）前往東涌站，轉乘東涌線至九龍站。',
+              '⚠️ <strong>替代方案：</strong>若來不及搭上 13:05，請直接搭乘 S1 巴士前往東涌站，以免延誤後續時間。'
             ]
           },
           {
-            id: 'd1-2',
-            step: 2,
-            time: '16:15 – 16:40',
-            name: '麓閣・伴山禪舍（思明區軟件園二期店）',
-            category: '酒店入住・放行李',
-            rating: '4.9',
-            isNew: false,
-            lat: 24.486846,
-            lng: 118.181160,
-            address: '福建省廈門市思明區虎仔山路190號（軟件園二期旁）',
-            img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-            desc: '禪意風格設計酒店，環境清幽且距離五通碼頭與五緣灣商圈都不遠。先辦理入住並把大件行李放妥，輕裝出門。',
-            tips: [
-              '<strong>位置優勢：</strong>前往下一站「五緣灣天虹購物中心（九九木眼鏡）」車程僅約 10–12 分鐘；最後一天去五通碼頭也只需約 15 分鐘。'
-            ]
+            id: 'd1-5', step: 5, time: '14:20', name: 'AIRSIDE 商場 / 啟德站', stay: '演唱會前午餐', category: '午餐＆商場',
+            lat: 22.3308, lng: 114.1972, address: '九龍啟德協調道2號（港鐵啟德站）',
+            img: makeHkBase64('mall', '14:20 AIRSIDE 商場 / 啟德站', '演唱會前午餐補給', '#1e1b4b', '#e11d48'),
+            desc: '抵達 AIRSIDE 商場 / 啟德站享用演唱會前午餐。',
+            tips: ['💡 <strong>交通建議：</strong>步行至港鐵柯士甸站，轉屯馬線至啟德站。']
           },
           {
-            id: 'd1-3',
-            step: 3,
-            time: '16:50 – 17:50',
-            name: '九九木眼鏡（五緣灣天虹購物中心店）',
-            category: '驗光配鏡・光學眼鏡',
-            rating: '4.8',
-            isNew: false,
-            lat: 24.509873,
-            lng: 118.160382,
-            address: '福建省廈門市湖里區金湖路516號（五緣灣天虹購物中心 B1地下一樓）',
-            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('福建省廈門市湖里區金湖路516號 五緣灣天虹購物中心 九九木眼鏡'),
-            customAmapUrl: 'https://uri.amap.com/marker?position=118.160382,24.509873&name=' + encodeURIComponent('九九木眼鏡(五緣灣天虹購物中心B1)'),
-            img: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
-            desc: '放完行李後搭車前往湖里區金湖路 516 號「五緣灣天虹購物中心」B1 地下一樓的九九木眼鏡驗光配鏡，完成後接著前往八市吃晚餐。',
-            tips: [
-              '<strong>商場位置：</strong>位於金湖路與五緣灣道交匯處（地鐵 2 號線／3 號線五緣灣站旁），進入五緣灣天虹購物中心搭乘手扶梯至 B1 地下一樓即達。',
-              '<strong>取件秘訣：</strong>若配製特殊鏡片或度數無法當場取件，可請店家配好後直接透過順豐快遞寄回「麓閣・伴山禪舍」櫃檯代收，不用再專程跑一趟。'
-            ]
+            id: 'd1-6', step: 6, time: '15:30', name: '啟德體育館 / 周邊地區', stay: '活動行程', category: '演唱會活動',
+            lat: 22.3228, lng: 114.1995, address: '九龍啟德承啟道38-39號（啟德體育館）',
+            img: makeHkBase64('concert', '15:30 啟德體育館 / 周邊地區', '演唱會與現場活動行程', '#4c0519', '#e11d48'),
+            desc: '於啟德體育館及周邊地區進行活動行程。', tips: []
           },
           {
-            id: 'd1-4',
-            step: 4,
-            time: '18:10 – 19:30',
-            name: '八市（廈門第八海鮮市場）',
-            category: '傳統市集・在地美食',
-            rating: '4.6',
-            isNew: false,
-            lat: 24.4593,
-            lng: 118.0772,
-            address: '福建省廈門市思明區開禾路與友誼路交叉口一帶',
-            img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
-            desc: '廈門最具在地煙火氣的老字號海鮮與小吃集散地，從五緣灣天虹搭車走仙岳路或成功大道過來約 20–25 分鐘。',
-            tips: [
-              '<strong>推薦動線：</strong>從開禾路口進入，沿途可吃阿杰五香、朱記手撕雞、鐘麗君滿煎糕等熟食小吃。',
-              '<strong>避坑提醒：</strong>若在市場內買海鮮代客料理，務必先確認「秤重單價」與「每道加工費」再下鍋。'
-            ]
+            id: 'd1-7', step: 7, time: '19:30', name: '地道小吃與街區漫步', stay: '陳記魚蛋・廟街牛雜・李小龍銅像', category: '地道小吃＆街區漫步',
+            lat: 22.2932, lng: 114.1742, address: '九龍尖沙咀星光大道（李小龍銅像）＆ 廟街／尖沙咀街區',
+            img: makeHkBase64('streetfood', '19:30 地道小吃與街區漫步', '陳記魚蛋・廟街牛雜・李小龍銅像', '#7c2d12', '#be123c'),
+            desc: '品嚐陳記魚蛋、廟街牛雜，沿路逛咖啡店與當地商店，並造訪李小龍銅像。', tips: []
           },
           {
-            id: 'd1-5',
-            step: 5,
-            time: '19:30 – 21:30',
-            name: '中山路步行街',
-            category: '歷史街區・南洋騎樓',
-            rating: '4.7',
-            isNew: false,
-            lat: 24.4542,
-            lng: 118.0811,
-            address: '福建省廈門市思明區中山路（緊鄰八市南側）',
-            img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
-            desc: '從八市往南散步即可無縫銜接中山路步行街。成排的南洋風情騎樓建築在夜間亮燈後極具層次感，適合飯後散步消化。',
-            tips: [
-              '<strong>拍照看點：</strong>夜間騎樓廊柱光影與街區西側遙望海口的視野最出片。',
-              '<strong>回程交通：</strong>逛完後避開步行街管制路段，走到鷺江道或鎮海路外圍叫車回酒店最順暢。'
-            ]
+            id: 'd1-8', step: 8, time: '21:00', name: '返回啟德地區', stay: '抵達啟德體育館或周邊一帶', category: '返回啟德',
+            lat: 22.3215, lng: 114.1988, address: '九龍啟德體育館或周邊一帶',
+            img: makeHkBase64('concert', '21:00 返回啟德地區', '抵達啟德體育館或周邊一帶', '#31102f', '#9f1239'),
+            desc: '返回啟德地區，抵達啟德體育館或周邊一帶。', tips: []
+          },
+          {
+            id: 'd1-9', step: 9, time: '22:00', name: '佳佳甜品', stay: '佐敦吃宵夜', category: '米其林必比登宵夜',
+            lat: 22.3056, lng: 114.1705, address: '九龍佐敦寧波街29號',
+            img: makeHkBase64('dessert', '22:00 佳佳甜品', '佐敦吃宵夜｜米其林推薦糖水', '#451a03', '#b45309'),
+            desc: '前往佐敦佳佳甜品吃宵夜。',
+            tips: ['💡 <strong>交通建議：</strong>搭乘港鐵至佐敦站。']
+          },
+          {
+            id: 'd1-10', step: 10, time: '23:00', name: '麗豪航天城酒店', stay: '休息', category: '返回酒店休息',
+            lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
+            img: makeHkBase64('transit', '23:00 返回麗豪航天城酒店', '城巴 A22/N21 轉機場免費接駁車（路線1）', '#0f172a', '#334155'),
+            desc: '返回麗豪航天城酒店休息。',
+            tips: ['🚌 <strong>交通與替代方案：</strong>此時已錯過東涌站 22:15 的末班接駁車。請至彌敦道搭乘城巴 A22 或 N21 夜間巴士直達機場（機場旅運車站），抵達後轉乘機場往酒店的免費接駁車（路線1營業至凌晨 25:30，班次密集）回酒店。']
           }
         ]
       },
       {
-        dayId: 'd2',
-        date: '11/19（四）',
-        title: '鼓浪嶼漫遊 ＋ 雙子塔夜景 ＆ 白城沙灘酒吧',
-        subtitle: '酒店早餐 ➔ 鼓浪嶼半日遊 ➔ 【新增】雙子塔拍夜景照 ➔ 廈大白城沙灘酒吧',
+        dayId: 'd2', date: '📅 DAY 2', title: '九龍信仰與港島精華',
+        subtitle: '06:45 酒店出發 ➔ 08:15 黃大仙廟 ➔ 09:20 金華冰廳 ➔ 10:20 尖沙咀商圈 ➔ 11:30 天星碼頭 ➔ 12:15 利東街&霸王茶姬 ➔ 13:00 再興燒臘 ➔ 13:50 鵝頸橋底 ➔ 14:40 石板街 ➔ 15:00 大館 ➔ 15:55 嘉咸街壁畫 ➔ 16:15 纜車總站 ➔ 16:45 太平山頂 ➔ 18:15 下山往中環碼頭 ➔ 18:45 香港摩天輪 ➔ 19:45 天星小輪返尖沙咀 ➔ 20:10 廟街牌樓 ➔ 21:15 返回酒店',
         color: '#2563eb',
         spots: [
           {
-            id: 'd2-1',
-            step: 1,
-            time: '09:30 – 16:30',
-            name: '鼓浪嶼（萬國建築博覽群）',
-            category: '世界文化遺產・離島漫步',
-            rating: '4.8',
-            isNew: false,
-            lat: 24.4446,
-            lng: 118.0673,
-            address: '福建省廈門市思明區鼓浪嶼（由東渡郵輪中心廈鼓碼頭搭船登島）',
-            img: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
-            desc: '酒店吃完早餐後前往碼頭搭船登島。全島無機動車，遍布百年洋樓、紅磚別墅與蜿蜒巷弄，下午 16:30 左右搭船返回本島。',
-            tips: [
-              '<strong>船票提醒：</strong>務必提前在微信「嶼見廈門」小程式購買往返船票（推薦至三丘田碼頭下船，動線最順）。',
-              '<strong>體力控管：</strong>島上全為上下坡步道，挑選重點（最美轉角、龍頭路、菽莊花園或日光岩）漫遊，留體力給晚上行程。'
-            ]
+            id: 'd2-1', step: 1, time: '06:45', name: '麗豪航天城酒店出發', stay: '早間出發', category: '出發動線',
+            lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
+            img: makeHkBase64('transit', '06:45 麗豪航天城酒店出發', 'E22 巴士直達或 07:15 接駁車轉港鐵', '#1e3a8a', '#2563eb'),
+            desc: '06:45 從麗豪航天城酒店出發前往九龍。',
+            tips: ['💡 <strong>交通建議：</strong>搭乘機場巴士 E22 直達「黃大仙站」，或搭 07:15 飯店接駁車至東涌轉港鐵至黃大仙站。']
           },
           {
-            id: 'd2-2',
-            step: 2,
-            time: '17:30 – 19:00',
-            name: '廈門世茂海峽大廈（雙子塔拍夜景照）',
-            category: '摩天地標・藍調夜景',
-            rating: '4.8',
-            isNew: true,
-            lat: 24.4357,
-            lng: 118.0872,
-            address: '福建省廈門市思明區演武西路180-188號（最佳拍攝點：演武大橋觀景平台／沙坡尾）',
-            img: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80',
-            desc: '兩棟高達 300 公尺的帆船造型雙塔地標。從鼓浪嶼返回本島後直接過來，剛好趕上 17:30–18:30 的「藍調時刻（Blue Hour）」拍夜景。',
-            tips: [
-              '<strong>最佳機位 1（大景首選）：</strong>導航至旁邊的「演武大橋觀景平台」，以海面與弧形橋體帶出雙子塔完整全景。',
-              '<strong>最佳機位 2（文青街拍）：</strong>導航至北側「沙坡尾避風塢」，用老漁船與水面反光拍出復古與現代雙塔的強烈對比。',
-              '<strong>轉場補給：</strong>拍完可在雙子塔裙樓（世茂 Emall）稍作休息，接著打車 5 分鐘直達白城沙灘。'
-            ]
+            id: 'd2-2', step: 2, time: '08:15', name: '黃大仙廟', stay: '參拜，停留 45 分鐘。早晨人少最適合', category: '九龍信仰參拜',
+            lat: 22.3426, lng: 114.1935, address: '九龍黃大仙竹園村2號（港鐵黃大仙站）',
+            img: makeHkBase64('temple', '08:15 黃大仙廟', '參拜，停留 45 分鐘（早晨人少最適合）', '#7f1d1d', '#d97706'),
+            desc: '抵達黃大仙廟參拜，停留 45 分鐘。早晨人少最適合。',
+            tips: ['💡 <strong>交通建議：</strong>搭乘港鐵觀塘線至旺角站。']
           },
           {
-            id: 'd2-3',
-            step: 3,
-            time: '19:15 – 22:00',
-            name: '白城沙灘酒吧（廈大白城海岸線）',
-            category: '海景微醺・夜間沙灘',
-            rating: '4.6',
-            isNew: false,
-            lat: 24.4312,
-            lng: 118.1008,
-            address: '福建省廈門市思明區環島南路（廈大白城天橋至胡里山炮台沿線）',
-            img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-            desc: '緊鄰雙子塔東南側的弧形海岸線，入夜後沙灘沿岸亮起露營風燈串與駐唱音樂，吹著海風小酌非常愜意。',
-            tips: [
-              '<strong>選位建議：</strong>天橋下方入口處人潮最密，建議沿著木棧道往東（胡里山方向）走一小段，環境更寬敞舒適。',
-              '<strong>穿搭提醒：</strong>11 月下旬夜晚海邊風大微涼，建議穿著防風皮衣或工裝外套。'
-            ]
+            id: 'd2-3', step: 3, time: '09:20', name: '金華冰廳', stay: '吃早餐，停留 45 分鐘', category: '港式早餐',
+            lat: 22.3222, lng: 114.1695, address: '九龍旺角弼街47號',
+            img: makeHkBase64('cafe', '09:20 金華冰廳', '吃早餐，停留 45 分鐘｜招牌鮮油菠蘿包', '#78350f', '#f59e0b'),
+            desc: '於金華冰廳吃早餐，停留 45 分鐘。', tips: []
+          },
+          {
+            id: 'd2-4', step: 4, time: '10:20', name: '尖沙咀商圈', stay: '市區觀光，停留 1 小時', category: '市區觀光',
+            lat: 22.2988, lng: 114.1722, address: '九龍尖沙咀商圈',
+            img: makeHkBase64('mall', '10:20 尖沙咀商圈', '市區觀光，停留 1 小時', '#1e3a8a', '#0284c7'),
+            desc: '於尖沙咀商圈進行市區觀光，停留 1 小時。', tips: []
+          },
+          {
+            id: 'd2-5', step: 5, time: '11:30', name: '天星碼頭', stay: '搭乘天星小輪前往灣仔', category: '跨海渡輪',
+            lat: 22.2938, lng: 114.1688, address: '九龍尖沙咀天星碼頭',
+            img: makeHkBase64('ferry', '11:30 天星碼頭', '搭乘天星小輪前往灣仔', '#065f46', '#0284c7'),
+            desc: '於尖沙咀天星碼頭搭乘天星小輪前往灣仔。', tips: []
+          },
+          {
+            id: 'd2-6', step: 6, time: '12:15', name: '利東街 & 霸王茶姬', stay: '拍照與買飲料，停留 45 分鐘', category: '街拍＆手搖飲',
+            lat: 22.2759, lng: 114.1722, address: '香港島灣仔皇后大道東200號',
+            img: makeHkBase64('heritage', '12:15 利東街 & 霸王茶姬', '拍照與買飲料，停留 45 分鐘', '#881337', '#be185d'),
+            desc: '於灣仔利東街 & 霸王茶姬拍照與買飲料，停留 45 分鐘。', tips: []
+          },
+          {
+            id: 'd2-7', step: 7, time: '13:00', name: '再興燒臘飯店', stay: '吃午餐，停留 40 分鐘', category: '燒臘午餐',
+            lat: 22.2782, lng: 114.1755, address: '香港島灣仔軒尼詩道265-267號地下C座',
+            img: makeHkBase64('roast', '13:00 再興燒臘飯店', '吃午餐，停留 40 分鐘｜米其林推薦燒臘', '#7f1d1d', '#ea580c'),
+            desc: '於再興燒臘飯店吃午餐，停留 40 分鐘。', tips: []
+          },
+          {
+            id: 'd2-8', step: 8, time: '13:50', name: '鵝頸橋底', stay: '體驗打小人，停留 30 分鐘', category: '民俗文化體驗',
+            lat: 22.2791, lng: 114.1812, address: '香港島銅鑼灣堅拿道西與軒尼詩道交界（鵝頸橋底）',
+            img: makeHkBase64('streetfood', '13:50 鵝頸橋底', '體驗打小人，停留 30 分鐘', '#312e81', '#4f46e5'),
+            desc: '前往鵝頸橋底體驗打小人，停留 30 分鐘。',
+            tips: ['💡 <strong>交通建議：</strong>搭乘叮叮車或港鐵港島線至中環站。']
+          },
+          {
+            id: 'd2-9', step: 9, time: '14:40', name: '砵甸乍街 / 石板街', stay: '拍照，停留 15 分鐘', category: '歷史街區拍照',
+            lat: 22.2825, lng: 114.1552, address: '香港島中環砵甸乍街（石板街）',
+            img: makeHkBase64('heritage', '14:40 砵甸乍街 / 石板街', '拍照，停留 15 分鐘', '#334155', '#475569'),
+            desc: '於中環砵甸乍街 / 石板街拍照，停留 15 分鐘。', tips: []
+          },
+          {
+            id: 'd2-10', step: 10, time: '15:00', name: '大館', stay: '參觀園區，停留 45 分鐘', category: '古蹟藝術園區',
+            lat: 22.2815, lng: 114.1541, address: '香港島中環荷李活道10號（大館 Tai Kwun）',
+            img: makeHkBase64('heritage', '15:00 大館 Tai Kwun', '參觀園區，停留 45 分鐘', '#7c2d12', '#9a3412'),
+            desc: '參觀大館園區，停留 45 分鐘。', tips: []
+          },
+          {
+            id: 'd2-11', step: 11, time: '15:55', name: '嘉咸街壁畫', stay: '拍照打卡，停留 15 分鐘', category: '街頭塗鴉打卡',
+            lat: 22.2823, lng: 114.1528, address: '香港島中環荷李活道48號與嘉咸街交界處',
+            img: makeHkBase64('streetfood', '15:55 嘉咸街壁畫', '拍照打卡，停留 15 分鐘', '#1e3a8a', '#7c3aed'),
+            desc: '於嘉咸街壁畫拍照打卡，停留 15 分鐘。', tips: []
+          },
+          {
+            id: 'd2-12', step: 12, time: '16:15', name: '前往山頂纜車總站', stay: '中環花園道纜車總站', category: '山頂纜車上山',
+            lat: 22.2777, lng: 114.1592, address: '香港島中環花園道33號（山頂纜車總站）',
+            img: makeHkBase64('cablecar', '16:15 前往山頂纜車總站', '中環花園道纜車總站', '#065f46', '#15803d'),
+            desc: '前往中環花園道山頂纜車總站準備搭纜車上太平山。',
+            tips: ['💡 <strong>交通建議：</strong>從嘉咸街步行約 15-20 分鐘抵達中環花園道纜車總站；或直接搭計程車（約 5-10 分鐘）。建議提前網購纜車快速通關票。']
+          },
+          {
+            id: 'd2-13', step: 13, time: '16:45', name: '太平山頂', stay: '觀賞日落與夜景，停留 1.5 小時', category: '日落與百萬夜景',
+            lat: 22.2759, lng: 114.1455, address: '香港島太平山山頂',
+            img: makeHkBase64('peak', '16:45 太平山頂', '觀賞日落與夜景，停留 1.5 小時', '#0f172a', '#1d4ed8'),
+            desc: '於太平山頂觀賞日落與夜景，停留 1.5 小時。', tips: []
+          },
+          {
+            id: 'd2-14', step: 14, time: '18:15', name: '下山前往中環碼頭', stay: '下山轉乘動線', category: '交通轉乘',
+            lat: 22.2777, lng: 114.1592, address: '中環花園道纜車總站外 ➔ 中環碼頭',
+            img: makeHkBase64('transit', '18:15 下山前往中環碼頭', '轉乘 15C 號敞篷巴士或計程車', '#1e293b', '#2563eb'),
+            desc: '18:15 從太平山下山前往中環碼頭。',
+            tips: ['💡 <strong>交通建議：</strong>於纜車總站外轉乘 15C 號敞篷巴士或計程車直達中環碼頭。']
+          },
+          {
+            id: 'd2-15', step: 15, time: '18:45', name: '中環 9 號碼頭 & 香港摩天輪', stay: '搭乘摩天輪與海濱散步，停留 1 小時', category: '海濱摩天輪',
+            lat: 22.2855, lng: 114.1618, address: '香港島中環民光街33號（中環 9 號碼頭 & 香港摩天輪）',
+            img: makeHkBase64('wheel', '18:45 中環 9 號碼頭 & 香港摩天輪', '搭乘摩天輪與海濱散步，停留 1 小時', '#1e1b4b', '#db2777'),
+            desc: '於中環 9 號碼頭 & 香港摩天輪搭乘摩天輪與海濱散步，停留 1 小時。', tips: []
+          },
+          {
+            id: 'd2-16', step: 16, time: '19:45', name: '搭乘天星小輪返回尖沙咀', stay: '欣賞海上夜景，航程約 10 分鐘', category: '海上夜景渡輪',
+            lat: 22.2866, lng: 114.1605, address: '香港島中環 7 號碼頭 ➔ 九龍尖沙咀天星碼頭',
+            img: makeHkBase64('ferry', '19:45 搭乘天星小輪返回尖沙咀', '欣賞維港海上夜景，航程約 10 分鐘', '#0f172a', '#047857'),
+            desc: '搭乘天星小輪返回尖沙咀，欣賞海上夜景，航程約 10 分鐘。',
+            tips: ['💡 <strong>交通建議：</strong>從摩天輪步行 3 分鐘至中環 7 號碼頭，使用八達通搭船。']
+          },
+          {
+            id: 'd2-17', step: 17, time: '20:10', name: '廟街牌樓', stay: '逛夜市與晚餐，停留 1 小時', category: '夜市＆晚餐',
+            lat: 22.3059, lng: 114.1699, address: '九龍佐敦廟街牌樓',
+            img: makeHkBase64('streetfood', '20:10 廟街牌樓', '逛夜市與晚餐，停留 1 小時', '#7f1d1d', '#b45309'),
+            desc: '抵達廟街牌樓逛夜市與享用晚餐，停留 1 小時。',
+            tips: ['💡 <strong>交通建議：</strong>抵達尖沙咀碼頭後，轉乘計程車前往廟街（約 5-8 分鐘），或步行至港鐵尖沙咀站搭至佐敦站。']
+          },
+          {
+            id: 'd2-18', step: 18, time: '21:15', name: '準備返回麗豪航天城酒店', stay: '港鐵轉 22:15 飯店接駁車（路線2）', category: '返回酒店',
+            lat: 22.2892, lng: 113.9416, address: '港鐵佐敦站 ➔ 荔景站 ➔ 東涌站 ➔ 麗豪航天城酒店',
+            img: makeHkBase64('transit', '21:15 準備返回麗豪航天城酒店', '東涌站轉乘 22:15 飯店接駁車（路線2）', '#0f172a', '#1e40af'),
+            desc: '21:15 準備由佐敦返回麗豪航天城酒店。',
+            tips: ['💡 <strong>交通建議：</strong>搭乘港鐵荃灣線（佐敦站）至荔景站，轉乘東涌線至「東涌站」（車程約 40 分鐘），轉乘 22:15 的飯店接駁車（路線2）回酒店。']
           }
         ]
       },
       {
-        dayId: 'd3',
-        date: '11/20（五）',
-        title: '鯨宴海鮮自助 ＋ 嶼見閩南 ＆ 逛商場',
-        subtitle: '萬象城鯨宴海鮮自助 ➔ 【新增】嶼見閩南·時光幻境 ➔ 萬象城／SM商場逛街',
+        dayId: 'd3', date: '📅 DAY 3', title: '機場觀光與返程',
+        subtitle: '07:00 起床梳洗打包 ➔ 07:45 退房經 11 SKIES 天橋或接駁車往機場 ➔ 08:15 報到托運通關 ➔ 08:45 機場禁區港式早餐＆免稅店 ➔ 10:50 登機口（班機起飛）',
         color: '#059669',
+        banner: {
+          title: '✈️ 機場早餐（優勢分析＆美食亮點）',
+          adv: '✅ <strong>優勢分析：</strong>可以提早報到托運行李，無事一身輕地在禁區內享用高水準美食，順便逛免稅店。',
+          food: '🍜 <strong>美食亮點：</strong>禁區內有「何洪記」或「正斗粥麵專家」，這兩家的生滾粥（如皮蛋瘦肉粥）與雲吞麵都是米其林推薦水準；若想喝咖啡，也有 % Arabica 或 Blue Bottle Coffee。絕對比飯店的常規炒蛋培根更具「香港味」。'
+        },
         spots: [
           {
-            id: 'd3-1',
-            step: 1,
-            time: '11:30 – 13:30（或晚餐時段）',
-            name: '鯨宴海鮮姿造自助（廈門萬象城店）',
-            category: '頂級海鮮百匯・高蛋白饗宴',
-            rating: '4.8',
-            isNew: false,
-            lat: 24.4705,
-            lng: 118.1102,
-            address: '福建省廈門市思明區湖濱東路99號廈門萬象城二期 B201',
-            img: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
-            desc: '廈門高人氣高檔海鮮自助，主打活體海鮮現撈現煮、藍龍蝦、紐西蘭鰲蝦、帝王蟹腳、鐵板鵝肝與烤榴槤無限暢享。',
+            id: 'd3-1', step: 1, time: '07:00', name: '起床梳洗與最後打包', stay: '調整後動線 1', category: '飯店準備',
+            lat: 22.3193, lng: 113.9392, address: '麗豪航天城酒店（香港赤鱲角航展道8號）',
+            img: makeHkBase64('hotel', '07:00 起床梳洗與最後打包', '麗豪航天城酒店', '#064e3b', '#059669'),
+            desc: '07:00 起床梳洗與最後打包。', tips: []
+          },
+          {
+            id: 'd3-2', step: 2, time: '07:45', name: '退房，經 11 SKIES 行人天橋步行或搭接駁車前往機場', stay: '調整後動線 2', category: '退房前往機場',
+            lat: 22.3175, lng: 113.9360, address: '麗豪航天城酒店 ➔ 11 SKIES 行人天橋 ➔ 香港國際機場',
+            img: makeHkBase64('mall', '07:45 退房前往機場', '經 11 SKIES 行人天橋步行或搭接駁車', '#0f766e', '#0284c7'),
+            desc: '07:45 辦理退房，經 11 SKIES 行人天橋步行或搭接駁車前往機場。', tips: []
+          },
+          {
+            id: 'd3-3', step: 3, time: '08:15', name: '報到、托運行李與通關', stay: '調整後動線 3', category: '機場報到通關',
+            lat: 22.3088, lng: 113.9345, address: '香港國際機場第一客運大樓離境大堂',
+            img: makeHkBase64('ticket', '08:15 報到、托運行李與通關', '提早托運行李，無事一身輕進禁區', '#065f46', '#0d9488'),
+            desc: '08:15 於香港國際機場櫃檯辦理報到、托運行李與出境通關，無事一身輕進入禁區。', tips: []
+          },
+          {
+            id: 'd3-4', step: 4, time: '08:45', name: '於機場禁區享用道地港式早餐，隨後進行免稅店最後採購', stay: '何洪記／正斗／% Arabica／Blue Bottle', category: '禁區港式早餐＆免稅店',
+            lat: 22.3080, lng: 113.9185, address: '香港國際機場禁區美食廣場＆免稅店',
+            img: makeHkBase64('dessert', '08:45 機場禁區道地港式早餐', '何洪記・正斗粥麵專家・% Arabica・Blue Bottle', '#78350f', '#059669'),
+            desc: '08:45 於機場禁區享用道地港式早餐，隨後進行免稅店最後採購。',
             tips: [
-              '<strong>時段建議：</strong>推薦排在午餐（11:30 開餐），剛開餐時活蝦蟹補貨最快，中午吃完高蛋白大餐，下午逛園區剛好消化。',
-              '<strong>替代彈性：</strong>若已預訂晚餐時段，只需將下午的「嶼見閩南」調到上午 10:30–14:30 即可。'
+              '🍜 <strong>推薦必吃：</strong>「何洪記」或「正斗粥麵專家」的米其林推薦生滾粥（如皮蛋瘦肉粥）與雲吞麵。',
+              '☕ <strong>精品咖啡：</strong>% Arabica 或 Blue Bottle Coffee。'
             ]
           },
           {
-            id: 'd3-2',
-            step: 2,
-            time: '14:00 – 18:00',
-            name: '遇見閩南（嶼見閩南·時光幻境）',
-            category: '沉浸式閩南文化景區・古厝街拍',
-            rating: '4.7',
-            isNew: true,
-            lat: 24.4848,
-            lng: 118.0735,
-            address: '福建省廈門市湖里區東港北路15、17-19號（近東渡郵輪中心碼頭）',
-            img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
-            desc: '重現宋元明清至近代的閩南紅磚古厝建築群與非遺文化街區，園區內設有多場沉浸式實景演藝與 NPC 互動體驗。',
-            tips: [
-              '<strong>營業時間：</strong>日常 09:30–18:30（18:00 停止入園），務必攜帶台胞證實名入園。',
-              '<strong>拍照看點：</strong>燕尾脊紅磚古厝、南洋騎樓街景與非遺展演舞台，預留 3.5–4 小時體驗最完整。'
-            ]
-          },
-          {
-            id: 'd3-3',
-            step: 3,
-            time: '18:30 – 21:30',
-            name: '逛商場（廈門萬象城 MixC ／ SM城市廣場）',
-            category: '精品購物・潮流商圈',
-            rating: '4.9',
-            isNew: false,
-            lat: 24.4712,
-            lng: 118.1115,
-            address: '福建省廈門市思明區湖濱東路99號（廈門萬象城一、二期連通）',
-            img: 'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=800&q=80',
-            desc: '廈門品牌最齊全的指標商場，一、二期涵蓋國際腕錶精品、設計師服飾、戶外工裝品牌與質感咖啡廳。',
-            tips: [
-              '<strong>動線優勢：</strong>從嶼見閩南打車回萬象城約 15 分鐘，逛完街再打車回軟件園二期酒店也很順路。'
-            ]
-          }
-        ]
-      },
-      {
-        dayId: 'd4',
-        date: '11/21（六）',
-        title: '萬石山海黃金線：南普陀寺 ＋ 植物園 ＋ 鐘鼓索道',
-        subtitle: '【新增一日順遊】南普陀寺祈福 ➔ 廈門園林植物園（多肉＆雨林） ➔ 鐘鼓索道看夕陽',
-        color: '#7c3aed',
-        spots: [
-          {
-            id: 'd4-1',
-            step: 1,
-            time: '09:00 – 11:00',
-            name: '南普陀寺',
-            category: '千年古剎・閩南名寺',
-            rating: '4.8',
-            isNew: true,
-            lat: 24.4418,
-            lng: 118.0965,
-            address: '福建省廈門市思明區思明南路515號（廈門大學南門旁）',
-            img: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800&q=80',
-            desc: '背依五老峰的千年古剎，建築飛簷精緻、香火鼎盛。排在早上第一站前往，溫度舒適且能避開正午旅行團人潮。',
-            tips: [
-              '<strong>預約必看：</strong>採實名制免費預約，出發前先在微信小程式搜尋「南普陀寺預約服務平台」登記時段。',
-              '<strong>體力保留：</strong>參拜完殿堂、買盒南普陀素餅即可，不用硬爬後山五老峰頂，留體力給隔壁的植物園。'
-            ]
-          },
-          {
-            id: 'd4-2',
-            step: 2,
-            time: '11:15 – 15:15',
-            name: '廈門園林植物園（雨林世界 ＆ 多肉植物區）',
-            category: '山林秘境・硬派仙人掌大片',
-            rating: '4.8',
-            isNew: true,
-            lat: 24.4503,
-            lng: 118.0958,
-            address: '福建省廈門市思明區虎園路25號（主出入口：西門）',
-            img: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=800&q=80',
-            desc: '被譽為廈門城市綠肺，其中「多肉植物區」的巨型仙人掌荒漠造景與「雨林世界」的定時迷霧丁達爾光影是兩大必拍核心。',
-            tips: [
-              '<strong>省力關鍵（極重要）：</strong>園區全在山坡上，入園務必直接購買「景交車（觀光巴士）通票」，搭車直上多肉植物區再往下玩到雨林世界。',
-              '<strong>雨林噴霧時段：</strong>秋冬噴霧時間多在上午 09:30–11:30、下午 14:00–16:00，建議下午 14:00 左右抵達雨林區拍光束。',
-              '<strong>出園方向：</strong>逛完請統一從「西門（虎園路）」走出園區，出門步行 2 分鐘即達鐘鼓索道站！'
-            ]
-          },
-          {
-            id: 'd4-3',
-            step: 3,
-            time: '15:30 – 16:45',
-            name: '廈門鐘鼓索道',
-            category: '高空纜車・夕陽山海全景',
-            rating: '4.7',
-            isNew: true,
-            lat: 24.4521,
-            lng: 118.0934,
-            address: '福建省廈門市思明區虎園路31號（植物園西門正對面旁）',
-            img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-            desc: '全長超過 1000 公尺的雙人座空中纜車（原車去、原車回，全程約 40 分鐘），可從高空 360 度俯瞰植物園山林、老城紅屋頂、雙子塔與遠方海景。',
-            tips: [
-              '<strong>預約必看：</strong>15:30–16:30 的夕陽時段最熱門，務必提前在微信公眾號或平台購票預約時段，現場極易售罄。',
-              '<strong>車廂特色：</strong>雙人獨立小車廂，兩個人搭乘不需與陌生人拼車，高空視野極佳。'
-            ]
-          }
-        ]
-      },
-      {
-        dayId: 'd5',
-        date: '11/22（日）',
-        title: '小三通返程：五通碼頭搭船 ➔ 金門尚義機場飛台中',
-        subtitle: '10:00 酒店退房出發 ➔ 11:30 五通碼頭開船 ➔ 12:00 抵金門水頭 ➔ 13:30 起飛回台中',
-        color: '#dc2626',
-        spots: [
-          {
-            id: 'd5-1',
-            step: 1,
-            time: '10:15 – 11:30',
-            name: '廈門五通客運碼頭（11:30 船班返金門）',
-            category: '小三通返程・通關登船',
-            rating: '4.7',
-            isNew: false,
-            lat: 24.5335,
-            lng: 118.1942,
-            address: '福建省廈門市湖里區環島東路2500號（距離軟件園二期酒店車程約 15–20 分鐘）',
-            img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
-            desc: '從軟件園二期酒店退房後搭車約 15–20 分鐘即可抵達五通碼頭。11:30 開船約 12:00 抵達金門水頭碼頭，銜接 13:30 班機飛回台中。',
-            tips: [
-              '<strong>通關時間：</strong>船班開航前 30 分鐘（11:00）停止檢票，建議 10:30 前抵達五通碼頭櫃檯取票通關。',
-              '<strong>金門轉乘關鍵：</strong>12:00 抵達金門水頭碼頭出關後，請直接排隊搭「計程車」直奔尚義機場（車程約 15 分鐘），確保在 13:00 國內線關櫃前完成報到託運。'
-            ]
+            id: 'd3-5', step: 5, time: '10:50', name: '登機口（班機起飛）', stay: '10:50 班機起飛', category: '登機返程',
+            lat: 22.3072, lng: 113.9140, address: '香港國際機場登機閘口',
+            img: makeHkBase64('plane', '10:50 登機口（班機起飛）', '平安返航回臺中', '#0f172a', '#059669'),
+            desc: '10:50 於登機口搭機起飛返臺。', tips: []
           }
         ]
       }
     ];
 
-    const map = L.map('map', { zoomControl: true }).setView([24.485, 118.135], 12);
-
-    const gaodeLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-      attribution: '&copy; 高德地圖 AutoNavi',
-      subdomains: ['1', '2', '3', '4'],
-      maxZoom: 19
-    });
-
-    const googleLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}', {
-      attribution: '&copy; Google Maps',
-      subdomains: ['0', '1', '2', '3'],
-      maxZoom: 20
-    });
-
-    const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 19
-    });
-
-    gaodeLayer.addTo(map);
-    L.control.layers({
-      '🧭 高德地圖（推薦）': gaodeLayer,
-      '🗺️ Google 地圖（繁中）': googleLayer,
-      '🌐 OpenStreetMap': osmLayer
-    }, null, { position: 'topright' }).addTo(map);
+    const map = L.map('map', { zoomControl: true }).setView([22.305, 114.120], 11);
+    const googleLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}', { attribution: '&copy; Google Maps', subdomains: ['0','1','2','3'], maxZoom: 20 });
+    const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 });
+    const gaodeLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', { attribution: '&copy; 高德地圖', subdomains: ['1','2','3','4'], maxZoom: 19 });
+    googleLayer.addTo(map);
+    L.control.layers({ '🗺️ Google 地圖（繁中推薦）': googleLayer, '🌐 OpenStreetMap': osmLayer, '🧭 高德地圖': gaodeLayer }, null, { position: 'topright' }).addTo(map);
 
     const markersBySpotId = {};
     const layerGroupsByDay = {};
-    const allBounds = [];
+    const allHkBounds = [];
+    let activeSpotIds = [];
+    let currentSpotIdx = 0;
 
     function toggleHeader() {
       const header = document.getElementById('appHeader');
       const btn = document.getElementById('headerToggleBtn');
       header.classList.toggle('collapsed');
-      if (header.classList.contains('collapsed')) {
-        btn.innerHTML = '▼ 展開日期選單';
-      } else {
-        btn.innerHTML = '▲ 收合頂部欄';
-      }
+      btn.innerHTML = header.classList.contains('collapsed') ? '▼ 展開日期選單' : '▲ 收合頂部欄';
     }
 
     function openMapModal(titleText) {
       const modal = document.getElementById('mapModalBackdrop');
-      if (titleText) {
-        document.getElementById('mapModalTitle').textContent = titleText;
-      }
+      if (titleText) document.getElementById('mapModalTitle').textContent = titleText;
       modal.classList.add('open');
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 60);
+      setTimeout(() => map.invalidateSize(), 60);
     }
 
     function closeMapModal() {
@@ -1215,53 +491,91 @@
     }
 
     function closeMapModalOnBackdrop(e) {
-      if (e.target.id === 'mapModalBackdrop') {
-        closeMapModal();
-      }
+      if (e.target.id === 'mapModalBackdrop') closeMapModal();
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeMapModal();
-    });
+    function updateSwipeBar(spotId) {
+      const item = markersBySpotId[spotId];
+      if (!item) return;
+      document.getElementById('swipeThumb').src = item.img;
+      document.getElementById('swipeBadge').textContent = `${item.date} · 第 ${currentSpotIdx + 1} / ${activeSpotIds.length} 站 · ${item.time}`;
+      document.getElementById('swipeName').textContent = item.name;
+      document.getElementById('swipeSub').textContent = '📍 ' + item.address;
+      document.getElementById('mapModalTitle').textContent = `📍 ${item.date} (${item.time})｜${item.name} (${currentSpotIdx + 1}/${activeSpotIds.length})`;
+    }
 
-    function openFullMapModal() {
-      openMapModal('📍 廈門五日行程總覽地圖');
-      setTimeout(() => {
-        map.invalidateSize();
-        resetMapView();
-      }, 150);
+    function stepSpot(delta) {
+      if (!activeSpotIds.length) return;
+      currentSpotIdx = (currentSpotIdx + delta + activeSpotIds.length) % activeSpotIds.length;
+      const nextId = activeSpotIds[currentSpotIdx];
+      const inner = document.getElementById('swipeCardInner');
+      inner.style.transform = `translateX(${delta > 0 ? '-12px' : '12px'})`;
+      setTimeout(() => { inner.style.transform = 'translateX(0)'; }, 160);
+      focusSpot(nextId, activeSpotIds);
+    }
+
+    function initSwipeGestures() {
+      let startX = 0, startY = 0;
+      ['mapSwipeBar', 'mapModalHeader'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', e => {
+          startX = e.changedTouches[0].screenX;
+          startY = e.changedTouches[0].screenY;
+        }, { passive: true });
+        el.addEventListener('touchend', e => {
+          const dx = e.changedTouches[0].screenX - startX;
+          const dy = e.changedTouches[0].screenY - startY;
+          if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) stepSpot(1); // 左滑：下一站
+            else stepSpot(-1);       // 右滑：上一站
+          }
+        }, { passive: true });
+      });
+      document.addEventListener('keydown', e => {
+        if (!document.getElementById('mapModalBackdrop').classList.contains('open')) return;
+        if (e.key === 'Escape') closeMapModal();
+        if (e.key === 'ArrowLeft') stepSpot(-1);
+        if (e.key === 'ArrowRight') stepSpot(1);
+      });
     }
 
     function initApp() {
       const feed = document.getElementById('itineraryFeed');
       feed.innerHTML = '';
-
       itineraryData.forEach(day => {
         const dayLayer = L.layerGroup().addTo(map);
         layerGroupsByDay[day.dayId] = dayLayer;
         const dayLatLngs = [];
-
         const section = document.createElement('section');
         section.className = 'day-section';
         section.dataset.dayId = day.dayId;
+
+        const bannerHtml = day.banner ? `
+          <div class="day-Highlight-banner">
+            <h3>${day.banner.title}</h3>
+            <p>${day.banner.adv}</p>
+            <p>${day.banner.food}</p>
+          </div>
+        ` : '';
 
         let cardsHtml = '';
 
         day.spots.forEach(spot => {
           const latLng = [spot.lat, spot.lng];
-          dayLatLngs.push(latLng);
-          allBounds.push(latLng);
+          if (!spot.skipBounds) {
+            dayLatLngs.push(latLng);
+            allHkBounds.push(latLng);
+          }
 
           const pinIcon = L.divIcon({
             className: '',
             html: `<div class="custom-pin" style="background:${day.color}"><span>${spot.step}</span></div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 30],
-            popupAnchor: [0, -28]
+            iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28]
           });
 
-          const gmapUrl = spot.customGmapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('廈門 ' + spot.name)}`;
-          const amapUrl = spot.customAmapUrl || `https://uri.amap.com/marker?position=${spot.lng},${spot.lat}&name=${encodeURIComponent(spot.name)}`;
+          const searchPrefix = spot.skipBounds ? '' : '香港 ';
+          const gmapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchPrefix + spot.name)}`;
+          const amapUrl = `https://uri.amap.com/marker?position=${spot.lng},${spot.lat}&name=${encodeURIComponent(spot.name)}`;
 
           const marker = L.marker(latLng, { icon: pinIcon }).addTo(dayLayer);
           marker.bindPopup(`
@@ -1271,38 +585,38 @@
               <p>${spot.address}</p>
               <div class="popup-links">
                 <a href="${gmapUrl}" target="_blank" rel="noopener">🗺️ Google Maps</a>
-                <a href="${amapUrl}" target="_blank" rel="noopener">🧭 高德地圖導航</a>
+                <a href="${amapUrl}" target="_blank" rel="noopener">🧭 高德導航</a>
               </div>
             </div>
           `);
 
-          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng, name: spot.name, date: day.date };
+          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng, name: spot.name, date: day.date, time: spot.time, address: spot.address, img: spot.img };
+          activeSpotIds.push(spot.id);
 
-          const tipsHtml = spot.tips.map(t => `<li>${t}</li>`).join('');
-          const newBadgeHtml = spot.isNew ? `<span class="new-tag">✨ 新加入景點</span>` : '';
+          const tipsBlockHtml = spot.tips && spot.tips.length > 0
+            ? `<ul class="tips-list" style="border-left-color:${day.color}">${spot.tips.map(t => `<li>${t}</li>`).join('')}</ul>`
+            : '';
+          const stayBadgeHtml = spot.stay ? `<span class="stay-tag">${spot.stay}</span>` : '';
 
           cardsHtml += `
             <article class="place-card" id="card-${spot.id}" onclick="focusSpot('${spot.id}')">
               <div class="card-media">
                 <span class="time-tag">${spot.time}</span>
-                <span class="step-number" style="background:${day.color};color:#fff;">${spot.step}</span>
-                <img src="${spot.img}" alt="${spot.name}" loading="lazy" onerror="this.style.display='none'" />
+                <span class="step-number" style="background:${day.color}">${spot.step}</span>
+                <img src="${spot.img}" alt="${spot.name}" />
               </div>
               <div class="card-body">
                 <div>
                   <div class="place-title-group">
-                    <h3>${spot.name}</h3>
+                    <h3>${spot.time} ｜ ${spot.name}</h3>
                     <div class="place-meta">
-                      <span class="rating-stars">★ ${spot.rating}</span>
                       <span class="category-pill">${spot.category}</span>
-                      ${newBadgeHtml}
+                      ${stayBadgeHtml}
                     </div>
                   </div>
-                  <p class="place-desc" style="margin-top:10px;">${spot.desc}</p>
+                  <p class="place-desc" style="margin-top:8px;">${spot.desc}</p>
                 </div>
-                <ul class="tips-list" style="border-left-color:${day.color}">
-                  ${tipsHtml}
-                </ul>
+                ${tipsBlockHtml}
                 <div class="card-actions" onclick="event.stopPropagation()">
                   <span class="address-text">📍 ${spot.address}</span>
                   <div class="action-btns">
@@ -1317,83 +631,76 @@
         });
 
         if (dayLatLngs.length > 1) {
-          L.polyline(dayLatLngs, {
-            color: day.color,
-            weight: 3.5,
-            opacity: 0.75,
-            dashArray: '8, 8'
-          }).addTo(dayLayer);
+          L.polyline(dayLatLngs, { color: day.color, weight: 3.5, opacity: 0.75, dashArray: '8, 8' }).addTo(dayLayer);
         }
 
         section.innerHTML = `
           <div class="day-header">
             <div class="day-title-wrap">
               <span class="day-badge" style="background:${day.color}">${day.date}</span>
-              <div class="day-title-text">
-                <h2>${day.title}</h2>
-                <p>${day.subtitle}</p>
-              </div>
+              <div class="day-title-text"><h2>${day.title}</h2><p>${day.subtitle}</p></div>
             </div>
-            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">
-              🗺️ 彈出當日路線地圖
-            </button>
+            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 彈出當日路線地圖</button>
           </div>
-          <div class="cards-container">
-            ${cardsHtml}
-          </div>
+          ${bannerHtml}
+          <div class="cards-container">${cardsHtml}</div>
         `;
-
         feed.appendChild(section);
       });
+      initSwipeGestures();
     }
 
-    function focusSpot(spotId) {
+    function focusSpot(spotId, customList) {
+      if (customList) {
+        activeSpotIds = customList;
+      } else {
+        activeSpotIds = Object.keys(markersBySpotId);
+      }
+      currentSpotIdx = activeSpotIds.indexOf(spotId);
+      if (currentSpotIdx === -1) { activeSpotIds = Object.keys(markersBySpotId); currentSpotIdx = activeSpotIds.indexOf(spotId); }
+
       document.querySelectorAll('.place-card').forEach(c => c.classList.remove('highlighted'));
       const cardEl = document.getElementById(`card-${spotId}`);
       if (cardEl) cardEl.classList.add('highlighted');
 
       const item = markersBySpotId[spotId];
       if (item) {
-        openMapModal(`📍 ${item.date}｜${item.name}`);
-        if (!map.hasLayer(layerGroupsByDay[item.dayId])) {
-          layerGroupsByDay[item.dayId].addTo(map);
-        }
+        openMapModal();
+        updateSwipeBar(spotId);
+        if (!map.hasLayer(layerGroupsByDay[item.dayId])) layerGroupsByDay[item.dayId].addTo(map);
         setTimeout(() => {
           map.invalidateSize();
-          map.flyTo(item.latLng, 16, { duration: 0.7 });
-          setTimeout(() => {
-            item.marker.openPopup();
-          }, 350);
-        }, 120);
+          map.flyTo(item.latLng, 15, { duration: 0.6 });
+          setTimeout(() => item.marker.openPopup(), 300);
+        }, 100);
       }
     }
 
     function zoomToDay(dayId) {
       const day = itineraryData.find(d => d.dayId === dayId);
       if (!day) return;
-      openMapModal(`🗺️ ${day.date}｜${day.title}`);
-      zoomToDayInModal(dayId);
-    }
-
-    function zoomToDayInModal(dayId) {
-      const day = itineraryData.find(d => d.dayId === dayId);
-      if (!day) return;
+      activeSpotIds = day.spots.map(s => s.id);
+      currentSpotIdx = 0;
+      openMapModal();
+      updateSwipeBar(activeSpotIds[0]);
       Object.keys(layerGroupsByDay).forEach(k => {
-        if (k === dayId) {
-          if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map);
-        } else {
-          if (map.hasLayer(layerGroupsByDay[k])) map.removeLayer(layerGroupsByDay[k]);
-        }
+        if (k === dayId) { if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map); }
+        else { if (map.hasLayer(layerGroupsByDay[k])) map.removeLayer(layerGroupsByDay[k]); }
       });
-      const bounds = day.spots.map(s => [s.lat, s.lng]);
+      const bounds = day.spots.filter(s => !s.skipBounds).map(s => [s.lat, s.lng]);
       setTimeout(() => {
         map.invalidateSize();
-        if (bounds.length === 1) {
-          map.flyTo(bounds[0], 15, { duration: 0.7 });
-        } else {
-          map.flyToBounds(bounds, { padding: [50, 50], duration: 0.7 });
-        }
-      }, 120);
+        if (bounds.length === 1) map.flyTo(bounds[0], 14, { duration: 0.6 });
+        else if (bounds.length > 1) map.flyToBounds(bounds, { padding: [50, 50], duration: 0.6 });
+      }, 100);
+    }
+
+    function openFullMapModal() {
+      activeSpotIds = Object.keys(markersBySpotId);
+      currentSpotIdx = 0;
+      openMapModal('📍 香港三天兩夜行程總覽地圖');
+      updateSwipeBar(activeSpotIds[0]);
+      setTimeout(() => resetMapView(), 120);
     }
 
     function filterDay(dayId, btnEl) {
@@ -1401,33 +708,22 @@
         document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
       }
-
-      const sections = document.querySelectorAll('.day-section');
-      sections.forEach(sec => {
-        if (dayId === 'all' || sec.dataset.dayId === dayId) {
-          sec.style.display = 'block';
-        } else {
-          sec.style.display = 'none';
-        }
+      document.querySelectorAll('.day-section').forEach(sec => {
+        sec.style.display = (dayId === 'all' || sec.dataset.dayId === dayId) ? 'block' : 'none';
       });
-
       if (window.innerWidth <= 768 && dayId !== 'all') {
         const header = document.getElementById('appHeader');
-        if (!header.classList.contains('collapsed')) {
-          toggleHeader();
-        }
+        if (!header.classList.contains('collapsed')) toggleHeader();
       }
     }
 
     function resetMapView() {
       Object.keys(layerGroupsByDay).forEach(k => {
-        if (!map.hasLayer(layerGroupsByDay[k])) {
-          layerGroupsByDay[k].addTo(map);
-        }
+        if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map);
       });
-      if (allBounds.length > 0) {
+      if (allHkBounds.length > 0) {
         map.invalidateSize();
-        map.flyToBounds(allBounds, { padding: [40, 40], duration: 0.7 });
+        map.flyToBounds(allHkBounds, { padding: [40, 40], duration: 0.6 });
       }
     }
 
