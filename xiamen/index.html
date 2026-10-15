@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
-  <title>2026 廈門五日山海漫遊｜互動圖文行程表 & 導航地圖</title>
-  <!-- Leaflet CSS (100% Free & Open Source) -->
+  <title>2026 廈門五日山海漫遊｜互動圖文行程表 & 彈窗導航地圖</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,14 +44,80 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Collapsible Top Header */
     .app-header {
       background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
       color: #ffffff;
-      padding: 24px 32px 18px;
+      padding: 20px 24px 14px;
       position: sticky;
       top: 0;
       z-index: 1000;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+      transition: padding 0.25s ease;
+    }
+
+    .app-header.collapsed {
+      padding: 10px 16px;
+    }
+
+    .header-bar-compact {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 12px;
+    }
+
+    .compact-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f8fafc;
+      display: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .app-header.collapsed .compact-title {
+      display: block;
+    }
+
+    .header-toggle-btn {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .header-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .header-collapsible-content {
+      max-width: 1100px;
+      margin: 8px auto 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
+      max-height: 500px;
+      opacity: 1;
+    }
+
+    .app-header.collapsed .header-collapsible-content {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      pointer-events: none;
     }
 
     .header-top {
@@ -59,18 +125,18 @@
       justify-content: space-between;
       align-items: flex-end;
       flex-wrap: wrap;
-      gap: 16px;
-      max-width: 1600px;
-      margin: 0 auto 16px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .title-group h1 {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 800;
       letter-spacing: 0.5px;
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .title-badge {
@@ -91,14 +157,14 @@
 
     .header-stats {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .stat-pill {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 10px;
       font-size: 12.5px;
       color: #e2e8f0;
@@ -111,8 +177,6 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      max-width: 1600px;
-      margin: 0 auto;
       padding-bottom: 4px;
       scrollbar-width: none;
     }
@@ -125,16 +189,16 @@
       background: rgba(255, 255, 255, 0.08);
       color: #cbd5e1;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 16px;
+      padding: 8px 15px;
       border-radius: 999px;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
 
     .date-tab:hover {
@@ -156,20 +220,17 @@
       display: inline-block;
     }
 
+    /* Single-Column Centered Main Layout */
     .main-container {
-      max-width: 1600px;
+      max-width: 1100px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 540px;
-      gap: 24px;
-      padding: 24px 32px 60px;
-      align-items: start;
+      padding: 24px 20px 80px;
     }
 
     .itinerary-feed {
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 28px;
     }
 
     .day-section {
@@ -178,11 +239,10 @@
       border: 1px solid var(--border-color);
       box-shadow: var(--shadow-sm);
       overflow: hidden;
-      transition: all 0.25s ease;
     }
 
     .day-header {
-      padding: 20px 24px;
+      padding: 18px 24px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
@@ -208,7 +268,7 @@
     }
 
     .day-title-text h2 {
-      font-size: 19px;
+      font-size: 18.5px;
       font-weight: 800;
       color: var(--text-primary);
     }
@@ -220,13 +280,13 @@
     }
 
     .day-map-btn {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: #334155;
-      padding: 7px 14px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -235,16 +295,14 @@
     }
 
     .day-map-btn:hover {
-      background: #e2e8f0;
-      color: #0f172a;
+      background: #dbeafe;
     }
 
     .cards-container {
-      padding: 24px;
+      padding: 22px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      position: relative;
+      gap: 18px;
     }
 
     .place-card {
@@ -272,7 +330,7 @@
     .card-media {
       position: relative;
       height: 100%;
-      min-height: 200px;
+      min-height: 195px;
       background-color: #1e293b;
       overflow: hidden;
     }
@@ -293,14 +351,13 @@
       position: absolute;
       top: 12px;
       left: 12px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.86);
       backdrop-filter: blur(6px);
       color: #fff;
       padding: 4px 10px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.3px;
       z-index: 2;
     }
 
@@ -330,14 +387,6 @@
       gap: 12px;
     }
 
-    .card-top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
     .place-title-group h3 {
       font-size: 18px;
       font-weight: 800;
@@ -345,6 +394,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .place-meta {
@@ -421,21 +471,19 @@
     .address-text {
       font-size: 12px;
       color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     .action-btns {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .btn-sm {
-      padding: 5px 11px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 12.5px;
+      font-weight: 700;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -449,63 +497,145 @@
 
     .btn-sm:hover {
       background: #f1f5f9;
-      border-color: #cbd5e1;
       color: #0f172a;
     }
 
     .btn-locate {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-      color: #1d4ed8;
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
 
     .btn-locate:hover {
-      background: #dbeafe;
+      background: #1d4ed8;
+      color: #ffffff;
     }
 
-    .map-sidebar {
-      position: sticky;
-      top: 132px;
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-md);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 156px);
-      min-height: 520px;
-    }
-
-    .map-sidebar-header {
-      padding: 14px 18px;
+    /* Floating Overview Map Button */
+    .floating-map-btn {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 990;
       background: #0f172a;
-      color: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .map-sidebar-header h3 {
-      font-size: 14.5px;
-      font-weight: 700;
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35);
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .floating-map-btn:hover {
+      transform: translateY(-2px);
+      background: #1e293b;
+    }
+
+    /* Map Modal Popup Window */
+    .map-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .map-modal-backdrop.open {
+      display: flex;
+    }
+
+    .map-modal-dialog {
+      width: 100%;
+      max-width: 960px;
+      height: 82vh;
+      max-height: 760px;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      animation: modalPop 0.22s ease-out;
+    }
+
+    @keyframes modalPop {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .map-modal-header {
+      padding: 14px 18px;
+      background: #0f172a;
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .map-modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .map-modal-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .map-reset-btn {
       background: rgba(255,255,255,0.14);
       border: 1px solid rgba(255,255,255,0.25);
       color: #fff;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
       cursor: pointer;
     }
 
     .map-reset-btn:hover {
       background: rgba(255,255,255,0.25);
+    }
+
+    .map-close-btn {
+      background: #ef4444;
+      border: none;
+      color: #ffffff;
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .map-close-btn:hover {
+      background: #dc2626;
     }
 
     #map {
@@ -586,28 +716,17 @@
       font-weight: 600;
     }
 
-    @media (max-width: 1100px) {
-      .main-container {
-        grid-template-columns: 1fr;
-        padding: 16px;
-      }
-
-      .map-sidebar {
-        position: relative;
-        top: 0;
-        height: 420px;
-        min-height: 360px;
-        order: -1;
-      }
-    }
-
     @media (max-width: 768px) {
       .app-header {
-        padding: 16px;
+        padding: 12px 14px 10px;
       }
 
       .title-group h1 {
-        font-size: 19px;
+        font-size: 18px;
+      }
+
+      .main-container {
+        padding: 14px 12px 80px;
       }
 
       .place-card {
@@ -615,77 +734,107 @@
       }
 
       .card-media {
-        height: 190px;
+        height: 185px;
       }
 
       .cards-container {
-        padding: 16px;
+        padding: 14px;
+      }
+
+      .map-modal-backdrop {
+        padding: 8px;
+      }
+
+      .map-modal-dialog {
+        height: 86vh;
       }
     }
   </style>
 </head>
 <body>
 
-  <header class="app-header">
-    <div class="header-top">
-      <div class="title-group">
-        <h1>
-          2026 廈門五日山海漫遊
-          <span class="title-badge">小三通・思明區＆湖里區順遊版</span>
-        </h1>
-        <p>11/18 (三) – 11/22 (日) ｜ 下榻：麓閣・伴山禪舍（思明區軟件園二期店）</p>
-      </div>
-      <div class="header-stats">
-        <div class="stat-pill">🚢 去程：11/18 抵達五通碼頭</div>
-        <div class="stat-pill">✈️ 回程：11/22 11:30搭船 ➔ 13:30金門飛台中</div>
-      </div>
+  <!-- Collapsible Header -->
+  <header class="app-header" id="appHeader">
+    <div class="header-bar-compact">
+      <div class="compact-title">🏝️ 2026 廈門五日山海漫遊（11/18 – 11/22）</div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">
+        ▲ 收合頂部欄
+      </button>
     </div>
 
-    <nav class="date-tabs" id="dateTabs">
-      <button class="date-tab active" onclick="filterDay('all', this)">
-        <span>🗺️ 全部行程總覽</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d1', this)">
-        <span class="dot" style="background: var(--accent-d1)"></span>
-        <span>11/18 (三) 抵達・九九木眼鏡・八市</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d2', this)">
-        <span class="dot" style="background: var(--accent-d2)"></span>
-        <span>11/19 (四) 鼓浪嶼・雙子塔・白城酒吧</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d3', this)">
-        <span class="dot" style="background: var(--accent-d3)"></span>
-        <span>11/20 (五) 鯨宴自助・嶼見閩南・商場</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d4', this)">
-        <span class="dot" style="background: var(--accent-d4)"></span>
-        <span>11/21 (六) 南普陀・植物園・鐘鼓索道</span>
-      </button>
-      <button class="date-tab" onclick="filterDay('d5', this)">
-        <span class="dot" style="background: var(--accent-d5)"></span>
-        <span>11/22 (日) 小三通返程台中</span>
-      </button>
-    </nav>
+    <div class="header-collapsible-content" id="headerContent">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>
+            2026 廈門五日山海漫遊
+            <span class="title-badge">小三通・思明區＆湖里區順遊版</span>
+          </h1>
+          <p>11/18 (三) – 11/22 (日) ｜ 下榻：麓閣・伴山禪舍（思明區軟件園二期店）</p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-pill">🚢 去程：11/18 抵達五通碼頭</div>
+          <div class="stat-pill">✈️ 回程：11/22 11:30搭船 ➔ 13:30金門飛台中</div>
+        </div>
+      </div>
+
+      <nav class="date-tabs" id="dateTabs">
+        <button class="date-tab active" onclick="filterDay('all', this)">
+          <span>🗺️ 全部行程總覽</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d1', this)">
+          <span class="dot" style="background: var(--accent-d1)"></span>
+          <span>11/18 (三) 抵達・九九木眼鏡・八市</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d2', this)">
+          <span class="dot" style="background: var(--accent-d2)"></span>
+          <span>11/19 (四) 鼓浪嶼・雙子塔・白城酒吧</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d3', this)">
+          <span class="dot" style="background: var(--accent-d3)"></span>
+          <span>11/20 (五) 鯨宴自助・嶼見閩南・商場</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d4', this)">
+          <span class="dot" style="background: var(--accent-d4)"></span>
+          <span>11/21 (六) 南普陀・植物園・鐘鼓索道</span>
+        </button>
+        <button class="date-tab" onclick="filterDay('d5', this)">
+          <span class="dot" style="background: var(--accent-d5)"></span>
+          <span>11/22 (日) 小三通返程台中</span>
+        </button>
+      </nav>
+    </div>
   </header>
 
+  <!-- Main Content -->
   <main class="main-container">
     <div class="itinerary-feed" id="itineraryFeed"></div>
+  </main>
 
-    <aside class="map-sidebar">
-      <div class="map-sidebar-header">
-        <h3>📍 廈門行程動態路線圖（點擊景點卡片可定位）</h3>
-        <button class="map-reset-btn" onclick="resetMapView()">顯示全島路線</button>
+  <!-- Floating Quick Map Button -->
+  <button class="floating-map-btn" onclick="openFullMapModal()">
+    🗺️ 開啟全島路線地圖
+  </button>
+
+  <!-- Map Modal Popup -->
+  <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
+    <div class="map-modal-dialog" onclick="event.stopPropagation()">
+      <div class="map-modal-header">
+        <div class="map-modal-title" id="mapModalTitle">📍 廈門行程動態路線圖</div>
+        <div class="map-modal-controls">
+          <button class="map-reset-btn" onclick="resetMapView()">顯示全島路線</button>
+          <button class="map-close-btn" onclick="closeMapModal()">✕ 關閉</button>
+        </div>
       </div>
       <div id="map"></div>
       <div class="map-legend">
-        <div class="legend-item" onclick="filterDayByCode('d1')"><span class="dot" style="background: var(--accent-d1)"></span>11/18 九九木＆八市</div>
-        <div class="legend-item" onclick="filterDayByCode('d2')"><span class="dot" style="background: var(--accent-d2)"></span>11/19 鼓浪嶼＆雙子塔</div>
-        <div class="legend-item" onclick="filterDayByCode('d3')"><span class="dot" style="background: var(--accent-d3)"></span>11/20 鯨宴＆嶼見閩南</div>
-        <div class="legend-item" onclick="filterDayByCode('d4')"><span class="dot" style="background: var(--accent-d4)"></span>11/21 南普陀＆植物園索道</div>
-        <div class="legend-item" onclick="filterDayByCode('d5')"><span class="dot" style="background: var(--accent-d5)"></span>11/22 返程碼頭</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d1')"><span class="dot" style="background: var(--accent-d1)"></span>11/18 九九木＆八市</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d2')"><span class="dot" style="background: var(--accent-d2)"></span>11/19 鼓浪嶼＆雙子塔</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d3')"><span class="dot" style="background: var(--accent-d3)"></span>11/20 鯨宴＆嶼見閩南</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d4')"><span class="dot" style="background: var(--accent-d4)"></span>11/21 南普陀＆植物園索道</div>
+        <div class="legend-item" onclick="zoomToDayInModal('d5')"><span class="dot" style="background: var(--accent-d5)"></span>11/22 返程碼頭</div>
       </div>
-    </aside>
-  </main>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
@@ -694,7 +843,7 @@
         dayId: 'd1',
         date: '11/18（三）',
         title: '抵達廈門・九九木眼鏡配鏡與老城煙火氣',
-        subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 麓閣・伴山禪舍放行李 ➔ 九九木眼鏡 ➔ 八市 ➔ 中山路步行街',
+        subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 麓閣・伴山禪舍放行李 ➔ 九九木眼鏡（五緣灣天虹B1） ➔ 八市 ➔ 中山路步行街',
         color: '#d97706',
         spots: [
           {
@@ -707,7 +856,7 @@
             isNew: false,
             lat: 24.5328,
             lng: 118.1925,
-            address: '湖里區環島東路2488號砂之船奧特萊斯（五通客運碼頭對面）',
+            address: '福建省廈門市湖里區環島東路2488號砂之船奧特萊斯（五通客運碼頭對面）',
             img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
             desc: '從五通客運碼頭下船出關後，直接過馬路走到對面砂之船奧特萊斯來杯冰美式或生椰拿鐵提神，開啟廈門行程。',
             tips: [
@@ -723,46 +872,48 @@
             category: '酒店入住・放行李',
             rating: '4.9',
             isNew: false,
-            lat: 24.4862,
-            lng: 118.1815,
-            address: '思明區軟件園二期周邊（近虎仔山）',
+            lat: 24.486846,
+            lng: 118.181160,
+            address: '福建省廈門市思明區虎仔山路190號（軟件園二期旁）',
             img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-            desc: '禪意風格設計酒店，環境清幽且距離五通碼頭與市區商圈都不遠。先辦理入住並把大件行李放妥，輕裝出門。',
+            desc: '禪意風格設計酒店，環境清幽且距離五通碼頭與五緣灣商圈都不遠。先辦理入住並把大件行李放妥，輕裝出門。',
             tips: [
-              '<strong>位置優勢：</strong>最後一天 11/22 去五通碼頭搭船也只需約 15–20 分鐘車程。'
+              '<strong>位置優勢：</strong>前往下一站「五緣灣天虹購物中心（九九木眼鏡）」車程僅約 10–12 分鐘；最後一天去五通碼頭也只需約 15 分鐘。'
             ]
           },
           {
             id: 'd1-3',
             step: 3,
             time: '16:50 – 17:50',
-            name: '九九木眼鏡',
+            name: '九九木眼鏡（五緣灣天虹購物中心店）',
             category: '驗光配鏡・光學眼鏡',
             rating: '4.8',
             isNew: false,
-            lat: 24.4755,
-            lng: 118.1225,
-            address: '廈門市區門市（點擊下方高德導航可直接定位前往）',
-            customAmapUrl: 'https://uri.amap.com/search?keyword=%E4%B9%9D%E4%B9%9D%E6%9C%A8%E7%9C%BC%E9%95%9C&city=350200',
+            lat: 24.509873,
+            lng: 118.160382,
+            address: '福建省廈門市湖里區金湖路516號（五緣灣天虹購物中心 B1地下一樓）',
+            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('福建省廈門市湖里區金湖路516號 五緣灣天虹購物中心 九九木眼鏡'),
+            customAmapUrl: 'https://uri.amap.com/marker?position=118.160382,24.509873&name=' + encodeURIComponent('九九木眼鏡(五緣灣天虹購物中心B1)'),
             img: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
-            desc: '放完行李後前往「九九木眼鏡」挑選鏡框與驗光配鏡，完成後剛好接著去八市吃晚餐。',
+            desc: '放完行李後搭車前往湖里區金湖路 516 號「五緣灣天虹購物中心」B1 地下一樓的九九木眼鏡驗光配鏡，完成後接著前往八市吃晚餐。',
             tips: [
+              '<strong>商場位置：</strong>位於金湖路與五緣灣道交匯處（地鐵 2 號線／3 號線五緣灣站旁），進入五緣灣天虹購物中心搭乘手扶梯至 B1 地下一樓即達。',
               '<strong>取件秘訣：</strong>若配製特殊鏡片或度數無法當場取件，可請店家配好後直接透過順豐快遞寄回「麓閣・伴山禪舍」櫃檯代收，不用再專程跑一趟。'
             ]
           },
           {
             id: 'd1-4',
             step: 4,
-            time: '18:00 – 19:30',
+            time: '18:10 – 19:30',
             name: '八市（廈門第八海鮮市場）',
             category: '傳統市集・在地美食',
             rating: '4.6',
             isNew: false,
             lat: 24.4593,
             lng: 118.0772,
-            address: '思明區開禾路與友誼路交叉口一帶',
+            address: '福建省廈門市思明區開禾路與友誼路交叉口一帶',
             img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
-            desc: '廈門最具在地煙火氣的老字號海鮮與小吃集散地，傍晚時分攤販燈火通明，充滿濃厚的閩南老城氛圍。',
+            desc: '廈門最具在地煙火氣的老字號海鮮與小吃集散地，從五緣灣天虹搭車走仙岳路或成功大道過來約 20–25 分鐘。',
             tips: [
               '<strong>推薦動線：</strong>從開禾路口進入，沿途可吃阿杰五香、朱記手撕雞、鐘麗君滿煎糕等熟食小吃。',
               '<strong>避坑提醒：</strong>若在市場內買海鮮代客料理，務必先確認「秤重單價」與「每道加工費」再下鍋。'
@@ -778,7 +929,7 @@
             isNew: false,
             lat: 24.4542,
             lng: 118.0811,
-            address: '思明區中山路（緊鄰八市南側）',
+            address: '福建省廈門市思明區中山路（緊鄰八市南側）',
             img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
             desc: '從八市往南散步即可無縫銜接中山路步行街。成排的南洋風情騎樓建築在夜間亮燈後極具層次感，適合飯後散步消化。',
             tips: [
@@ -805,7 +956,7 @@
             isNew: false,
             lat: 24.4446,
             lng: 118.0673,
-            address: '思明區鼓浪嶼（由東渡郵輪中心廈鼓碼頭搭船登島）',
+            address: '福建省廈門市思明區鼓浪嶼（由東渡郵輪中心廈鼓碼頭搭船登島）',
             img: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
             desc: '酒店吃完早餐後前往碼頭搭船登島。全島無機動車，遍布百年洋樓、紅磚別墅與蜿蜒巷弄，下午 16:30 左右搭船返回本島。',
             tips: [
@@ -823,7 +974,7 @@
             isNew: true,
             lat: 24.4357,
             lng: 118.0872,
-            address: '思明區演武西路180-188號（最佳拍攝點：演武大橋觀景平台／沙坡尾）',
+            address: '福建省廈門市思明區演武西路180-188號（最佳拍攝點：演武大橋觀景平台／沙坡尾）',
             img: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80',
             desc: '兩棟高達 300 公尺的帆船造型雙塔地標。從鼓浪嶼返回本島後直接過來，剛好趕上 17:30–18:30 的「藍調時刻（Blue Hour）」拍夜景。',
             tips: [
@@ -842,7 +993,7 @@
             isNew: false,
             lat: 24.4312,
             lng: 118.1008,
-            address: '思明區環島南路（廈大白城天橋至胡里山炮台沿線）',
+            address: '福建省廈門市思明區環島南路（廈大白城天橋至胡里山炮台沿線）',
             img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
             desc: '緊鄰雙子塔東南側的弧形海岸線，入夜後沙灘沿岸亮起露營風燈串與駐唱音樂，吹著海風小酌非常愜意。',
             tips: [
@@ -869,7 +1020,7 @@
             isNew: false,
             lat: 24.4705,
             lng: 118.1102,
-            address: '思明區湖濱東路99號廈門萬象城二期 B201',
+            address: '福建省廈門市思明區湖濱東路99號廈門萬象城二期 B201',
             img: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
             desc: '廈門高人氣高檔海鮮自助，主打活體海鮮現撈現煮、藍龍蝦、紐西蘭鰲蝦、帝王蟹腳、鐵板鵝肝與烤榴槤無限暢享。',
             tips: [
@@ -887,7 +1038,7 @@
             isNew: true,
             lat: 24.4848,
             lng: 118.0735,
-            address: '湖里區東港北路15、17-19號（近東渡郵輪中心碼頭）',
+            address: '福建省廈門市湖里區東港北路15、17-19號（近東渡郵輪中心碼頭）',
             img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
             desc: '重現宋元明清至近代的閩南紅磚古厝建築群與非遺文化街區，園區內設有多場沉浸式實景演藝與 NPC 互動體驗。',
             tips: [
@@ -905,7 +1056,7 @@
             isNew: false,
             lat: 24.4712,
             lng: 118.1115,
-            address: '思明區湖濱東路99號（廈門萬象城一、二期連通）',
+            address: '福建省廈門市思明區湖濱東路99號（廈門萬象城一、二期連通）',
             img: 'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=800&q=80',
             desc: '廈門品牌最齊全的指標商場，一、二期涵蓋國際腕錶精品、設計師服飾、戶外工裝品牌與質感咖啡廳。',
             tips: [
@@ -931,7 +1082,7 @@
             isNew: true,
             lat: 24.4418,
             lng: 118.0965,
-            address: '思明區思明南路515號（廈門大學南門旁）',
+            address: '福建省廈門市思明區思明南路515號（廈門大學南門旁）',
             img: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=800&q=80',
             desc: '背依五老峰的千年古剎，建築飛簷精緻、香火鼎盛。排在早上第一站前往，溫度舒適且能避開正午旅行團人潮。',
             tips: [
@@ -949,7 +1100,7 @@
             isNew: true,
             lat: 24.4503,
             lng: 118.0958,
-            address: '思明區虎園路25號（主出入口：西門）',
+            address: '福建省廈門市思明區虎園路25號（主出入口：西門）',
             img: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=800&q=80',
             desc: '被譽為廈門城市綠肺，其中「多肉植物區」的巨型仙人掌荒漠造景與「雨林世界」的定時迷霧丁達爾光影是兩大必拍核心。',
             tips: [
@@ -968,7 +1119,7 @@
             isNew: true,
             lat: 24.4521,
             lng: 118.0934,
-            address: '思明區虎園路31號（植物園西門正對面旁）',
+            address: '福建省廈門市思明區虎園路31號（植物園西門正對面旁）',
             img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
             desc: '全長超過 1000 公尺的雙人座空中纜車（原車去、原車回，全程約 40 分鐘），可從高空 360 度俯瞰植物園山林、老城紅屋頂、雙子塔與遠方海景。',
             tips: [
@@ -995,7 +1146,7 @@
             isNew: false,
             lat: 24.5335,
             lng: 118.1942,
-            address: '湖里區環島東路2500號（距離軟件園二期酒店車程約 15–20 分鐘）',
+            address: '福建省廈門市湖里區環島東路2500號（距離軟件園二期酒店車程約 15–20 分鐘）',
             img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
             desc: '從軟件園二期酒店退房後搭車約 15–20 分鐘即可抵達五通碼頭。11:30 開船約 12:00 抵達金門水頭碼頭，銜接 13:30 班機飛回台中。',
             tips: [
@@ -1007,12 +1158,8 @@
       }
     ];
 
-    // Initialize Leaflet Map
-    const map = L.map('map', {
-      zoomControl: true
-    }).setView([24.468, 118.115], 12);
+    const map = L.map('map', { zoomControl: true }).setView([24.485, 118.135], 12);
 
-    // 3 Completely Free, No-API-Key Tile Layers
     const gaodeLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
       attribution: '&copy; 高德地圖 AutoNavi',
       subdomains: ['1', '2', '3', '4'],
@@ -1040,6 +1187,50 @@
     const markersBySpotId = {};
     const layerGroupsByDay = {};
     const allBounds = [];
+
+    function toggleHeader() {
+      const header = document.getElementById('appHeader');
+      const btn = document.getElementById('headerToggleBtn');
+      header.classList.toggle('collapsed');
+      if (header.classList.contains('collapsed')) {
+        btn.innerHTML = '▼ 展開日期選單';
+      } else {
+        btn.innerHTML = '▲ 收合頂部欄';
+      }
+    }
+
+    function openMapModal(titleText) {
+      const modal = document.getElementById('mapModalBackdrop');
+      if (titleText) {
+        document.getElementById('mapModalTitle').textContent = titleText;
+      }
+      modal.classList.add('open');
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 60);
+    }
+
+    function closeMapModal() {
+      document.getElementById('mapModalBackdrop').classList.remove('open');
+    }
+
+    function closeMapModalOnBackdrop(e) {
+      if (e.target.id === 'mapModalBackdrop') {
+        closeMapModal();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMapModal();
+    });
+
+    function openFullMapModal() {
+      openMapModal('📍 廈門五日行程總覽地圖');
+      setTimeout(() => {
+        map.invalidateSize();
+        resetMapView();
+      }, 150);
+    }
 
     function initApp() {
       const feed = document.getElementById('itineraryFeed');
@@ -1069,7 +1260,7 @@
             popupAnchor: [0, -28]
           });
 
-          const gmapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('廈門 ' + spot.name)}`;
+          const gmapUrl = spot.customGmapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('廈門 ' + spot.name)}`;
           const amapUrl = spot.customAmapUrl || `https://uri.amap.com/marker?position=${spot.lng},${spot.lat}&name=${encodeURIComponent(spot.name)}`;
 
           const marker = L.marker(latLng, { icon: pinIcon }).addTo(dayLayer);
@@ -1085,7 +1276,7 @@
             </div>
           `);
 
-          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng };
+          markersBySpotId[spot.id] = { marker, dayId: day.dayId, latLng, name: spot.name, date: day.date };
 
           const tipsHtml = spot.tips.map(t => `<li>${t}</li>`).join('');
           const newBadgeHtml = spot.isNew ? `<span class="new-tag">✨ 新加入景點</span>` : '';
@@ -1099,14 +1290,12 @@
               </div>
               <div class="card-body">
                 <div>
-                  <div class="card-top-row">
-                    <div class="place-title-group">
-                      <h3>${spot.name}</h3>
-                      <div class="place-meta">
-                        <span class="rating-stars">★ ${spot.rating}</span>
-                        <span class="category-pill">${spot.category}</span>
-                        ${newBadgeHtml}
-                      </div>
+                  <div class="place-title-group">
+                    <h3>${spot.name}</h3>
+                    <div class="place-meta">
+                      <span class="rating-stars">★ ${spot.rating}</span>
+                      <span class="category-pill">${spot.category}</span>
+                      ${newBadgeHtml}
                     </div>
                   </div>
                   <p class="place-desc" style="margin-top:10px;">${spot.desc}</p>
@@ -1146,7 +1335,7 @@
               </div>
             </div>
             <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">
-              🗺️ 在地圖查看當日路線
+              🗺️ 彈出當日路線地圖
             </button>
           </div>
           <div class="cards-container">
@@ -1156,10 +1345,6 @@
 
         feed.appendChild(section);
       });
-
-      if (allBounds.length > 0) {
-        map.fitBounds(allBounds, { padding: [40, 40] });
-      }
     }
 
     function focusSpot(spotId) {
@@ -1169,29 +1354,46 @@
 
       const item = markersBySpotId[spotId];
       if (item) {
+        openMapModal(`📍 ${item.date}｜${item.name}`);
         if (!map.hasLayer(layerGroupsByDay[item.dayId])) {
           layerGroupsByDay[item.dayId].addTo(map);
         }
-        map.flyTo(item.latLng, 15, { duration: 0.8 });
         setTimeout(() => {
-          item.marker.openPopup();
-        }, 400);
-      }
-
-      if (window.innerWidth <= 1100) {
-        document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          map.invalidateSize();
+          map.flyTo(item.latLng, 16, { duration: 0.7 });
+          setTimeout(() => {
+            item.marker.openPopup();
+          }, 350);
+        }, 120);
       }
     }
 
     function zoomToDay(dayId) {
       const day = itineraryData.find(d => d.dayId === dayId);
       if (!day) return;
+      openMapModal(`🗺️ ${day.date}｜${day.title}`);
+      zoomToDayInModal(dayId);
+    }
+
+    function zoomToDayInModal(dayId) {
+      const day = itineraryData.find(d => d.dayId === dayId);
+      if (!day) return;
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (k === dayId) {
+          if (!map.hasLayer(layerGroupsByDay[k])) layerGroupsByDay[k].addTo(map);
+        } else {
+          if (map.hasLayer(layerGroupsByDay[k])) map.removeLayer(layerGroupsByDay[k]);
+        }
+      });
       const bounds = day.spots.map(s => [s.lat, s.lng]);
-      if (bounds.length === 1) {
-        map.flyTo(bounds[0], 14, { duration: 0.8 });
-      } else {
-        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.8 });
-      }
+      setTimeout(() => {
+        map.invalidateSize();
+        if (bounds.length === 1) {
+          map.flyTo(bounds[0], 15, { duration: 0.7 });
+        } else {
+          map.flyToBounds(bounds, { padding: [50, 50], duration: 0.7 });
+        }
+      }, 120);
     }
 
     function filterDay(dayId, btnEl) {
@@ -1209,34 +1411,23 @@
         }
       });
 
-      Object.keys(layerGroupsByDay).forEach(k => {
-        if (dayId === 'all' || k === dayId) {
-          if (!map.hasLayer(layerGroupsByDay[k])) {
-            layerGroupsByDay[k].addTo(map);
-          }
-        } else {
-          if (map.hasLayer(layerGroupsByDay[k])) {
-            map.removeLayer(layerGroupsByDay[k]);
-          }
+      if (window.innerWidth <= 768 && dayId !== 'all') {
+        const header = document.getElementById('appHeader');
+        if (!header.classList.contains('collapsed')) {
+          toggleHeader();
         }
-      });
-
-      if (dayId === 'all') {
-        resetMapView();
-      } else {
-        zoomToDay(dayId);
       }
     }
 
-    function filterDayByCode(dayId) {
-      const buttons = document.querySelectorAll('.date-tab');
-      const idxMap = { 'all': 0, 'd1': 1, 'd2': 2, 'd3': 3, 'd4': 4, 'd5': 5 };
-      filterDay(dayId, buttons[idxMap[dayId]]);
-    }
-
     function resetMapView() {
+      Object.keys(layerGroupsByDay).forEach(k => {
+        if (!map.hasLayer(layerGroupsByDay[k])) {
+          layerGroupsByDay[k].addTo(map);
+        }
+      });
       if (allBounds.length > 0) {
-        map.flyToBounds(allBounds, { padding: [40, 40], duration: 0.8 });
+        map.invalidateSize();
+        map.flyToBounds(allBounds, { padding: [40, 40], duration: 0.7 });
       }
     }
 
