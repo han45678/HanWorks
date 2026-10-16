@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="referrer" content="no-referrer" />
   <title>🇭🇰 香港三天兩夜：演唱會與城市精華行程</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
     :root { --bg-main:#f4f5f7; --bg-card:#ffffff; --text-primary:#181a1f; --text-secondary:#5a6270; --text-muted:#8c95a4; --border-color:#e4e7ec; --accent-d1:#e11d48; --accent-d2:#2563eb; --accent-d3:#059669; --shadow-sm:0 2px 8px rgba(15,23,42,0.05); --shadow-md:0 8px 24px rgba(15,23,42,0.08); --radius-lg:16px; --radius-md:12px; }
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-main); color:var(--text-primary); line-height:1.6; -webkit-font-smoothing:antialiased; }
-    .app-header { background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%); color:#fff; padding:18px 24px 14px; position:sticky; top:0; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.2); transition:padding 0.25s ease; }
+    .app-header { background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%); color:#fff; padding:16px 24px 14px; position:sticky; top:0; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.2); transition:padding 0.25s ease; }
     .app-header.collapsed { padding:10px 16px; }
     .header-bar-compact { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; gap:12px; }
     .compact-title { font-size:15px; font-weight:800; color:#f8fafc; display:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -21,13 +21,12 @@
     .app-header.collapsed .header-collapsible-content { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
     .header-top { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; margin-bottom:14px; }
     .title-group h1 { font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .title-badge { font-size:12px; font-weight:600; padding:3px 10px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22); border-radius:999px; }
     .title-group p { font-size:13px; color:#94a3b8; margin-top:4px; }
     .header-stats { display:flex; gap:10px; flex-wrap:wrap; }
     .stat-pill { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); padding:5px 12px; border-radius:10px; font-size:12px; color:#e2e8f0; }
     .date-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
     .date-tabs::-webkit-scrollbar { display:none; }
-    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:7px 18px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; transition:all 0.2s; }
     .date-tab.active { background:#fff; color:#0f172a; border-color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
     .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
     .main-container { max-width:1100px; margin:0 auto; padding:22px 18px 80px; }
@@ -43,11 +42,12 @@
     .day-Highlight-banner h3 { font-size:16px; font-weight:800; color:#065f46; margin-bottom:8px; }
     .day-Highlight-banner p { font-size:13px; color:#1e293b; margin-bottom:6px; }
     .cards-container { padding:20px; display:flex; flex-direction:column; gap:16px; }
-    .place-card { display:grid; grid-template-columns:230px 1fr; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:#fff; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
+    .place-card { display:grid; grid-template-columns:240px 1fr; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden; background:#fff; transition:transform 0.2s,box-shadow 0.2s; cursor:pointer; }
     .place-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
     .place-card.highlighted { border:2px solid #2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.12); }
-    .card-media { position:relative; height:100%; min-height:175px; background:#1e293b; overflow:hidden; }
-    .card-media img { width:100%; height:100%; object-fit:cover; display:block; }
+    .card-media { position:relative; height:100%; min-height:180px; background:#1e293b; overflow:hidden; }
+    .card-media img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.35s ease; }
+    .place-card:hover .card-media img { transform:scale(1.04); }
     .time-tag { position:absolute; top:10px; left:10px; background:rgba(15,23,42,0.88); color:#fff; padding:3px 9px; border-radius:6px; font-size:12px; font-weight:800; z-index:2; }
     .step-number { position:absolute; bottom:10px; left:10px; width:28px; height:28px; border-radius:50%; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:2; }
     .card-body { padding:15px 18px; display:flex; flex-direction:column; justify-content:space-between; gap:9px; }
@@ -100,7 +100,7 @@
       .title-group h1 { font-size:18px; }
       .main-container { padding:14px 12px 80px; }
       .place-card { grid-template-columns:1fr; }
-      .card-media { height:170px; }
+      .card-media { height:180px; }
       .cards-container { padding:14px; }
       .day-Highlight-banner { margin:14px 14px 0; }
       .map-modal-backdrop { padding:6px; }
@@ -121,7 +121,7 @@
     <div class="header-collapsible-content" id="headerContent">
       <div class="header-top">
         <div class="title-group">
-          <h1>🇭🇰 香港三天兩夜：演唱會與城市精華行程 <span class="title-badge">Base64 離線圖文・滑動地圖版</span></h1>
+          <h1>🇭🇰 香港三天兩夜：演唱會與城市精華行程</h1>
           <p>DAY 1 抵達、取票與演唱會 ｜ DAY 2 九龍信仰與港島精華 ｜ DAY 3 機場觀光與返程</p>
         </div>
         <div class="header-stats">
@@ -130,10 +130,10 @@
         </div>
       </div>
       <nav class="date-tabs" id="dateTabs">
-        <button class="date-tab active" onclick="filterDay('all', this)"><span>🗺️ 全部行程總覽（33 節點）</span></button>
-        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>📅 DAY 1：抵達、取票與演唱會（10 節點）</span></button>
-        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>📅 DAY 2：九龍信仰與港島精華（18 節點）</span></button>
-        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>📅 DAY 3：機場觀光與返程（5 節點）</span></button>
+        <button class="date-tab active" onclick="filterDay('all', this)"><span>ALL</span></button>
+        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>DAY 1</span></button>
+        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>DAY 2</span></button>
+        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>DAY 3</span></button>
       </nav>
     </div>
   </header>
@@ -144,7 +144,6 @@
 
   <button class="floating-map-btn" onclick="openFullMapModal()">🗺️ 開啟全港路線地圖</button>
 
-  <!-- Map Modal with Left/Right Swipe Switcher -->
   <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
     <div class="map-modal-dialog" onclick="event.stopPropagation()">
       <div class="map-modal-header" id="mapModalHeader">
@@ -162,7 +161,7 @@
       <div class="map-swipe-bar" id="mapSwipeBar">
         <div class="swipe-hint">👆 手機可在此區「左滑／右滑」或點擊按鈕切換上、下一站</div>
         <div class="swipe-card-inner" id="swipeCardInner">
-          <img class="swipe-thumb" id="swipeThumb" src="" alt="" />
+          <img class="swipe-thumb" id="swipeThumb" src="" alt="" referrerpolicy="no-referrer" />
           <div class="swipe-info">
             <div class="swipe-step-badge" id="swipeBadge"></div>
             <div class="swipe-spot-name" id="swipeName"></div>
@@ -179,68 +178,35 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // 動態產生每個香港景點專屬主題插畫並轉成 Base64 Data URI (data:image/svg+xml;base64,...)
-    function makeHkBase64(theme, title, subtitle, c1, c2) {
-      const artMap = {
-        plane: `<path d="M95 145 L305 95 L285 125 L115 162 Z" fill="#f8fafc"/><path d="M175 125 L140 75 L168 72 L215 118 Z" fill="#38bdf8"/><path d="M115 142 L90 112 L108 108 L132 136 Z" fill="#f43f5e"/><ellipse cx="290" cy="158" rx="45" ry="12" fill="#fff" opacity="0.25"/>`,
-        hotel: `<rect x="120" y="65" width="75" height="110" rx="6" fill="#38bdf8"/><rect x="205" y="82" width="75" height="93" rx="6" fill="#60a5fa"/><rect x="135" y="80" width="45" height="8" fill="#fff"/><rect x="135" y="100" width="45" height="8" fill="#fff"/><rect x="220" y="98" width="45" height="8" fill="#fff"/>`,
-        ticket: `<rect x="105" y="78" width="190" height="88" rx="10" fill="#fbbf24"/><circle cx="105" cy="122" r="14" fill="${c1}"/><circle cx="295" cy="122" r="14" fill="${c2}"/><line x1="235" y1="78" x2="235" y2="166" stroke="#78350f" stroke-width="3" stroke-dasharray="6,6"/><polygon points="165,102 172,116 188,118 176,128 179,144 165,136 151,144 154,128 142,118 158,116" fill="#78350f"/>`,
-        mall: `<rect x="115" y="75" width="85" height="95" rx="8" fill="#f43f5e"/><path d="M138 75 A20 20 0 0 1 178 75" fill="none" stroke="#fff" stroke-width="5"/><rect x="185" y="90" width="95" height="85" rx="8" fill="#3b82f6"/><path d="M212 90 A20 20 0 0 1 252 90" fill="none" stroke="#fff" stroke-width="5"/>`,
-        concert: `<path d="M85 175 Q200 75 315 175 Z" fill="#f43f5e" opacity="0.85"/><polygon points="130,175 85,55 125,55" fill="#fde047" opacity="0.35"/><polygon points="270,175 275,55 315,55" fill="#38bdf8" opacity="0.35"/><circle cx="200" cy="135" r="22" fill="#fff"/>`,
-        streetfood: `<line x1="125" y1="165" x2="215" y2="75" stroke="#fde047" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="140" r="16" fill="#f97316"/><circle cx="175" cy="115" r="16" fill="#fb923c"/><circle cx="200" cy="90" r="16" fill="#f59e0b"/><rect x="235" y="78" width="75" height="42" rx="6" fill="none" stroke="#f43f5e" stroke-width="4"/><text x="272" y="105" text-anchor="middle" fill="#fde047" font-size="16" font-weight="bold">香港</text>`,
-        dessert: `<path d="M125 115 A75 58 0 0 0 275 115 Z" fill="#f8fafc"/><ellipse cx="200" cy="115" rx="75" ry="16" fill="#334155"/><path d="M235 110 L275 72" stroke="#fbbf24" stroke-width="7" stroke-linecap="round"/><rect x="145" y="168" width="110" height="8" rx="4" fill="#cbd5e1"/>`,
-        temple: `<path d="M115 95 Q200 68 285 95 Z" fill="#eab308"/><path d="M95 130 Q200 102 305 130 Z" fill="#ca8a04"/><rect x="135" y="130" width="130" height="50" fill="#991b1b"/><rect x="182" y="142" width="36" height="38" fill="#fef08a"/>`,
-        cafe: `<path d="M120 135 Q200 68 280 135 Z" fill="#f59e0b"/><rect x="108" y="128" width="184" height="18" rx="6" fill="#fde047"/><path d="M130 146 Q200 175 270 146 Z" fill="#d97706"/>`,
-        ferry: `<path d="M85 140 L315 140 L290 175 L110 175 Z" fill="#047857"/><rect x="130" y="102" width="140" height="38" rx="6" fill="#f8fafc"/><polygon points="200,72 206,88 222,88 209,97 214,112 200,103 186,112 191,97 178,88 194,88" fill="#f59e0b"/><path d="M50 182 Q125 168 200 182 T350 182" fill="none" stroke="#7dd3fc" stroke-width="6"/>`,
-        roast: `<path d="M125 125 A75 52 0 0 0 275 125 Z" fill="#f8fafc"/><ellipse cx="200" cy="122" rx="68" ry="20" fill="#b91c1c"/><ellipse cx="185" cy="118" rx="42" ry="12" fill="#ea580c"/><line x1="160" y1="82" x2="265" y2="105" stroke="#fde68a" stroke-width="5"/>`,
-        heritage: `<rect x="105" y="75" width="190" height="100" rx="4" fill="#b91c1c"/><path d="M128 175 V125 A22 22 0 0 1 172 125 V175 M228 175 V125 A22 22 0 0 1 272 125 V175" fill="#1e293b"/><rect x="100" y="68" width="200" height="12" fill="#f8fafc"/>`,
-        cablecar: `<line x1="65" y1="165" x2="335" y2="65" stroke="#cbd5e1" stroke-width="5"/><g transform="rotate(-20 200 115)"><rect x="145" y="88" width="110" height="48" rx="10" fill="#15803d"/><rect x="155" y="96" width="90" height="20" rx="4" fill="#bae6fd"/></g>`,
-        peak: `<path d="M115 115 Q200 165 285 115 L265 165 L135 165 Z" fill="#f8fafc"/><rect x="85" y="145" width="18" height="35" fill="#38bdf8"/><rect x="112" y="132" width="20" height="48" fill="#60a5fa"/><rect x="275" y="138" width="22" height="42" fill="#818cf8"/><circle cx="315" cy="65" r="18" fill="#fde047"/>`,
-        wheel: `<circle cx="200" cy="112" r="54" fill="none" stroke="#f43f5e" stroke-width="7"/><circle cx="200" cy="112" r="40" fill="none" stroke="#38bdf8" stroke-width="3"/><line x1="200" y1="112" x2="170" y2="178" stroke="#f8fafc" stroke-width="6"/><line x1="200" y1="112" x2="230" y2="178" stroke="#f8fafc" stroke-width="6"/>`,
-        transit: `<rect x="115" y="78" width="170" height="85" rx="14" fill="#f8fafc"/><rect x="130" y="92" width="140" height="36" rx="6" fill="#1e293b"/><circle cx="148" cy="146" r="8" fill="#ef4444"/><circle cx="252" cy="146" r="8" fill="#ef4444"/><line x1="85" y1="172" x2="315" y2="172" stroke="#94a3b8" stroke-width="6"/>`
-      };
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
-        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>
-        <rect width="400" height="250" fill="url(#g)"/>
-        <circle cx="345" cy="45" r="80" fill="#ffffff" opacity="0.06"/>
-        <circle cx="50" cy="205" r="90" fill="#ffffff" opacity="0.05"/>
-        ${artMap[theme] || artMap.peak}
-        <rect x="0" y="192" width="400" height="58" fill="#0f172a" opacity="0.78"/>
-        <text x="200" y="216" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="15.5" font-weight="bold">${title}</text>
-        <text x="200" y="237" text-anchor="middle" fill="#cbd5e1" font-family="sans-serif" font-size="12">${subtitle}</text>
-      </svg>`;
-      return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-    }
-
     const itineraryData = [
       {
-        dayId: 'd1', date: '📅 DAY 1', title: '抵達、取票與演唱會',
+        dayId: 'd1', date: 'DAY 1', title: '抵達、取票與演唱會',
         subtitle: '09:00 臺中機場 ➔ 12:00 香港機場 ➔ 12:30 麗豪航天城酒店 ➔ 13:40 西九龍高鐵順豐站 ➔ 14:20 AIRSIDE ➔ 15:30 啟德體育館 ➔ 19:30 地道小吃與李小龍銅像 ➔ 21:00 返回啟德 ➔ 22:00 佳佳甜品 ➔ 23:00 麗豪航天城酒店',
         color: '#e11d48',
         spots: [
           {
             id: 'd1-1', step: 1, time: '09:00', name: '臺中國際機場', stay: '10:10 起飛', category: '出發機場',
             lat: 24.2647, lng: 120.6206, skipBounds: true, address: '臺中國際機場（清泉崗機場）',
-            img: makeHkBase64('plane', '09:00 臺中國際機場', '10:10 起飛前往香港', '#1e3a8a', '#be123c'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-S479-s99KdtlkFLsZz7t18eHJusIRurn7IcP-Igfqg&s=10',
             desc: '09:00 抵達臺中國際機場辦理報到與出境手續，搭乘 10:10 起飛班機前往香港。', tips: []
           },
           {
             id: 'd1-2', step: 2, time: '12:00', name: '香港國際機場', stay: '抵達、通關與領取行李', category: '抵達香港',
             lat: 22.3080, lng: 113.9185, address: '香港大嶼山赤鱲角香港國際機場',
-            img: makeHkBase64('plane', '12:00 香港國際機場', '抵達、通關與領取行李', '#0f172a', '#1d4ed8'),
+            img: 'https://cdn.sanity.io/images/nxpteyfv/goguides/464833864128ec6468e2a5d5775e6383f3eeee9b-1600x1066.jpg',
             desc: '12:00 抵達香港國際機場，辦理入境通關與領取行李。', tips: []
           },
           {
             id: 'd1-3', step: 3, time: '12:30', name: '麗豪航天城酒店', stay: '寄放行李', category: '飯店寄放行李',
             lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
-            img: makeHkBase64('hotel', '12:30 麗豪航天城酒店', '寄放行李｜免費接駁車（路線1）', '#1e293b', '#3b82f6'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '前往麗豪航天城酒店寄放行李。',
             tips: ['💡 <strong>交通建議：</strong>前往二號客運大樓 9-11 號停車位，搭乘 12:45 的免費接駁車（路線1）前往酒店。']
           },
           {
             id: 'd1-4', step: 4, time: '13:40', name: '順豐速運 尖沙咀西九龍高鐵順豐站', stay: '領取演唱會門票', category: '門票領取',
             lat: 22.3039, lng: 114.1652, address: '香港西九龍高鐵站順豐站（港鐵九龍站／柯士甸站）',
-            img: makeHkBase64('ticket', '13:40 西九龍高鐵順豐站', '領取演唱會門票', '#881337', '#d97706'),
+            img: 'https://res.klook.com/image/upload/w_750,h_469,c_fill,q_85/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/dwoxdmjhvvjoz8vmynxe.jpg',
             desc: '前往順豐速運尖沙咀西九龍高鐵順豐站領取演唱會門票。',
             tips: [
               '💡 <strong>交通建議：</strong>搭乘 13:05 的免費接駁車（路線2）前往東涌站，轉乘東涌線至九龍站。',
@@ -250,169 +216,169 @@
           {
             id: 'd1-5', step: 5, time: '14:20', name: 'AIRSIDE 商場 / 啟德站', stay: '演唱會前午餐', category: '午餐＆商場',
             lat: 22.3308, lng: 114.1972, address: '九龍啟德協調道2號（港鐵啟德站）',
-            img: makeHkBase64('mall', '14:20 AIRSIDE 商場 / 啟德站', '演唱會前午餐補給', '#1e1b4b', '#e11d48'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmmcNnKCwYTedzFnTkQdTaKjioFLDOS9hi1uEx16s6a67gJwHjhGUtH2c&s=10',
             desc: '抵達 AIRSIDE 商場 / 啟德站享用演唱會前午餐。',
             tips: ['💡 <strong>交通建議：</strong>步行至港鐵柯士甸站，轉屯馬線至啟德站。']
           },
           {
             id: 'd1-6', step: 6, time: '15:30', name: '啟德體育館 / 周邊地區', stay: '活動行程', category: '演唱會活動',
             lat: 22.3228, lng: 114.1995, address: '九龍啟德承啟道38-39號（啟德體育館）',
-            img: makeHkBase64('concert', '15:30 啟德體育館 / 周邊地區', '演唱會與現場活動行程', '#4c0519', '#e11d48'),
+            img: 'https://dimg04.tripcdn.com/images/1mj1112000i1iv1g33856_C_800_600_R5.png_.webp',
             desc: '於啟德體育館及周邊地區進行活動行程。', tips: []
           },
           {
             id: 'd1-7', step: 7, time: '19:30', name: '地道小吃與街區漫步', stay: '陳記魚蛋・廟街牛雜・李小龍銅像', category: '地道小吃＆街區漫步',
             lat: 22.2932, lng: 114.1742, address: '九龍尖沙咀星光大道（李小龍銅像）＆ 廟街／尖沙咀街區',
-            img: makeHkBase64('streetfood', '19:30 地道小吃與街區漫步', '陳記魚蛋・廟街牛雜・李小龍銅像', '#7c2d12', '#be123c'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqlSerpUsIJF_bFRUgNCseTmnmBgsvG0CR972s-MD69wLUjR-lQbknWgGz&s=10',
             desc: '品嚐陳記魚蛋、廟街牛雜，沿路逛咖啡店與當地商店，並造訪李小龍銅像。', tips: []
           },
           {
             id: 'd1-8', step: 8, time: '21:00', name: '返回啟德地區', stay: '抵達啟德體育館或周邊一帶', category: '返回啟德',
             lat: 22.3215, lng: 114.1988, address: '九龍啟德體育館或周邊一帶',
-            img: makeHkBase64('concert', '21:00 返回啟德地區', '抵達啟德體育館或周邊一帶', '#31102f', '#9f1239'),
+            img: 'https://dimg04.tripcdn.com/images/1mj1112000i1iv1g33856_C_800_600_R5.png_.webp',
             desc: '返回啟德地區，抵達啟德體育館或周邊一帶。', tips: []
           },
           {
             id: 'd1-9', step: 9, time: '22:00', name: '佳佳甜品', stay: '佐敦吃宵夜', category: '米其林必比登宵夜',
             lat: 22.3056, lng: 114.1705, address: '九龍佐敦寧波街29號',
-            img: makeHkBase64('dessert', '22:00 佳佳甜品', '佐敦吃宵夜｜米其林推薦糖水', '#451a03', '#b45309'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSosu6ciFajl3aso56w881WAGQcYOiCXx6kwMEPwEPuqA&s=10',
             desc: '前往佐敦佳佳甜品吃宵夜。',
             tips: ['💡 <strong>交通建議：</strong>搭乘港鐵至佐敦站。']
           },
           {
             id: 'd1-10', step: 10, time: '23:00', name: '麗豪航天城酒店', stay: '休息', category: '返回酒店休息',
             lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
-            img: makeHkBase64('transit', '23:00 返回麗豪航天城酒店', '城巴 A22/N21 轉機場免費接駁車（路線1）', '#0f172a', '#334155'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '返回麗豪航天城酒店休息。',
             tips: ['🚌 <strong>交通與替代方案：</strong>此時已錯過東涌站 22:15 的末班接駁車。請至彌敦道搭乘城巴 A22 或 N21 夜間巴士直達機場（機場旅運車站），抵達後轉乘機場往酒店的免費接駁車（路線1營業至凌晨 25:30，班次密集）回酒店。']
           }
         ]
       },
       {
-        dayId: 'd2', date: '📅 DAY 2', title: '九龍信仰與港島精華',
+        dayId: 'd2', date: 'DAY 2', title: '九龍信仰與港島精華',
         subtitle: '06:45 酒店出發 ➔ 08:15 黃大仙廟 ➔ 09:20 金華冰廳 ➔ 10:20 尖沙咀商圈 ➔ 11:30 天星碼頭 ➔ 12:15 利東街&霸王茶姬 ➔ 13:00 再興燒臘 ➔ 13:50 鵝頸橋底 ➔ 14:40 石板街 ➔ 15:00 大館 ➔ 15:55 嘉咸街壁畫 ➔ 16:15 纜車總站 ➔ 16:45 太平山頂 ➔ 18:15 下山往中環碼頭 ➔ 18:45 香港摩天輪 ➔ 19:45 天星小輪返尖沙咀 ➔ 20:10 廟街牌樓 ➔ 21:15 返回酒店',
         color: '#2563eb',
         spots: [
           {
             id: 'd2-1', step: 1, time: '06:45', name: '麗豪航天城酒店出發', stay: '早間出發', category: '出發動線',
             lat: 22.3193, lng: 113.9392, address: '香港赤鱲角香港國際機場航展道8號',
-            img: makeHkBase64('transit', '06:45 麗豪航天城酒店出發', 'E22 巴士直達或 07:15 接駁車轉港鐵', '#1e3a8a', '#2563eb'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '06:45 從麗豪航天城酒店出發前往九龍。',
             tips: ['💡 <strong>交通建議：</strong>搭乘機場巴士 E22 直達「黃大仙站」，或搭 07:15 飯店接駁車至東涌轉港鐵至黃大仙站。']
           },
           {
             id: 'd2-2', step: 2, time: '08:15', name: '黃大仙廟', stay: '參拜，停留 45 分鐘。早晨人少最適合', category: '九龍信仰參拜',
             lat: 22.3426, lng: 114.1935, address: '九龍黃大仙竹園村2號（港鐵黃大仙站）',
-            img: makeHkBase64('temple', '08:15 黃大仙廟', '參拜，停留 45 分鐘（早晨人少最適合）', '#7f1d1d', '#d97706'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2e9Xyxccp9Zy1Q604cyagSJSSGrAkQJ5sqZKTwGLe5WOhsNb4ZeegfzO3&s=10',
             desc: '抵達黃大仙廟參拜，停留 45 分鐘。早晨人少最適合。',
             tips: ['💡 <strong>交通建議：</strong>搭乘港鐵觀塘線至旺角站。']
           },
           {
             id: 'd2-3', step: 3, time: '09:20', name: '金華冰廳', stay: '吃早餐，停留 45 分鐘', category: '港式早餐',
             lat: 22.3222, lng: 114.1695, address: '九龍旺角弼街47號',
-            img: makeHkBase64('cafe', '09:20 金華冰廳', '吃早餐，停留 45 分鐘｜招牌鮮油菠蘿包', '#78350f', '#f59e0b'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOHmBzhwHi8ezncK6upW02Lf6UwJkut_Vj6K4S241x4qNMm-dH77Pww087&s=10',
             desc: '於金華冰廳吃早餐，停留 45 分鐘。', tips: []
           },
           {
             id: 'd2-4', step: 4, time: '10:20', name: '尖沙咀商圈', stay: '市區觀光，停留 1 小時', category: '市區觀光',
             lat: 22.2988, lng: 114.1722, address: '九龍尖沙咀商圈',
-            img: makeHkBase64('mall', '10:20 尖沙咀商圈', '市區觀光，停留 1 小時', '#1e3a8a', '#0284c7'),
+            img: 'https://blog-static.kkday.com/zh-tw/blog/wp-content/uploads/batch_HokngKong_Times-Square_P1220576.jpg',
             desc: '於尖沙咀商圈進行市區觀光，停留 1 小時。', tips: []
           },
           {
             id: 'd2-5', step: 5, time: '11:30', name: '天星碼頭', stay: '搭乘天星小輪前往灣仔', category: '跨海渡輪',
             lat: 22.2938, lng: 114.1688, address: '九龍尖沙咀天星碼頭',
-            img: makeHkBase64('ferry', '11:30 天星碼頭', '搭乘天星小輪前往灣仔', '#065f46', '#0284c7'),
+            img: 'https://upload.wikimedia.org/wikipedia/commons/5/59/Tsim_Sha_Tsui_Ferry_Pier.jpg?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=original',
             desc: '於尖沙咀天星碼頭搭乘天星小輪前往灣仔。', tips: []
           },
           {
             id: 'd2-6', step: 6, time: '12:15', name: '利東街 & 霸王茶姬', stay: '拍照與買飲料，停留 45 分鐘', category: '街拍＆手搖飲',
             lat: 22.2759, lng: 114.1722, address: '香港島灣仔皇后大道東200號',
-            img: makeHkBase64('heritage', '12:15 利東街 & 霸王茶姬', '拍照與買飲料，停留 45 分鐘', '#881337', '#be185d'),
+            img: 'https://static6.orstatic.com/userphoto3/photo/2W/2A96/0G8XB9B11156D98BB1492Elv.jpg',
             desc: '於灣仔利東街 & 霸王茶姬拍照與買飲料，停留 45 分鐘。', tips: []
           },
           {
             id: 'd2-7', step: 7, time: '13:00', name: '再興燒臘飯店', stay: '吃午餐，停留 40 分鐘', category: '燒臘午餐',
             lat: 22.2782, lng: 114.1755, address: '香港島灣仔軒尼詩道265-267號地下C座',
-            img: makeHkBase64('roast', '13:00 再興燒臘飯店', '吃午餐，停留 40 分鐘｜米其林推薦燒臘', '#7f1d1d', '#ea580c'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzYjunG6LT0xfz7cIzpYso1Gc5yG2Sh8Ir61CE_jNqf89FdYDcH_Pn8fbi&s=10',
             desc: '於再興燒臘飯店吃午餐，停留 40 分鐘。', tips: []
           },
           {
             id: 'd2-8', step: 8, time: '13:50', name: '鵝頸橋底', stay: '體驗打小人，停留 30 分鐘', category: '民俗文化體驗',
             lat: 22.2791, lng: 114.1812, address: '香港島銅鑼灣堅拿道西與軒尼詩道交界（鵝頸橋底）',
-            img: makeHkBase64('streetfood', '13:50 鵝頸橋底', '體驗打小人，停留 30 分鐘', '#312e81', '#4f46e5'),
+            img: 'https://cdn2.ettoday.net/images/7676/d7676557.jpg',
             desc: '前往鵝頸橋底體驗打小人，停留 30 分鐘。',
             tips: ['💡 <strong>交通建議：</strong>搭乘叮叮車或港鐵港島線至中環站。']
           },
           {
             id: 'd2-9', step: 9, time: '14:40', name: '砵甸乍街 / 石板街', stay: '拍照，停留 15 分鐘', category: '歷史街區拍照',
             lat: 22.2825, lng: 114.1552, address: '香港島中環砵甸乍街（石板街）',
-            img: makeHkBase64('heritage', '14:40 砵甸乍街 / 石板街', '拍照，停留 15 分鐘', '#334155', '#475569'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoModLgjhwgVZ4X0jh_HltSsC9t7fy8I0LLcoSYoU3MQ&s=10',
             desc: '於中環砵甸乍街 / 石板街拍照，停留 15 分鐘。', tips: []
           },
           {
             id: 'd2-10', step: 10, time: '15:00', name: '大館', stay: '參觀園區，停留 45 分鐘', category: '古蹟藝術園區',
             lat: 22.2815, lng: 114.1541, address: '香港島中環荷李活道10號（大館 Tai Kwun）',
-            img: makeHkBase64('heritage', '15:00 大館 Tai Kwun', '參觀園區，停留 45 分鐘', '#7c2d12', '#9a3412'),
+            img: 'https://upload.wikimedia.org/wikipedia/commons/d/dc/Tai_Kwun_Police_Headquarters_Block_201806.jpg',
             desc: '參觀大館園區，停留 45 分鐘。', tips: []
           },
           {
             id: 'd2-11', step: 11, time: '15:55', name: '嘉咸街壁畫', stay: '拍照打卡，停留 15 分鐘', category: '街頭塗鴉打卡',
             lat: 22.2823, lng: 114.1528, address: '香港島中環荷李活道48號與嘉咸街交界處',
-            img: makeHkBase64('streetfood', '15:55 嘉咸街壁畫', '拍照打卡，停留 15 分鐘', '#1e3a8a', '#7c3aed'),
+            img: 'https://www.settour.com.tw/ss_img/poi/20220812/0337dcb0-9a0d-49ad-b970-8e034d142f29.jpg',
             desc: '於嘉咸街壁畫拍照打卡，停留 15 分鐘。', tips: []
           },
           {
             id: 'd2-12', step: 12, time: '16:15', name: '前往山頂纜車總站', stay: '中環花園道纜車總站', category: '山頂纜車上山',
             lat: 22.2777, lng: 114.1592, address: '香港島中環花園道33號（山頂纜車總站）',
-            img: makeHkBase64('cablecar', '16:15 前往山頂纜車總站', '中環花園道纜車總站', '#065f46', '#15803d'),
+            img: 'https://upload.wikimedia.org/wikipedia/commons/8/84/Peak_Tram%28White_light%29_27-08-2022.jpg?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=original',
             desc: '前往中環花園道山頂纜車總站準備搭纜車上太平山。',
             tips: ['💡 <strong>交通建議：</strong>從嘉咸街步行約 15-20 分鐘抵達中環花園道纜車總站；或直接搭計程車（約 5-10 分鐘）。建議提前網購纜車快速通關票。']
           },
           {
             id: 'd2-13', step: 13, time: '16:45', name: '太平山頂', stay: '觀賞日落與夜景，停留 1.5 小時', category: '日落與百萬夜景',
             lat: 22.2759, lng: 114.1455, address: '香港島太平山山頂',
-            img: makeHkBase64('peak', '16:45 太平山頂', '觀賞日落與夜景，停留 1.5 小時', '#0f172a', '#1d4ed8'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShyABIVQZNlYKwKKg0BmXVbLl8BtcbjXZwkdqz__PIDb-BTiZ0ZcousXc&s=10',
             desc: '於太平山頂觀賞日落與夜景，停留 1.5 小時。', tips: []
           },
           {
             id: 'd2-14', step: 14, time: '18:15', name: '下山前往中環碼頭', stay: '下山轉乘動線', category: '交通轉乘',
             lat: 22.2777, lng: 114.1592, address: '中環花園道纜車總站外 ➔ 中環碼頭',
-            img: makeHkBase64('transit', '18:15 下山前往中環碼頭', '轉乘 15C 號敞篷巴士或計程車', '#1e293b', '#2563eb'),
+            img: 'https://upload.wikimedia.org/wikipedia/commons/8/84/Peak_Tram%28White_light%29_27-08-2022.jpg?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=original',
             desc: '18:15 從太平山下山前往中環碼頭。',
             tips: ['💡 <strong>交通建議：</strong>於纜車總站外轉乘 15C 號敞篷巴士或計程車直達中環碼頭。']
           },
           {
             id: 'd2-15', step: 15, time: '18:45', name: '中環 9 號碼頭 & 香港摩天輪', stay: '搭乘摩天輪與海濱散步，停留 1 小時', category: '海濱摩天輪',
             lat: 22.2855, lng: 114.1618, address: '香港島中環民光街33號（中環 9 號碼頭 & 香港摩天輪）',
-            img: makeHkBase64('wheel', '18:45 中環 9 號碼頭 & 香港摩天輪', '搭乘摩天輪與海濱散步，停留 1 小時', '#1e1b4b', '#db2777'),
+            img: 'https://img.bigfang.tw/2017/09/1504291159-aa76fec791087cac74c43d5baf46eb72.jpg',
             desc: '於中環 9 號碼頭 & 香港摩天輪搭乘摩天輪與海濱散步，停留 1 小時。', tips: []
           },
           {
             id: 'd2-16', step: 16, time: '19:45', name: '搭乘天星小輪返回尖沙咀', stay: '欣賞海上夜景，航程約 10 分鐘', category: '海上夜景渡輪',
             lat: 22.2866, lng: 114.1605, address: '香港島中環 7 號碼頭 ➔ 九龍尖沙咀天星碼頭',
-            img: makeHkBase64('ferry', '19:45 搭乘天星小輪返回尖沙咀', '欣賞維港海上夜景，航程約 10 分鐘', '#0f172a', '#047857'),
+            img: 'https://www.starferry.com.hk/sites/default/files/dummy/cruise_night.png',
             desc: '搭乘天星小輪返回尖沙咀，欣賞海上夜景，航程約 10 分鐘。',
             tips: ['💡 <strong>交通建議：</strong>從摩天輪步行 3 分鐘至中環 7 號碼頭，使用八達通搭船。']
           },
           {
             id: 'd2-17', step: 17, time: '20:10', name: '廟街牌樓', stay: '逛夜市與晚餐，停留 1 小時', category: '夜市＆晚餐',
             lat: 22.3059, lng: 114.1699, address: '九龍佐敦廟街牌樓',
-            img: makeHkBase64('streetfood', '20:10 廟街牌樓', '逛夜市與晚餐，停留 1 小時', '#7f1d1d', '#b45309'),
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdMyDjJxLA_JK2aOYWrbAMlZ8OeSUINO3wpBAZ6ySj7SNMuhKQoFVo7Bo&s=10',
             desc: '抵達廟街牌樓逛夜市與享用晚餐，停留 1 小時。',
             tips: ['💡 <strong>交通建議：</strong>抵達尖沙咀碼頭後，轉乘計程車前往廟街（約 5-8 分鐘），或步行至港鐵尖沙咀站搭至佐敦站。']
           },
           {
             id: 'd2-18', step: 18, time: '21:15', name: '準備返回麗豪航天城酒店', stay: '港鐵轉 22:15 飯店接駁車（路線2）', category: '返回酒店',
             lat: 22.2892, lng: 113.9416, address: '港鐵佐敦站 ➔ 荔景站 ➔ 東涌站 ➔ 麗豪航天城酒店',
-            img: makeHkBase64('transit', '21:15 準備返回麗豪航天城酒店', '東涌站轉乘 22:15 飯店接駁車（路線2）', '#0f172a', '#1e40af'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '21:15 準備由佐敦返回麗豪航天城酒店。',
             tips: ['💡 <strong>交通建議：</strong>搭乘港鐵荃灣線（佐敦站）至荔景站，轉乘東涌線至「東涌站」（車程約 40 分鐘），轉乘 22:15 的飯店接駁車（路線2）回酒店。']
           }
         ]
       },
       {
-        dayId: 'd3', date: '📅 DAY 3', title: '機場觀光與返程',
+        dayId: 'd3', date: 'DAY 3', title: '機場觀光與返程',
         subtitle: '07:00 起床梳洗打包 ➔ 07:45 退房經 11 SKIES 天橋或接駁車往機場 ➔ 08:15 報到托運通關 ➔ 08:45 機場禁區港式早餐＆免稅店 ➔ 10:50 登機口（班機起飛）',
         color: '#059669',
         banner: {
@@ -424,25 +390,25 @@
           {
             id: 'd3-1', step: 1, time: '07:00', name: '起床梳洗與最後打包', stay: '調整後動線 1', category: '飯店準備',
             lat: 22.3193, lng: 113.9392, address: '麗豪航天城酒店（香港赤鱲角航展道8號）',
-            img: makeHkBase64('hotel', '07:00 起床梳洗與最後打包', '麗豪航天城酒店', '#064e3b', '#059669'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '07:00 起床梳洗與最後打包。', tips: []
           },
           {
             id: 'd3-2', step: 2, time: '07:45', name: '退房，經 11 SKIES 行人天橋步行或搭接駁車前往機場', stay: '調整後動線 2', category: '退房前往機場',
             lat: 22.3175, lng: 113.9360, address: '麗豪航天城酒店 ➔ 11 SKIES 行人天橋 ➔ 香港國際機場',
-            img: makeHkBase64('mall', '07:45 退房前往機場', '經 11 SKIES 行人天橋步行或搭接駁車', '#0f766e', '#0284c7'),
+            img: 'https://www.regala-hotels.com/sites/regal/files/styles/wide/public/2026-06/Regala%20Skycity%20Hotel_Exterior.jpg.webp',
             desc: '07:45 辦理退房，經 11 SKIES 行人天橋步行或搭接駁車前往機場。', tips: []
           },
           {
             id: 'd3-3', step: 3, time: '08:15', name: '報到、托運行李與通關', stay: '調整後動線 3', category: '機場報到通關',
             lat: 22.3088, lng: 113.9345, address: '香港國際機場第一客運大樓離境大堂',
-            img: makeHkBase64('ticket', '08:15 報到、托運行李與通關', '提早托運行李，無事一身輕進禁區', '#065f46', '#0d9488'),
+            img: 'https://cdn.sanity.io/images/nxpteyfv/goguides/464833864128ec6468e2a5d5775e6383f3eeee9b-1600x1066.jpg',
             desc: '08:15 於香港國際機場櫃檯辦理報到、托運行李與出境通關，無事一身輕進入禁區。', tips: []
           },
           {
             id: 'd3-4', step: 4, time: '08:45', name: '於機場禁區享用道地港式早餐，隨後進行免稅店最後採購', stay: '何洪記／正斗／% Arabica／Blue Bottle', category: '禁區港式早餐＆免稅店',
             lat: 22.3080, lng: 113.9185, address: '香港國際機場禁區美食廣場＆免稅店',
-            img: makeHkBase64('dessert', '08:45 機場禁區道地港式早餐', '何洪記・正斗粥麵專家・% Arabica・Blue Bottle', '#78350f', '#059669'),
+            img: 'https://cdn.sanity.io/images/nxpteyfv/goguides/464833864128ec6468e2a5d5775e6383f3eeee9b-1600x1066.jpg',
             desc: '08:45 於機場禁區享用道地港式早餐，隨後進行免稅店最後採購。',
             tips: [
               '🍜 <strong>推薦必吃：</strong>「何洪記」或「正斗粥麵專家」的米其林推薦生滾粥（如皮蛋瘦肉粥）與雲吞麵。',
@@ -452,7 +418,7 @@
           {
             id: 'd3-5', step: 5, time: '10:50', name: '登機口（班機起飛）', stay: '10:50 班機起飛', category: '登機返程',
             lat: 22.3072, lng: 113.9140, address: '香港國際機場登機閘口',
-            img: makeHkBase64('plane', '10:50 登機口（班機起飛）', '平安返航回臺中', '#0f172a', '#059669'),
+            img: 'https://cdn.sanity.io/images/nxpteyfv/goguides/464833864128ec6468e2a5d5775e6383f3eeee9b-1600x1066.jpg',
             desc: '10:50 於登機口搭機起飛返臺。', tips: []
           }
         ]
@@ -471,6 +437,50 @@
     const allHkBounds = [];
     let activeSpotIds = [];
     let currentSpotIdx = 0;
+
+    // 以專屬 spotId 獨立轉換 Base64，絕不與同網域圖片碰撞覆蓋
+    async function urlToBase64(url, spotId) {
+      if (url.startsWith('data:image/')) return url;
+      const cacheKey = 'hk_img_v2_' + spotId;
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached && cached.startsWith('data:image/')) return cached;
+      } catch (e) {}
+
+      const cleanUrl = url.replace(/\?_fr=wc$/, '');
+      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&w=750&output=jpg&q=82`;
+      for (const target of [proxyUrl, url]) {
+        try {
+          const res = await fetch(target, { mode: 'cors' });
+          if (!res.ok) continue;
+          const blob = await res.blob();
+          if (!blob.type.startsWith('image/')) continue;
+          const b64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          if (b64 && b64.startsWith('data:image/')) {
+            try { localStorage.setItem(cacheKey, b64); } catch (e) {}
+            return b64;
+          }
+        } catch (err) {}
+      }
+      return url;
+    }
+
+    async function convertAllImagesSilently() {
+      for (const day of itineraryData) {
+        for (const spot of day.spots) {
+          const b64 = await urlToBase64(spot.img, spot.id);
+          spot.img = b64;
+          if (markersBySpotId[spot.id]) markersBySpotId[spot.id].img = b64;
+          const imgEl = document.getElementById(`img-${spot.id}`);
+          if (imgEl) imgEl.src = b64;
+        }
+      }
+    }
 
     function toggleHeader() {
       const header = document.getElementById('appHeader');
@@ -526,8 +536,8 @@
           const dx = e.changedTouches[0].screenX - startX;
           const dy = e.changedTouches[0].screenY - startY;
           if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-            if (dx < 0) stepSpot(1); // 左滑：下一站
-            else stepSpot(-1);       // 右滑：上一站
+            if (dx < 0) stepSpot(1);
+            else stepSpot(-1);
           }
         }, { passive: true });
       });
@@ -603,7 +613,7 @@
               <div class="card-media">
                 <span class="time-tag">${spot.time}</span>
                 <span class="step-number" style="background:${day.color}">${spot.step}</span>
-                <img src="${spot.img}" alt="${spot.name}" />
+                <img id="img-${spot.id}" src="${spot.img}" alt="${spot.name}" referrerpolicy="no-referrer" />
               </div>
               <div class="card-body">
                 <div>
@@ -640,7 +650,7 @@
               <span class="day-badge" style="background:${day.color}">${day.date}</span>
               <div class="day-title-text"><h2>${day.title}</h2><p>${day.subtitle}</p></div>
             </div>
-            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 彈出當日路線地圖</button>
+            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 當日路線地圖</button>
           </div>
           ${bannerHtml}
           <div class="cards-container">${cardsHtml}</div>
@@ -648,14 +658,11 @@
         feed.appendChild(section);
       });
       initSwipeGestures();
+      convertAllImagesSilently();
     }
 
     function focusSpot(spotId, customList) {
-      if (customList) {
-        activeSpotIds = customList;
-      } else {
-        activeSpotIds = Object.keys(markersBySpotId);
-      }
+      activeSpotIds = customList || Object.keys(markersBySpotId);
       currentSpotIdx = activeSpotIds.indexOf(spotId);
       if (currentSpotIdx === -1) { activeSpotIds = Object.keys(markersBySpotId); currentSpotIdx = activeSpotIds.indexOf(spotId); }
 

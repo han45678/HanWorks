@@ -13,25 +13,20 @@
     body { font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-main); color:var(--text-primary); line-height:1.6; -webkit-font-smoothing:antialiased; }
     .app-header { background:linear-gradient(135deg,#111827 0%,#1e293b 100%); color:#fff; padding:16px 24px 14px; position:sticky; top:0; z-index:1000; box-shadow:0 4px 20px rgba(0,0,0,0.18); transition:padding 0.25s ease; }
     .app-header.collapsed { padding:10px 16px; }
-    .header-bar-compact { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; gap:8px; flex-wrap:wrap; }
-    .compact-title { font-size:14.5px; font-weight:800; color:#f8fafc; display:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .header-bar-compact { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; gap:8px; }
+    .compact-title { font-size:15px; font-weight:800; color:#f8fafc; display:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .app-header.collapsed .compact-title { display:block; }
-    .header-top-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
-    .b64-export-btn { background:#059669; border:1px solid #34d399; color:#fff; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; transition:all 0.2s; }
-    .b64-export-btn:hover { background:#047857; }
-    .b64-export-btn.loading { background:#475569; border-color:#64748b; cursor:wait; }
-    .header-toggle-btn { background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .header-toggle-btn { margin-left:auto; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.25); color:#fff; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
     .header-collapsible-content { max-width:1100px; margin:8px auto 0; overflow:hidden; transition:max-height 0.3s ease,opacity 0.25s ease,margin 0.25s ease; max-height:500px; opacity:1; }
     .app-header.collapsed .header-collapsible-content { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
     .header-top { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; margin-bottom:14px; }
     .title-group h1 { font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .title-badge { font-size:12px; font-weight:600; padding:3px 10px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.22); border-radius:999px; }
     .title-group p { font-size:13px; color:#94a3b8; margin-top:4px; }
     .header-stats { display:flex; gap:10px; flex-wrap:wrap; }
     .stat-pill { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); padding:5px 12px; border-radius:10px; font-size:12px; color:#e2e8f0; }
     .date-tabs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
     .date-tabs::-webkit-scrollbar { display:none; }
-    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+    .date-tab { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:7px 18px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; transition:all 0.2s; }
     .date-tab.active { background:#fff; color:#0f172a; border-color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
     .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
     .main-container { max-width:1100px; margin:0 auto; padding:22px 18px 80px; }
@@ -52,7 +47,6 @@
     .place-card:hover .card-media img { transform:scale(1.04); }
     .time-tag { position:absolute; top:10px; left:10px; background:rgba(15,23,42,0.86); color:#fff; padding:3px 9px; border-radius:6px; font-size:12px; font-weight:700; z-index:2; }
     .step-number { position:absolute; bottom:10px; left:10px; width:28px; height:28px; border-radius:50%; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:2; }
-    .b64-badge { position:absolute; bottom:10px; right:10px; background:rgba(5,150,105,0.88); color:#fff; padding:2px 7px; border-radius:4px; font-size:10.5px; font-weight:700; z-index:2; }
     .card-body { padding:16px 20px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; }
     .place-title-group h3 { font-size:17.5px; font-weight:800; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .place-meta { display:flex; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; }
@@ -120,17 +114,13 @@
   <header class="app-header" id="appHeader">
     <div class="header-bar-compact">
       <div class="compact-title">🏝️ 2026 廈門五日山海漫遊（11/18 – 11/22）</div>
-      <div class="header-top-actions">
-        <button class="b64-export-btn loading" id="b64ExportBtn" onclick="exportBase64Html()" title="將15張照片轉為Base64寫入HTML永久離線保存">
-          ⏳ 圖片轉 Base64 中 (0/15)...
-        </button>
-        <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">▲ 收合頂部欄</button>
-      </div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">▲ 收合頂部欄</button>
     </div>
     <div class="header-collapsible-content" id="headerContent">
       <div class="header-top">
         <div class="title-group">
-          <h1>2026 廈門五日山海漫遊></h1>
+          <h1>2026 廈門五日山海漫遊</h1>
+          <p>11/18 (三) – 11/22 (日) ｜ 下榻：麓閣・伴山禪舍（思明區軟件園二期店）</p>
         </div>
         <div class="header-stats">
           <div class="stat-pill">🚢 去程：11/18 抵達五通碼頭</div>
@@ -138,12 +128,12 @@
         </div>
       </div>
       <nav class="date-tabs" id="dateTabs">
-        <button class="date-tab active" onclick="filterDay('all', this)"><span>全部</span></button>
-        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>11/18 (三)</span></button>
-        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>11/19 (四)</span></button>
-        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>11/20 (五)</span></button>
-        <button class="date-tab" onclick="filterDay('d4', this)"><span class="dot" style="background:var(--accent-d4)"></span><span>11/21 (六)</span></button>
-        <button class="date-tab" onclick="filterDay('d5', this)"><span class="dot" style="background:var(--accent-d5)"></span><span>11/22 (日)</span></button>
+        <button class="date-tab active" onclick="filterDay('all', this)"><span>ALL</span></button>
+        <button class="date-tab" onclick="filterDay('d1', this)"><span class="dot" style="background:var(--accent-d1)"></span><span>DAY 1</span></button>
+        <button class="date-tab" onclick="filterDay('d2', this)"><span class="dot" style="background:var(--accent-d2)"></span><span>DAY 2</span></button>
+        <button class="date-tab" onclick="filterDay('d3', this)"><span class="dot" style="background:var(--accent-d3)"></span><span>DAY 3</span></button>
+        <button class="date-tab" onclick="filterDay('d4', this)"><span class="dot" style="background:var(--accent-d4)"></span><span>DAY 4</span></button>
+        <button class="date-tab" onclick="filterDay('d5', this)"><span class="dot" style="background:var(--accent-d5)"></span><span>DAY 5</span></button>
       </nav>
     </div>
   </header>
@@ -154,7 +144,6 @@
 
   <button class="floating-map-btn" onclick="openFullMapModal()">🗺️ 開啟全島路線地圖</button>
 
-  <!-- Map Modal with Left/Right Swipe Switcher -->
   <div class="map-modal-backdrop" id="mapModalBackdrop" onclick="closeMapModalOnBackdrop(event)">
     <div class="map-modal-dialog" onclick="event.stopPropagation()">
       <div class="map-modal-header" id="mapModalHeader">
@@ -188,11 +177,17 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script id="mainAppScript">
-    // 15張使用者指定圖片（依序排列對應 15 個行程節點）
+  <script>
+    // 自動清理舊版因前32碼重疊造成的錯誤快取
+    try {
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('xm_b64_')) localStorage.removeItem(k);
+      });
+    } catch (e) {}
+
     const itineraryData = [
       {
-        dayId: 'd1', date: '11/18（三）', title: '抵達廈門・九九木眼鏡配鏡與老城煙火氣',
+        dayId: 'd1', date: 'DAY 1（11/18）', title: '抵達廈門・九九木眼鏡配鏡與老城煙火氣',
         subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 麓閣・伴山禪舍放行李 ➔ 九九木眼鏡（五緣灣天虹B1） ➔ 八市 ➔ 中山路步行街',
         color: '#d97706',
         spots: [
@@ -241,7 +236,7 @@
         ]
       },
       {
-        dayId: 'd2', date: '11/19（四）', title: '鼓浪嶼漫遊 ＋ 雙子塔夜景 ＆ 白城沙灘酒吧',
+        dayId: 'd2', date: 'DAY 2（11/19）', title: '鼓浪嶼漫遊 ＋ 雙子塔夜景 ＆ 白城沙灘酒吧',
         subtitle: '酒店早餐 ➔ 鼓浪嶼半日遊 ➔ 【新增】雙子塔拍夜景照 ➔ 廈大白城沙灘酒吧',
         color: '#2563eb',
         spots: [
@@ -272,7 +267,7 @@
         ]
       },
       {
-        dayId: 'd3', date: '11/20（五）', title: '鯨宴海鮮自助 ＋ 嶼見閩南 ＆ 逛商場',
+        dayId: 'd3', date: 'DAY 3（11/20）', title: '鯨宴海鮮自助 ＋ 嶼見閩南 ＆ 逛商場',
         subtitle: '萬象城鯨宴海鮮自助 ➔ 【新增】嶼見閩南·時光幻境 ➔ 萬象城／SM商場逛街',
         color: '#059669',
         spots: [
@@ -303,7 +298,7 @@
         ]
       },
       {
-        dayId: 'd4', date: '11/21（六）', title: '萬石山海黃金線：南普陀寺 ＋ 植物園 ＋ 鐘鼓索道',
+        dayId: 'd4', date: 'DAY 4（11/21）', title: '萬石山海黃金線：南普陀寺 ＋ 植物園 ＋ 鐘鼓索道',
         subtitle: '【新增一日順遊】南普陀寺祈福 ➔ 廈門園林植物園（多肉＆雨林） ➔ 鐘鼓索道看夕陽',
         color: '#7c3aed',
         spots: [
@@ -334,7 +329,7 @@
         ]
       },
       {
-        dayId: 'd5', date: '11/22（日）', title: '小三通返程：五通碼頭搭船 ➔ 金門尚義機場飛台中',
+        dayId: 'd5', date: 'DAY 5（11/22）', title: '小三通返程：五通碼頭搭船 ➔ 金門尚義機場飛台中',
         subtitle: '10:00 酒店退房出發 ➔ 11:30 五通碼頭開船 ➔ 12:00 抵金門水頭 ➔ 13:30 起飛回台中',
         color: '#dc2626',
         spots: [
@@ -363,23 +358,23 @@
     let activeSpotIds = [];
     let currentSpotIdx = 0;
 
-    // 單張圖片轉 Base64 函式（支援 CORS Proxy 繞過防盜鏈與跨域限制）
-    async function urlToBase64(url) {
+    // 修正：以唯一 spotId 作為快取鍵值，確保 15 張照片各自獨立不覆蓋
+    async function urlToBase64(url, spotId) {
       if (url.startsWith('data:image/')) return url;
-      const cacheKey = 'xm_b64_' + btoa(unescape(encodeURIComponent(url))).slice(0, 32);
+      const cacheKey = 'xm_img_v2_' + spotId;
       try {
         const cached = localStorage.getItem(cacheKey);
         if (cached && cached.startsWith('data:image/')) return cached;
       } catch (e) {}
 
-      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=750&output=jpg&q=82`;
-      const tryList = [proxyUrl, url];
-
-      for (const target of tryList) {
+      const cleanUrl = url.replace(/\?_fr=wc$/, '');
+      const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&w=750&output=jpg&q=82`;
+      for (const target of [proxyUrl, url]) {
         try {
           const res = await fetch(target, { mode: 'cors' });
           if (!res.ok) continue;
           const blob = await res.blob();
+          if (!blob.type.startsWith('image/')) continue;
           const b64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result);
@@ -395,47 +390,16 @@
       return url;
     }
 
-    // 背景自動將 15 張圖片轉成 Base64 並替換至 DOM 與資料結構
-    async function autoConvertAllToBase64() {
-      const btn = document.getElementById('b64ExportBtn');
-      const allSpots = [];
-      itineraryData.forEach(d => d.spots.forEach(s => allSpots.push(s)));
-      let doneCount = 0;
-
-      for (const spot of allSpots) {
-        const b64 = await urlToBase64(spot.img);
-        spot.img = b64;
-        if (markersBySpotId[spot.id]) {
-          markersBySpotId[spot.id].img = b64;
+    async function convertAllImagesSilently() {
+      for (const day of itineraryData) {
+        for (const spot of day.spots) {
+          const b64 = await urlToBase64(spot.img, spot.id);
+          spot.img = b64;
+          if (markersBySpotId[spot.id]) markersBySpotId[spot.id].img = b64;
+          const imgEl = document.getElementById(`img-${spot.id}`);
+          if (imgEl) imgEl.src = b64;
         }
-        const imgEl = document.getElementById(`img-${spot.id}`);
-        if (imgEl) imgEl.src = b64;
-        const badgeEl = document.getElementById(`b64-badge-${spot.id}`);
-        if (badgeEl && b64.startsWith('data:image/')) {
-          badgeEl.textContent = '✓ Base64';
-        }
-        doneCount++;
-        if (btn) btn.innerHTML = `⏳ 圖片轉 Base64 中 (${doneCount}/${allSpots.length})...`;
       }
-
-      if (btn) {
-        btn.classList.remove('loading');
-        btn.innerHTML = `💾 下載 Base64 離線版 HTML (${doneCount}/${allSpots.length} 已完成)`;
-      }
-    }
-
-    // 一鍵匯出已經把 15 張 Base64 寫進原始碼的永久離線版 HTML
-    function exportBase64Html() {
-      let docHtml = document.documentElement.outerHTML;
-      const updatedJson = JSON.stringify(itineraryData, null, 6);
-      docHtml = docHtml.replace(/const itineraryData = \[[\s\S]*?\n\];/, `const itineraryData = ${updatedJson};`);
-      const blob = new Blob(['<!DOCTYPE html>\n' + docHtml], { type: 'text/html;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'xiamen_itinerary_2026_base64_offline.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
     }
 
     function toggleHeader() {
@@ -549,15 +513,13 @@
 
           const tipsHtml = spot.tips.map(t => `<li>${t}</li>`).join('');
           const newBadgeHtml = spot.isNew ? `<span class="new-tag">✨ 新加入景點</span>` : '';
-          const isAlreadyB64 = spot.img.startsWith('data:image/');
 
           cardsHtml += `
             <article class="place-card" id="card-${spot.id}" onclick="focusSpot('${spot.id}')">
               <div class="card-media">
                 <span class="time-tag">${spot.time}</span>
                 <span class="step-number" style="background:${day.color}">${spot.step}</span>
-                <span class="b64-badge" id="b64-badge-${spot.id}">${isAlreadyB64 ? '✓ Base64' : '實景圖'}</span>
-                <img id="img-${spot.id}" src="${spot.img}" alt="${spot.name}" referrerpolicy="no-referrer" onerror="this.src='https://wsrv.nl/?url='+encodeURIComponent('${spot.img}')+'&w=750&output=jpg'" />
+                <img id="img-${spot.id}" src="${spot.img}" alt="${spot.name}" referrerpolicy="no-referrer" />
               </div>
               <div class="card-body">
                 <div>
@@ -595,14 +557,14 @@
               <span class="day-badge" style="background:${day.color}">${day.date}</span>
               <div class="day-title-text"><h2>${day.title}</h2><p>${day.subtitle}</p></div>
             </div>
-            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 彈出當日路線地圖</button>
+            <button class="day-map-btn" onclick="zoomToDay('${day.dayId}')">🗺️ 當日路線地圖</button>
           </div>
           <div class="cards-container">${cardsHtml}</div>
         `;
         feed.appendChild(section);
       });
       initSwipeGestures();
-      autoConvertAllToBase64();
+      convertAllImagesSilently();
     }
 
     function focusSpot(spotId, customList) {
