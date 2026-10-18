@@ -178,7 +178,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // 自動清理舊版因前32碼重疊造成的錯誤快取
     try {
       Object.keys(localStorage).forEach(k => {
         if (k.startsWith('xm_b64_')) localStorage.removeItem(k);
@@ -187,8 +186,8 @@
 
     const itineraryData = [
       {
-        dayId: 'd1', date: 'DAY 1（11/18）', title: '抵達廈門・九九木眼鏡配鏡與老城煙火氣',
-        subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 麓閣・伴山禪舍放行李 ➔ 九九木眼鏡（五緣灣天虹B1） ➔ 八市 ➔ 中山路步行街',
+        dayId: 'd1', date: 'DAY 1（11/18）', title: '抵達廈門・九九木配鏡 ＋ 朱富貴海鮮火鍋 ＆ 八市中山路',
+        subtitle: '五通碼頭下船 ➔ 瑞幸咖啡 ➔ 飯店放行李 ➔ 九九木眼鏡（五緣灣天虹B1） ➔ 【新增】朱富貴火鍋（淺嚐） ➔ 八市 ＆ 中山路吃小東西',
         color: '#d97706',
         spots: [
           {
@@ -208,123 +207,179 @@
             tips: ['<strong>位置優勢：</strong>前往下一站「五緣灣天虹購物中心（九九木眼鏡）」車程僅約 10–12 分鐘；最後一天去五通碼頭也只需約 15 分鐘。']
           },
           {
-            id: 'd1-3', step: 3, time: '16:50 – 17:50', name: '九九木眼鏡（五緣灣天虹購物中心店）',
+            id: 'd1-3', step: 3, time: '16:50 – 17:45', name: '九九木眼鏡（五緣灣天虹購物中心店）',
             category: '驗光配鏡・光學眼鏡', rating: '4.8', isNew: false, lat: 24.509873, lng: 118.160382,
             address: '福建省廈門市湖里區金湖路516號（五緣灣天虹購物中心 B1地下一樓）',
             customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('福建省廈門市湖里區金湖路516號 五緣灣天虹購物中心 九九木眼鏡'),
             customAmapUrl: 'https://uri.amap.com/marker?position=118.160382,24.509873&name=' + encodeURIComponent('九九木眼鏡(五緣灣天虹購物中心B1)'),
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStRpd08BRWUjkjB1zMqsNdKfBm9d4NEF3hD-HkRpPodE0pj7IdK9gveFFu&s=10',
-            desc: '放完行李後搭車前往湖里區金湖路 516 號「五緣灣天虹購物中心」B1 地下一樓的九九木眼鏡驗光配鏡，完成後接著前往八市吃晚餐。',
+            desc: '放完行李後搭車前往湖里區金湖路 516 號「五緣灣天虹購物中心」B1 地下一樓的九九木眼鏡驗光配鏡，配完直接去吃朱富貴火鍋。',
             tips: ['<strong>商場位置：</strong>位於金湖路與五緣灣道交匯處（地鐵 2/3 號線五緣灣站旁），進入天虹購物中心搭手扶梯至 B1 即達。', '<strong>取件秘訣：</strong>若配製特殊鏡片無法當場取件，可請店家配好後用順豐快遞寄回「麓閣・伴山禪舍」櫃檯代收。']
           },
           {
-            id: 'd1-4', step: 4, time: '18:10 – 19:30', name: '八市（廈門第八海鮮市場）',
-            category: '傳統市集・在地美食', rating: '4.6', isNew: false, lat: 24.4593, lng: 118.0772,
-            address: '福建省廈門市思明區開禾路與友誼路交叉口一帶',
-            img: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/06/ef/b8/caption.jpg?w=1100&h=1100&s=1',
-            desc: '廈門最具在地煙火氣的老字號海鮮與小吃集散地，從五緣灣天虹搭車走仙岳路或成功大道過來約 20–25 分鐘。',
-            tips: ['<strong>推薦動線：</strong>從開禾路口進入，沿途可吃阿杰五香、朱記手撕雞、鐘麗君滿煎糕等熟食小吃。', '<strong>避坑提醒：</strong>若在市場內買海鮮代客料理，務必先確認「秤重單價」與「每道加工費」再下鍋。']
+            id: 'd1-4', step: 4, time: '18:00 – 19:15', name: '朱富貴海鮮火鍋（湖里國貿銀泰店／火車站禹悅匯店）',
+            category: '一人一鍋・鮮活水產自選', rating: '4.8', isNew: true, lat: 24.506943, lng: 118.180080,
+            address: '福建省廈門市湖里區仙岳路4688號銀泰百貨國貿中心店B1層（或順路至思明區廈禾路禹悅匯A館5樓）',
+            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('廈門 朱富貴火鍋'),
+            customAmapUrl: 'https://uri.amap.com/marker?position=118.180080,24.506943&name=' + encodeURIComponent('朱富貴火鍋(湖里銀泰店)'),
+            img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+            desc: '廈門超人氣「一人一鍋」現撈海鮮市集火鍋，想吃什麼自己拿盤子夾。配完眼鏡先來這裡簡單吃一波鮮活蝦蟹解饞！',
+            tips: ['<strong>控量重點（極重要）：</strong>這站主打「簡單吃、不要吃太飽」，挑幾盤招牌活蝦、貝類與鮮切牛肉嚐鮮即可，千萬別拿太撐的手工麵，留胃給稍後的八市與中山路小吃！', '<strong>分店選擇：</strong>離五緣灣天虹最近的是「湖里國貿銀泰店（車程約 5 分鐘）」；若想往老城區推進也可去「火車站禹悅匯店（A館5樓）」。']
           },
           {
-            id: 'd1-5', step: 5, time: '19:30 – 21:30', name: '中山路步行街',
-            category: '歷史街區・南洋騎樓', rating: '4.7', isNew: false, lat: 24.4542, lng: 118.0811,
+            id: 'd1-5', step: 5, time: '19:35 – 20:45', name: '八市（廈門第八海鮮市場）',
+            category: '傳統市集・在地小東西', rating: '4.6', isNew: false, lat: 24.4593, lng: 118.0772,
+            address: '福建省廈門市思明區開禾路與友誼路交叉口一帶',
+            img: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/06/ef/b8/caption.jpg?w=1100&h=1100&s=1',
+            desc: '吃完朱富貴後搭車來到八市散步消食，以「邊逛邊吃點小東西」為主，感受廈門老城區最道地的夜間煙火氣。',
+            tips: ['<strong>輕食推薦：</strong>買份阿杰五香、朱記手撕雞、鐘麗君滿煎糕或沙茶烤肉串分著嚐味道即可。']
+          },
+          {
+            id: 'd1-6', step: 6, time: '20:45 – 22:00', name: '中山路步行街',
+            category: '歷史街區・南洋騎樓散步', rating: '4.7', isNew: false, lat: 24.4542, lng: 118.0811,
             address: '福建省廈門市思明區中山路（緊鄰八市南側）',
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzA_oIio5KQiuru0xazomkvNq8MuZliIkCZ8lvr1acFJcUQ-1JkcMatiHM&s=10',
-            desc: '從八市往南散步即可無縫銜接中山路步行街。成排的南洋風情騎樓建築在夜間亮燈後極具層次感，適合飯後散步消化。',
+            desc: '從八市往南散步無縫銜接中山路步行街，邊看南洋騎樓夜景邊吃點花生湯、燒仙草等街頭小點，輕鬆收尾第一天。',
             tips: ['<strong>拍照看點：</strong>夜間騎樓廊柱光影與街區西側遙望海口的視野最出片。', '<strong>回程交通：</strong>逛完後避開步行街管制路段，走到鷺江道或鎮海路外圍叫車回酒店最順暢。']
           }
         ]
       },
       {
-        dayId: 'd2', date: 'DAY 2（11/19）', title: '鼓浪嶼漫遊 ＋ 雙子塔夜景 ＆ 白城沙灘酒吧',
-        subtitle: '酒店早餐 ➔ 鼓浪嶼半日遊 ➔ 【新增】雙子塔拍夜景照 ➔ 廈大白城沙灘酒吧',
+        dayId: 'd2', date: 'DAY 2（11/19）', title: '鼓浪嶼漫遊（15:00撤） ➔ 回飯店休息 ➔ Sea U 海雲夕陽雙子塔',
+        subtitle: '鼓浪嶼（15:00撤離） ➔ 【新增】回飯店休息充電 ➔ 【新增】夕陽前抵 Sea U 海雲咖啡廳吃飯拍雙子塔 ➔ 白城沙灘酒吧',
         color: '#2563eb',
         spots: [
           {
-            id: 'd2-1', step: 1, time: '09:30 – 16:30', name: '鼓浪嶼（萬國建築博覽群）',
+            id: 'd2-1', step: 1, time: '09:30 – 15:00', name: '鼓浪嶼（萬國建築博覽群・15:00撤離）',
             category: '世界文化遺產・離島漫步', rating: '4.8', isNew: false, lat: 24.4446, lng: 118.0673,
             address: '福建省廈門市思明區鼓浪嶼（由東渡郵輪中心廈鼓碼頭搭船登島）',
             img: 'https://img.ezfly.com/ims/I000/076/068.jpg',
-            desc: '酒店吃完早餐後前往碼頭搭船登島。全島無機動車，遍布百年洋樓、紅磚別墅與蜿蜒巷弄，下午 16:30 左右搭船返回本島。',
-            tips: ['<strong>船票提醒：</strong>務必提前在微信「嶼見廈門」小程式購買往返船票（推薦至三丘田碼頭下船，動線最順）。', '<strong>體力控管：</strong>島上全為上下坡步道，挑選重點漫遊，留體力給晚上雙子塔與海灘酒吧。']
+            desc: '早上登島漫步百年洋樓與紅磚別墅，挑選精華路段拍照，下午 3 點左右直接搭船撤離返回本島，不硬逛耗體力。',
+            tips: ['<strong>撤離時間關鍵：</strong>15:00 左右從三丘田碼頭搭船回本島，避開傍晚下島排隊高峰。', '<strong>體力分配：</strong>島上全為上下坡步道，見好就收先回飯店休息，傍晚看夕陽更有精神。']
           },
           {
-            id: 'd2-2', step: 2, time: '17:30 – 19:00', name: '廈門世茂海峽大廈（雙子塔拍夜景照）',
-            category: '摩天地標・藍調夜景', rating: '4.8', isNew: true, lat: 24.4357, lng: 118.0872,
-            address: '福建省廈門市思明區演武西路180-188號（最佳拍攝點：演武大橋觀景平台／沙坡尾）',
+            id: 'd2-2', step: 2, time: '15:30 – 16:20', name: '麓閣・伴山禪舍（回飯店休息充電）',
+            category: '中場休息・換裝小憩', rating: '4.9', isNew: true, lat: 24.486846, lng: 118.181160,
+            address: '福建省廈門市思明區虎仔山路190號（軟件園二期旁）',
+            img: 'https://ak-d.tripcdn.com/images/1mc7312000tc3nspvBDBC_W_480_360_R5_Q70.jpg',
+            desc: '下船後先搭車回飯店吹冷氣泡茶、沖個澡或換套帥氣穿搭，休息到 16:20 左右再出發前往白城沙灘追夕陽。',
+            tips: ['<strong>出發時間提醒：</strong>11/19 廈門日落時間約為 17:16，建議最晚 16:20 從飯店叫車出發（走環島幹道約 20 分鐘直達環島南路）。']
+          },
+          {
+            id: 'd2-3', step: 3, time: '16:45 – 19:15', name: 'Sea U 海雲餐酒吧·落日音樂會（拍夕陽＆雙子塔吃飯）',
+            category: '絕美落日海景・同框拍雙子塔', rating: '4.8', isNew: true, lat: 24.4302, lng: 118.1035,
+            address: '福建省廈門市思明區環島南路256-2號（白城沙灘與胡里山炮台交界海邊）',
+            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('廈門市思明區環島南路256-2號 Sea U海雲'),
+            customAmapUrl: 'https://uri.amap.com/marker?position=118.1035,24.4302&name=' + encodeURIComponent('Sea U海雲餐酒吧(環島南路256-2號)'),
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK0MfQQsxsyYDe-P4xDIEom8PMqwE-eWAKUIgS55ChZQ&s=10',
-            desc: '兩棟高達 300 公尺的帆船造型雙塔地標。從鼓浪嶼返回本島後直接過來，剛好趕上 17:30–18:30 的「藍調時刻（Blue Hour）」拍夜景。',
-            tips: ['<strong>最佳機位 1（大景首選）：</strong>導航至旁邊的「演武大橋觀景平台」，以海面與弧形橋體帶出雙子塔完整全景。', '<strong>最佳機位 2（文青街拍）：</strong>導航至北側「沙坡尾避風塢」，用老漁船與水面反光拍出復古與現代雙塔對比。']
+            desc: '卡在 11/19 夕陽時刻前抵達！餐廳正處於白城沙灘弧形海岸線制高視角，二樓露台與海景窗位在現場就能直接將「世茂雙子塔、橘紅落日、白城海灣」一次拍齊，邊看夕陽轉藍調夜景邊吃晚餐。',
+            tips: ['<strong>黃金拍攝時段：</strong>16:45–17:20 拍金黃落日與海面反光；17:25–18:00 雙子塔亮燈後拍藍調時刻（Blue Hour）夜景，一站搞定雙子塔大片！', '<strong>推薦餐點：</strong>香草烤春雞、西式排餐、斑斕超椰與蔚藍海岸特調，用餐完直接下樓就是白城沙灘。']
           },
           {
-            id: 'd2-3', step: 3, time: '19:15 – 22:00', name: '白城沙灘酒吧（廈大白城海岸線）',
+            id: 'd2-4', step: 4, time: '19:15 – 21:30', name: '白城沙灘酒吧（廈大白城海岸線漫步）',
             category: '海景微醺・夜間沙灘', rating: '4.6', isNew: false, lat: 24.4312, lng: 118.1008,
-            address: '福建省廈門市思明區環島南路（廈大白城天橋至胡里山炮台沿線）',
+            address: '福建省廈門市思明區環島南路（Sea U 海雲餐廳走出即達白城沙灘木棧道）',
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThNWdYtRnuZnrbQh8htT2JYh1ei25RlLnAKlZSfFh23dCB8KI3GMoZ9ew&s=10',
-            desc: '緊鄰雙子塔東南側的弧形海岸線，入夜後沙灘沿岸亮起露營風燈串與駐唱音樂，吹著海風小酌非常愜意。',
-            tips: ['<strong>選位建議：</strong>天橋下方入口處人潮最密，建議沿著木棧道往東（胡里山方向）走一小段，環境更寬敞舒適。', '<strong>穿搭提醒：</strong>11 月下旬夜晚海邊風大微涼，建議穿著防風皮衣或工裝外套。']
+            desc: '在 Sea U 吃完飯拍完雙子塔後，下樓直接踏上白城沙灘木棧道，聽著駐唱音樂與海浪聲散步小酌，完全免奔波。',
+            tips: ['<strong>穿搭提醒：</strong>11 月下旬夜晚海邊風大微涼，建議攜帶防風皮衣或工裝外套。']
           }
         ]
       },
       {
-        dayId: 'd3', date: 'DAY 3（11/20）', title: '鯨宴海鮮自助 ＋ 嶼見閩南 ＆ 逛商場',
-        subtitle: '萬象城鯨宴海鮮自助 ➔ 【新增】嶼見閩南·時光幻境 ➔ 萬象城／SM商場逛街',
+        dayId: 'd3', date: 'DAY 3（11/20）', title: '鯨宴海鮮自助 ＋ 嶼見閩南（縮短） ➔ 沙坡尾網紅街拍 ＆ 八市中山路',
+        subtitle: '鯨宴海鮮自助 ➔ 嶼見閩南（縮短為2小時精華） ➔ 【新增網紅點】沙坡尾藝術西區 ➔ 【補逛】八市／中山路步行街',
         color: '#059669',
         spots: [
           {
-            id: 'd3-1', step: 1, time: '11:30 – 13:30（或晚餐時段）', name: '鯨宴海鮮姿造自助（廈門萬象城店）',
+            id: 'd3-1', step: 1, time: '11:30 – 13:30', name: '鯨宴海鮮姿造自助（廈門萬象城店）',
             category: '頂級海鮮百匯・高蛋白饗宴', rating: '4.8', isNew: false, lat: 24.4705, lng: 118.1102,
             address: '福建省廈門市思明區湖濱東路99號廈門萬象城二期 B201',
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvqqU4-dtrDC72q4KDTQokVT2907vFddRwpy9ZdD70cOfZVWpvuRDPBD8&s=10',
             desc: '廈門高人氣高檔海鮮自助，主打活體海鮮現撈現煮、藍龍蝦、紐西蘭鰲蝦、帝王蟹腳、鐵板鵝肝與烤榴槤無限暢享。',
-            tips: ['<strong>時段建議：</strong>推薦排在午餐（11:30 開餐），剛開餐時活蝦蟹補貨最快，中午吃完高蛋白大餐，下午逛園區剛好消化。', '<strong>替代彈性：</strong>若已預訂晚餐時段，只需將下午的「嶼見閩南」調到上午 10:30–14:30 即可。']
+            tips: ['<strong>時段建議：</strong>11:30 開餐入場，活蝦蟹補貨最快，中午吃完高蛋白大餐，下午走走拍拍剛好消化。']
           },
           {
-            id: 'd3-2', step: 2, time: '14:00 – 18:00', name: '遇見閩南（嶼見閩南·時光幻境）',
-            category: '沉浸式閩南文化景區・古厝街拍', rating: '4.7', isNew: true, lat: 24.4848, lng: 118.0735,
+            id: 'd3-2', step: 2, time: '14:00 – 16:00', name: '遇見閩南（嶼見閩南·時光幻境・精華快閃）',
+            category: '沉浸式閩南古厝・時間縮短版', rating: '4.7', isNew: false, lat: 24.4848, lng: 118.0735,
             address: '福建省廈門市湖里區東港北路15、17-19號（近東渡郵輪中心碼頭）',
             img: 'https://ak-d.tripcdn.com/images/0355112000o4ti8s4A47B_C_1000_1000_Q50.jpg_.webp?_fr=wc',
-            desc: '重現宋元明清至近代的閩南紅磚古厝建築群與非遺文化街區，園區內設有多場沉浸式實景演藝與 NPC 互動體驗。',
-            tips: ['<strong>營業時間：</strong>日常 09:30–18:30（18:00 停止入園），務必攜帶台胞證實名入園。', '<strong>拍照看點：</strong>燕尾脊紅磚古厝、南洋騎樓街景與非遺展演舞台，預留 3.5–4 小時體驗最完整。']
+            desc: '停留時間精簡為 2 小時！鎖定最具代表性的燕尾脊紅磚古厝群與主舞台演藝拍照打卡，拍完即撤，留時間給下午的網紅街區與夜市。',
+            tips: ['<strong>入園提醒：</strong>務必攜帶台胞證實名入園，進場先拿節目單挑一場核心大秀看即可，不浪費時間久留。']
           },
           {
-            id: 'd3-3', step: 3, time: '18:30 – 21:30', name: '逛商場（廈門萬象城 MixC ／ SM城市廣場）',
-            category: '精品購物・潮流商圈', rating: '4.9', isNew: false, lat: 24.4712, lng: 118.1115,
-            address: '福建省廈門市思明區湖濱東路99號（廈門萬象城一、二期連通）',
-            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpfvS3h2Vs1__nMaGz85LZ0lG5w-cgvciC3TfCsjzZ9kucOifGt4Utc1A&s=10',
-            desc: '廈門品牌最齊全的指標商場，一、二期涵蓋國際腕錶精品、設計師服飾、戶外工裝品牌與質感咖啡廳。',
-            tips: ['<strong>動線優勢：</strong>從嶼見閩南打車回萬象城約 15 分鐘，逛完街再打車回軟件園二期酒店也很順路。']
+            id: 'd3-3', step: 3, time: '16:25 – 18:30', name: '沙坡尾藝術西區 ＆ 避風塢（網紅地標街拍）',
+            category: '潮流網紅聚落・工業文青咖啡', rating: '4.8', isNew: true, lat: 24.4390, lng: 118.0890,
+            address: '福建省廈門市思明區沙坡尾60號（大學路與民族路交匯處）',
+            img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+            desc: '取消百貨商場行程，改來廈門最火紅的「沙坡尾藝術西區」！由老漁港避風塢與舊廠房改造而成的工業文青風街區，匯聚獨立咖啡店、美式復古小店與天台打卡點。',
+            tips: ['<strong>必拍機位：</strong>避風塢木棧道可拍「老漁船＋彩色老房＋摩天雙子塔」的新舊衝突感，非常適合 City Boy／硬派工裝穿搭街拍。', '<strong>咖啡推薦：</strong>街區內有多家工業風獨立精品咖啡館，適合點杯冰美式小憩。']
+          },
+          {
+            id: 'd3-4', step: 4, time: '18:45 – 21:30', name: '二訪八市 ＆ 中山路步行街（美食補遺巡禮）',
+            category: '老城夜市・小吃補刀', rating: '4.7', isNew: true, lat: 24.4570, lng: 118.0790,
+            address: '福建省廈門市思明區開禾路八市 ➔ 中山路步行街沿線',
+            img: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/06/ef/b8/caption.jpg?w=1100&h=1100&s=1',
+            desc: '從沙坡尾打車過來僅需 8–10 分鐘。把 Day 1 沒吃到的八市海鮮大排檔、沙茶麵、局口街巷弄小吃與中山路伴手禮一次逛透。',
+            tips: ['<strong>進攻重點：</strong>可專攻第一天沒肚子吃的沙茶麵（如烏糖／四里／月華沙茶麵）、大中沙茶麵或局口拌麵。']
           }
         ]
       },
       {
-        dayId: 'd4', date: 'DAY 4（11/21）', title: '萬石山海黃金線：南普陀寺 ＋ 植物園 ＋ 鐘鼓索道',
-        subtitle: '【新增一日順遊】南普陀寺祈福 ➔ 廈門園林植物園（多肉＆雨林） ➔ 鐘鼓索道看夕陽',
+        dayId: 'd4', date: 'DAY 4（11/21）', title: '南普陀寺 ➔ 黃都禮宴（中午優先） ➔ 植物園＆索道 ➔ 洗浴按摩放鬆',
+        subtitle: '南普陀寺 ➔ 【新增午宴】黃都禮宴 ➔ 植物園＆鐘鼓索道 ➔ 八市/中山路補吃 ➔ 【新增】洗浴中心按摩放鬆',
         color: '#7c3aed',
         spots: [
           {
-            id: 'd4-1', step: 1, time: '09:00 – 11:00', name: '南普陀寺',
-            category: '千年古剎・閩南名寺', rating: '4.8', isNew: true, lat: 24.4418, lng: 118.0965,
+            id: 'd4-1', step: 1, time: '09:00 – 10:50', name: '南普陀寺',
+            category: '千年古剎・閩南名寺', rating: '4.8', isNew: false, lat: 24.4418, lng: 118.0965,
             address: '福建省廈門市思明區思明南路515號（廈門大學南門旁）',
             img: 'https://megapx-assets.dcard.tw/images/2ae82697-ae52-4d85-a366-9cd4776f3cd7/640.jpeg',
-            desc: '背依五老峰的千年古剎，建築飛簷精緻、香火鼎盛。排在早上第一站前往，溫度舒適且能避開正午旅行團人潮。',
-            tips: ['<strong>預約必看：</strong>採實名制免費預約，出發前先在微信小程式搜尋「南普陀寺預約服務平台」登記時段。', '<strong>體力保留：</strong>參拜完殿堂、買盒南普陀素餅即可，不用硬爬後山五老峰頂，留體力給隔壁的植物園。']
+            desc: '背依五老峰的千年古剎，早上第一站前往氣溫涼爽且避開旅行團，參拜完正好搭車去吃中午的「黃都・禮宴」。',
+            tips: ['<strong>預約必看：</strong>出發前先在微信小程式搜尋「南普陀寺預約服務平台」免費實名登記早場時段。']
           },
           {
-            id: 'd4-2', step: 2, time: '11:15 – 15:15', name: '廈門園林植物園（雨林世界 ＆ 多肉植物區）',
-            category: '山林秘境・硬派仙人掌大片', rating: '4.8', isNew: true, lat: 24.4503, lng: 118.0958,
+            id: 'd4-2', step: 2, time: '11:20 – 13:45', name: '黃都・禮宴（中午優先！沉浸式皇家宮廷午宴）',
+            category: '沉浸式國風劇場・宮廷美饌', rating: '4.9', isNew: true, lat: 24.4762, lng: 118.1725,
+            address: '福建省廈門市思明區蓮前街道前埔路188號-1號',
+            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('廈門市思明區蓮前街道前埔路188號 黃都禮宴'),
+            customAmapUrl: 'https://uri.amap.com/marker?position=118.1725,24.4762&name=' + encodeURIComponent('黃都·禮宴(前埔路188號)'),
+            img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+            desc: '以「一席承千年皇家禮韻」為主題的沉浸式國風劇場餐廳，在亭台樓閣與雕樑畫棟間邊看古風歌舞戲劇演出、邊享用一道道精緻宮廷宴席料理！',
+            tips: ['<strong>午宴時段（中午優先）：</strong>午宴營業時間為 10:00–14:00，務必提前預約午宴席位；建議 11:20 前抵達，可先體驗古風互動雅集或拍照，再準時入席看秀開席。', '<strong>份量提醒：</strong>宮廷禮宴主打精緻擺盤與視覺儀式感，若食量大覺得只有七八分飽，傍晚下山直接去八市／中山路補吃！']
+          },
+          {
+            id: 'd4-3', step: 3, time: '14:15 – 16:30', name: '廈門園林植物園（雨林世界 ＆ 多肉植物區）',
+            category: '山林秘境・硬派仙人掌大片', rating: '4.8', isNew: false, lat: 24.4503, lng: 118.0958,
             address: '福建省廈門市思明區虎園路25號（主出入口：西門）',
             img: 'https://res.klook.com/image/upload/w_750,h_469,c_fill,q_85/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/dyyglqzx6hxzdec1pj7p.jpg',
-            desc: '被譽為廈門城市綠肺，其中「多肉植物區」的巨型仙人掌荒漠造景與「雨林世界」的定時迷霧丁達爾光影是兩大必拍核心。',
-            tips: ['<strong>省力關鍵（極重要）：</strong>園區全在山坡上，入園務必直接購買「景交車（觀光巴士）通票」，搭車直上多肉植物區再往下玩到雨林世界。', '<strong>出園方向：</strong>逛完請統一從「西門（虎園路）」走出園區，出門步行 2 分鐘即達鐘鼓索道站！']
+            desc: '吃完黃都禮宴後搭車前往植物園，直攻「多肉植物區」巨型仙人掌荒漠造景與「雨林世界」定時噴霧丁達爾光影。',
+            tips: ['<strong>省力關鍵：</strong>入園直接買「景交車通票」，搭車直上多肉植物區與雨林世界，逛完從「西門」出園無縫接鐘鼓索道。']
           },
           {
-            id: 'd4-3', step: 3, time: '15:30 – 16:45', name: '廈門鐘鼓索道',
-            category: '高空纜車・夕陽山海全景', rating: '4.7', isNew: true, lat: 24.4521, lng: 118.0934,
+            id: 'd4-4', step: 4, time: '16:40 – 17:45', name: '廈門鐘鼓索道',
+            category: '高空纜車・夕陽山海全景', rating: '4.7', isNew: false, lat: 24.4521, lng: 118.0934,
             address: '福建省廈門市思明區虎園路31號（植物園西門正對面旁）',
-            img: 'https://ak-d.tripcdn.com/images/0354x12000rxo9x2sB6CB_C_1000_1000_Q50.jpg_.webp?_fr=wc',
-            desc: '全長超過 1000 公尺的雙人座空中纜車（原車去、原車回，全程約 40 分鐘），可從高空 360 度俯瞰植物園山林、老城紅屋頂、雙子塔與遠方海景。',
-            tips: ['<strong>預約必看：</strong>15:30–16:30 的夕陽時段最熱門，務必提前在微信公眾號或平台購票預約時段，現場極易售罄。']
+            img: 'https://ak-d.tripcdn.com/images/0354x12000rxo9x2sB6CB_C_1000_1000_Q50.jpg_.webp',
+            desc: '全長超過 1000 公尺的雙人座空中纜車（全程約 40 分鐘），剛好在日落時段從高空 360 度俯瞰植物園山林、老城紅屋頂與遠方海景。',
+            tips: ['<strong>預約必看：</strong>16:30–17:30 夕陽時段最搶手，務必提前在微信公眾號購票預約時段。']
+          },
+          {
+            id: 'd4-5', step: 5, time: '18:00 – 19:45', name: '八市 ／ 中山路步行街（自由亂吃補刀）',
+            category: '在地小吃・高彈性覓食', rating: '4.7', isNew: true, lat: 24.4593, lng: 118.0772,
+            address: '福建省廈門市思明區開禾路八市 ＆ 中山路步行街（距鐘鼓索道車程僅 8 分鐘）',
+            img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzA_oIio5KQiuru0xazomkvNq8MuZliIkCZ8lvr1acFJcUQ-1JkcMatiHM&s=10',
+            desc: '從鐘鼓索道下山離八市與中山路超近！如果中午黃都禮宴的精緻宮廷菜沒吃飽，直接來這裡開啟「亂吃模式」，生蠔、小管、沙茶烤肉、薑母鴨隨意掃街。',
+            tips: ['<strong>完美銜接：</strong>吃飽喝足後再搭車前往下一站洗浴中心泡湯按摩，完美消化不脹氣。']
+          },
+          {
+            id: 'd4-6', step: 6, time: '20:00 – 23:00', name: '手佳健康水療會所（蓮前明發店／呂厝豪峰店・洗浴按摩放鬆）',
+            category: '泡湯洗浴・全身推拿足浴＋免費自助吧', rating: '4.9', isNew: true, lat: 24.477010, lng: 118.125278,
+            address: '福建省廈門市思明區蓮前西路51號毅宏大廈1-2樓（或湖里區呂嶺路15號呂厝豪峰店）',
+            customGmapUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('廈門 手佳健康會所'),
+            customAmapUrl: 'https://uri.amap.com/marker?position=118.125278,24.477010&name=' + encodeURIComponent('手佳健康會所(蓮前明發店)'),
+            img: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+            desc: '最後一晚回飯店前的終極放鬆！廈門口碑極佳的大型複合式洗浴水療按摩會所，提供熱水大浴池泡湯、蒸汽桑拿、專業中式全身指壓／足浴推拿，還附設 24 小時免費熱食水果自助吧。',
+            tips: ['<strong>動線超順：</strong>「蓮前明發店」與「呂厝豪峰店」正好位在八市／中山路返回軟件園二期飯店的中途幹道上，按完摩搭車回「麓閣・伴山禪舍」僅約 10–12 分鐘，回去直接秒睡！', '<strong>高階替代方案：</strong>若想體驗更高端奢華的湯泉水療，也可選擇「淺深休閒會所（湖濱南路店）」或「水裹·湯泉生活」。']
           }
         ]
       },
@@ -338,7 +393,7 @@
             category: '小三通返程・通關登船', rating: '4.7', isNew: false, lat: 24.5335, lng: 118.1942,
             address: '福建省廈門市湖里區環島東路2500號（距離軟件園二期酒店車程約 15–20 分鐘）',
             img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7oBFa3qc8SjroTE5TvoIdbpOTgsfU9Z0e2lMVpuJ1Dw&s=10',
-            desc: '從軟件園二期酒店退房後搭車約 15–20 分鐘即可抵達五通碼頭。11:30 開船約 12:00 抵達金門水頭碼頭，銜接 13:30 班機飛回台中。',
+            desc: '前一晚按完摩徹底放鬆後，早上睡飽於 10:00 退房搭車前往五通碼頭。11:30 開船約 12:00 抵達金門水頭碼頭，銜接 13:30 班機飛回台中。',
             tips: ['<strong>通關時間：</strong>船班開航前 30 分鐘（11:00）停止檢票，建議 10:30 前抵達五通碼頭櫃檯取票通關。', '<strong>金門轉乘關鍵：</strong>12:00 抵達金門水頭碼頭出關後，請直接排隊搭「計程車」直奔尚義機場（車程約 15 分鐘）。']
           }
         ]
@@ -358,10 +413,9 @@
     let activeSpotIds = [];
     let currentSpotIdx = 0;
 
-    // 修正：以唯一 spotId 作為快取鍵值，確保 15 張照片各自獨立不覆蓋
     async function urlToBase64(url, spotId) {
       if (url.startsWith('data:image/')) return url;
-      const cacheKey = 'xm_img_v2_' + spotId;
+      const cacheKey = 'xm_img_v3_' + spotId;
       try {
         const cached = localStorage.getItem(cacheKey);
         if (cached && cached.startsWith('data:image/')) return cached;
@@ -512,7 +566,7 @@
           activeSpotIds.push(spot.id);
 
           const tipsHtml = spot.tips.map(t => `<li>${t}</li>`).join('');
-          const newBadgeHtml = spot.isNew ? `<span class="new-tag">✨ 新加入景點</span>` : '';
+          const newBadgeHtml = spot.isNew ? `<span class="new-tag">✨ 新調整景點</span>` : '';
 
           cardsHtml += `
             <article class="place-card" id="card-${spot.id}" onclick="focusSpot('${spot.id}')">
