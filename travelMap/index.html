@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <title>travelMap｜個人旅遊地圖中心</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-panel: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --planned-color: #10b981;
+      --unplanned-color: #f59e0b;
+      --accent-blue: #3b82f6;
+      --border-light: rgba(255, 255, 255, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Collapsible Top Header */
+    .app-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-bottom: 1px solid var(--border-light);
+      padding: 14px 20px 12px;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      transition: padding 0.25s ease;
+    }
+    .app-header.collapsed { padding: 8px 16px; }
+
+    .header-bar-compact {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      color: #93c5fd;
+    }
+
+    .header-toggle-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-light);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .header-collapsible-content {
+      max-width: 1400px;
+      margin: 10px auto 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.25s ease;
+      max-height: 260px;
+      opacity: 1;
+    }
+    .app-header.collapsed .header-collapsible-content {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      pointer-events: none;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+
+    .filter-tab {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border-light);
+      color: #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .filter-tab.active {
+      background: #fff;
+      color: #0f172a;
+      border-color: #fff;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    .hint-pill {
+      font-size: 12px;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-light);
+      padding: 5px 12px;
+      border-radius: 8px;
+    }
+
+    /* Map Container & Bottom Dock */
+    .map-stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Bottom Quick-Select Cards Dock */
+    .city-dock {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      display: flex;
+      gap: 10px;
+      max-width: 95vw;
+      overflow-x: auto;
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      scrollbar-width: none;
+    }
+    .city-dock::-webkit-scrollbar { display: none; }
+
+    .dock-item {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-light);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .dock-item:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+
+    /* Custom Map Marker Pin */
+    .map-pin-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform: translate(-50%, -100%);
+    }
+    .map-pin-label {
+      background: #0f172a;
+      color: #fff;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      border: 2px solid #fff;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .map-pin-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    }
+
+    /* Status Modal Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      animation: popIn 0.2s ease-out;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.94) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .status-banner {
+      padding: 12px 14px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 14.5px;
+    }
+    .status-banner.planned {
+      background: #ecfdf5;
+      border: 1px solid #6ee7b7;
+      color: #065f46;
+    }
+    .status-banner.unplanned {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .coord-box {
+      font-size: 12px;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-family: monospace;
+    }
+
+    .trip-info-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .trip-info-desc {
+      font-size: 13.5px;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tag-chip {
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-jump {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 11px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: background 0.2s;
+    }
+    .btn-jump:hover { background: #1d4ed8; }
+
+    .quick-links-box {
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .quick-links-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .quick-links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .quick-link-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      border: 1px solid #cbd5e1;
+      transition: all 0.15s;
+    }
+    .quick-link-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-copy-json {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-copy-json:hover { background: #f1f5f9; }
+
+    @media (max-width: 768px) {
+      .app-header { padding: 10px 14px; }
+      .hint-pill { display: none; }
+      .city-dock { bottom: 14px; padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Collapsible Top Header -->
+  <header class="app-header" id="appHeader">
+    <div class="header-bar-compact">
+      <div class="brand-logo">
+        🌍 travelMap
+        <span class="brand-badge">HanWorks 旅遊地圖中心</span>
+      </div>
+      <button class="header-toggle-btn" id="headerToggleBtn" onclick="toggleHeader()">▲ 收合選單</button>
+    </div>
+
+    <div class="header-collapsible-content">
+      <div class="controls-row">
+        <div class="filter-tabs" id="filterTabs">
+          <button class="filter-tab active" onclick="filterMarkers('all', this)">🗺️ 全部地點</button>
+          <button class="filter-tab" onclick="filterMarkers('planned', this)">
+            <span class="dot" style="background: var(--planned-color)"></span>✅ 已規劃行程
+          </button>
+          <button class="filter-tab" onclick="filterMarkers('unplanned', this)">
+            <span class="dot" style="background: var(--unplanned-color)"></span>⏳ 待規劃清單
+          </button>
+          <button class="filter-tab" onclick="resetWorldView()">🌐 重置視角</button>
+        </div>
+        <div class="hint-pill">💡 點擊「地圖標記」或「地圖任意位置」皆可查詢該座標是否已規劃行程</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Interactive Map -->
+  <div class="map-stage">
+    <div id="map"></div>
+    <div class="city-dock" id="cityDock"></div>
+  </div>
+
+  <!-- Coordinate & Trip Status Modal -->
+  <div class="modal-backdrop" id="statusModal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalHeaderTitle">📍 座標規劃狀態查詢</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBodyContent"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 預設 JSON 資料（若同目錄下有 trips.json 會優先自動載入 trips.json）
+    const DEFAULT_TRIPS_JSON = [
+      {
+        "id": "hk",
+        "name": "香港 Hong Kong",
+        "country": "🇭🇰 香港",
+        "planned": true,
+        "lat": 22.3039,
+        "lng": 114.1652,
+        "radiusKm": 45,
+        "days": "三天兩夜",
+        "title": "香港三天兩夜：演唱會與城市精華行程",
+        "summary": "啟德體育館演唱會、黃大仙廟、金華冰廳、灣仔再興燒臘、大館、太平山頂百萬夜景、中環摩天輪與廟街夜市。",
+        "url": "https://han45678.github.io/HanWorks/hk/",
+        "tags": ["演唱會", "太平山夜景", "港式美食", "三天兩夜"]
+      },
+      {
+        "id": "xiamen",
+        "name": "廈門 Xiamen",
+        "country": "🏝️ 福建廈門",
+        "planned": true,
+        "lat": 24.4798,
+        "lng": 118.1102,
+        "radiusKm": 45,
+        "days": "五天四夜 (11/18–11/22)",
+        "title": "2026 廈門五日山海漫遊",
+        "summary": "小三通五通碼頭、九九木眼鏡、八市＆中山路、鼓浪嶼、雙子塔夜景、白城沙灘酒吧、鯨宴海鮮自助、嶼見閩南、南普陀寺＆植物園鐘鼓索道。",
+        "url": "https://han45678.github.io/HanWorks/xiamen/",
+        "tags": ["小三通", "鼓浪嶼", "植物園索道", "五日遊"]
+      },
+      {
+        "id": "busan",
+        "name": "釜山 Busan",
+        "country": "🇰🇷 韓國釜山",
+        "planned": true,
+        "lat": 35.1578,
+        "lng": 129.0600,
+        "radiusKm": 45,
+        "days": "三天兩夜 (週五–週日)",
+        "title": "釜山三天兩夜：獨旅友善・網紅美食醫美行程",
+        "summary": "新世界 Spa Land 汗蒸幕、水營站李夏姃醬蟹、天空膠囊列車、X the SKY、甘川洞小王子、白淺灘文化村、西面醫美與札嘎其烤魚街。",
+        "url": "https://han45678.github.io/HanWorks/busan/",
+        "tags": ["獨旅友善", "膠囊列車", "西面醫美", "三天兩夜"]
+      },
+      {
+        "id": "tokyo",
+        "name": "東京 Tokyo",
+        "country": "🇯🇵 日本東京",
+        "planned": false,
+        "lat": 35.6762,
+        "lng": 139.6503,
+        "radiusKm": 45,
+        "days": "尚未排定",
+        "title": "東京自由行（尚未規劃）",
+        "summary": "此座標點目前已加入 JSON 清單中，但尚未建立專屬行程表網頁。",
+        "url": "",
+        "tags": ["願望清單", "待規劃"]
+      }
+    ];
+
+    let travelData = [];
+    let currentFilter = 'all';
+    const markerLayer = L.layerGroup();
+    let tempClickMarker = null;
+
+    // 初始化免費免 Key 地圖
+    const map = L.map('map', { zoomControl: true }).setView([27.5, 121.5], 5);
+
+    const googleLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}', {
+      attribution: '&copy; Google Maps',
+      subdomains: ['0', '1', '2', '3'],
+      maxZoom: 20
+    });
+
+    const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19
+    });
+
+    const gaodeLayer = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      attribution: '&copy; 高德地圖',
+      subdomains: ['1', '2', '3', '4'],
+      maxZoom: 19
+    });
+
+    googleLayer.addTo(map);
+    markerLayer.addTo(map);
+
+    L.control.layers({
+      '🗺️ Google 地圖（繁中）': googleLayer,
+      '🌐 OpenStreetMap': osmLayer,
+      '🧭 高德地圖': gaodeLayer
+    }, null, { position: 'topright' }).addTo(map);
+
+    // 計算兩個經緯度座標之間的距離 (公里)
+    function getDistanceKm(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // 載入 JSON 資料（優先讀取 ./trips.json，若無則使用內建 JSON）
+    async function loadTravelJson() {
+      try {
+        const res = await fetch('./trips.json', { cache: 'no-store' });
+        if (res.ok) {
+          travelData = await res.json();
+        } else {
+          travelData = DEFAULT_TRIPS_JSON;
+        }
+      } catch (e) {
+        travelData = DEFAULT_TRIPS_JSON;
+      }
+      renderMarkersAndDock();
+      resetWorldView();
+    }
+
+    // 渲染地圖標記與底部快速切換列
+    function renderMarkersAndDock() {
+      markerLayer.clearLayers();
+      const dock = document.getElementById('cityDock');
+      dock.innerHTML = '';
+
+      travelData.forEach(item => {
+        if (currentFilter === 'planned' && !item.planned) return;
+        if (currentFilter === 'unplanned' && item.planned) return;
+
+        const pinColor = item.planned ? '#10b981' : '#f59e0b';
+        const statusIcon = item.planned ? '✅' : '⏳';
+
+        const icon = L.divIcon({
+          className: '',
+          html: `
+            <div class="map-pin-wrap">
+              <div class="map-pin-label" style="border-color:${pinColor}">
+                <span>${statusIcon}</span>
+                <span>${item.name}</span>
+              </div>
+              <div class="map-pin-dot" style="background:${pinColor}"></div>
+            </div>
+          `,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0]
+        });
+
+        const marker = L.marker([item.lat, item.lng], { icon }).addTo(markerLayer);
+        marker.on('click', (e) => {
+          L.DomEvent.stopPropagation(e);
+          if (tempClickMarker) map.removeLayer(tempClickMarker);
+          map.flyTo([item.lat, item.lng], 10, { duration: 0.7 });
+          openTripModal(item, item.lat, item.lng);
+        });
+
+        const dockBtn = document.createElement('button');
+        dockBtn.className = 'dock-item';
+        dockBtn.innerHTML = `<span class="dot" style="background:${pinColor}"></span><span>${item.country}</span>`;
+        dockBtn.onclick = () => {
+          if (tempClickMarker) map.removeLayer(tempClickMarker);
+          map.flyTo([item.lat, item.lng], 10, { duration: 0.7 });
+          openTripModal(item, item.lat, item.lng);
+        };
+        dock.appendChild(dockBtn);
+      });
+    }
+
+    // 點擊地圖任意位置：自動判斷該座標是否已規劃過
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      if (tempClickMarker) map.removeLayer(tempClickMarker);
+
+      // 檢查點擊座標是否落在 JSON 任一城市半徑範圍內
+      let matchedTrip = null;
+      let minDistance = Infinity;
+
+      travelData.forEach(item => {
+        const dist = getDistanceKm(lat, lng, item.lat, item.lng);
+        const radius = item.radiusKm || 45;
+        if (dist <= radius && dist < minDistance) {
+          minDistance = dist;
+          matchedTrip = item;
+        }
+      });
+
+      if (matchedTrip) {
+        map.flyTo([matchedTrip.lat, matchedTrip.lng], 10, { duration: 0.6 });
+        openTripModal(matchedTrip, lat, lng, Math.round(minDistance));
+      } else {
+        tempClickMarker = L.circleMarker([lat, lng], {
+          radius: 8,
+          color: '#fff',
+          weight: 2,
+          fillColor: '#ef4444',
+          fillOpacity: 0.9
+        }).addTo(map);
+        openUnplannedCoordModal(lat, lng);
+      }
+    });
+
+    // 彈出「已登錄地點（已規劃 / 待規劃）」視窗
+    function openTripModal(item, clickLat, clickLng, distKm) {
+      const modal = document.getElementById('statusModal');
+      const headerTitle = document.getElementById('modalHeaderTitle');
+      const body = document.getElementById('modalBodyContent');
+
+      headerTitle.innerHTML = `${item.country}｜座標規劃狀態`;
+
+      const statusBannerHtml = item.planned
+        ? `<div class="status-banner planned">✅ 此座標點【已規劃過行程】！（${item.days}）</div>`
+        : `<div class="status-banner unplanned">⏳ 此座標點【尚未完成規劃】（目前已列入待辦清單）</div>`;
+
+      const distanceNote = distKm !== undefined ? `（距離中心點約 ${distKm} km）` : '';
+      const tagsHtml = (item.tags || []).map(t => `<span class="tag-chip"># ${t}</span>`).join('');
+
+      const actionHtml = item.planned && item.url
+        ? `<a class="btn-jump" href="${item.url}">🚀 點擊跳轉至【${item.name}】行程網頁 ➔</a>`
+        : `<button class="btn-copy-json" onclick="closeModal()">尚未建立行程網址（可於 JSON 補上 url 欄位）</button>`;
+
+      body.innerHTML = `
+        ${statusBannerHtml}
+        <div class="coord-box">📍 座標：${clickLat.toFixed(4)}, ${clickLng.toFixed(4)} ${distanceNote}</div>
+        <div class="trip-info-title">${item.title}</div>
+        <p class="trip-info-desc">${item.summary}</p>
+        <div class="tag-row">${tagsHtml}</div>
+        <div class="modal-actions">
+          ${actionHtml}
+        </div>
+      `;
+
+      modal.classList.add('open');
+    }
+
+    // 彈出「點擊任意未知座標（尚未規劃）」視窗
+    function openUnplannedCoordModal(lat, lng) {
+      const modal = document.getElementById('statusModal');
+      const headerTitle = document.getElementById('modalHeaderTitle');
+      const body = document.getElementById('modalBodyContent');
+
+      headerTitle.innerHTML = `📍 未知座標點｜規劃狀態查詢`;
+
+      const plannedList = travelData.filter(d => d.planned && d.url);
+      const quickButtonsHtml = plannedList.map(d =>
+        `<a class="quick-link-btn" href="${d.url}">${d.country}</a>`
+      ).join('');
+
+      const sampleJson = JSON.stringify({
+        id: "new-spot",
+        name: "新旅遊地點",
+        country: "📍 新地點",
+        planned: false,
+        lat: Number(lat.toFixed(4)),
+        lng: Number(lng.toFixed(4)),
+        radiusKm: 45,
+        days: "待規劃",
+        title: "尚未規劃行程",
+        summary: "點擊地圖新增的座標點。",
+        url: "",
+        tags: ["待規劃"]
+      }, null, 2);
+
+      body.innerHTML = `
+        <div class="status-banner unplanned">❌ 此座標點目前【尚未規劃過任何行程】</div>
+        <div class="coord-box">📍 點擊座標：Lat ${lat.toFixed(4)}, Lng ${lng.toFixed(4)}</div>
+        <p class="trip-info-desc">這個位置還沒有建立在你的旅遊 JSON 清單中。你可以直接跳轉至下方已規劃好的城市行程，或複製此座標的 JSON 物件加入 <code>trips.json</code>：</p>
+        <button class="btn-copy-json" onclick='copyJsonTemplate(${JSON.stringify(sampleJson)}, this)'>📋 複製此座標的 JSON 格式範本</button>
+        <div class="quick-links-box">
+          <div class="quick-links-title">✅ 點選已規劃的行程直接跳轉：</div>
+          <div class="quick-links-grid">${quickButtonsHtml}</div>
+        </div>
+      `;
+
+      modal.classList.add('open');
+    }
+
+    function copyJsonTemplate(jsonStr, btnEl) {
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        btnEl.textContent = '✅ 已複製 JSON！可直接貼入 trips.json';
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('statusModal').classList.remove('open');
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'statusModal') closeModal();
+    }
+
+    function filterMarkers(type, btnEl) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      renderMarkersAndDock();
+      resetWorldView();
+    }
+
+    function resetWorldView() {
+      const visible = travelData.filter(item => {
+        if (currentFilter === 'planned') return item.planned;
+        if (currentFilter === 'unplanned') return !item.planned;
+        return true;
+      });
+      if (visible.length > 0) {
+        const bounds = visible.map(i => [i.lat, i.lng]);
+        map.flyToBounds(bounds, { padding: [70, 70], maxZoom: 7, duration: 0.7 });
+      }
+    }
+
+    function toggleHeader() {
+      const header = document.getElementById('appHeader');
+      const btn = document.getElementById('headerToggleBtn');
+      header.classList.toggle('collapsed');
+      btn.innerHTML = header.classList.contains('collapsed') ? '▼ 展開選單' : '▲ 收合選單';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    loadTravelJson();
+  </script>
+</body>
+</html>
