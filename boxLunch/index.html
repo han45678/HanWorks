@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>打造你的台式便當 - 選格・飯量・熱量・秤重算錢</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>打造你的台式便當</title>
   <!-- Phaser 3 遊戲引擎 -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
   <!-- Google Fonts -->
@@ -12,9 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #070c1a;
-      --bg-panel: #101935;
-      --bg-card: #162244;
+      --bg-dark: #060a17;
+      --bg-panel: #0e1730;
+      --bg-card: #162347;
       --accent: #ff6b2b;
       --accent-glow: rgba(255, 107, 43, 0.45);
       --cyan: #38bdf8;
@@ -33,60 +33,67 @@
       padding: 0;
     }
 
-    body {
-      background: radial-gradient(circle at 50% 18%, #17254a 0%, #050811 100%);
+    html, body {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 25%, #17254a 0%, #050811 100%);
       color: var(--text-main);
       font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
     }
 
+    /* 滿版主容器：嚴格鎖定 100dvh 不產生任何垂直捲軸 */
     .app-shell {
       width: 100%;
-      max-width: 490px;
+      max-width: 500px;
       height: 100vh;
-      max-height: 950px;
-      background: linear-gradient(180deg, #0d152e 0%, #070b18 100%);
+      height: 100dvh;
+      background: linear-gradient(180deg, #0b132b 0%, #060a17 100%);
       display: flex;
       flex-direction: column;
       position: relative;
-      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
       overflow: hidden;
     }
 
-    @media (min-width: 520px) {
-      .app-shell {
-        height: 94vh;
-        border-radius: 34px;
-      }
+    /* ================= 1. 頂部極簡整合式 HUD (標題 + 3合1秤重卡路里價格) ================= */
+    .top-hud {
+      flex-shrink: 0;
+      padding: 8px 12px 6px;
+      background: rgba(8, 13, 29, 0.88);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
     }
 
-    /* 頂部標題列 */
-    .top-header {
-      padding: 10px 14px 6px;
+    .hud-row-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
 
     .brand-title {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 900;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
     }
 
     .brand-title .serif {
       font-family: 'Playfair Display', serif;
     }
 
-    .brand-title span.highlight {
+    .brand-title .highlight {
       color: var(--yellow);
       font-style: italic;
-      margin-left: 3px;
     }
 
     .header-actions {
@@ -99,11 +106,11 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: var(--text-main);
       padding: 4px 10px;
-      border-radius: 16px;
-      font-size: 0.74rem;
+      border-radius: 14px;
+      font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.18s;
+      transition: all 0.16s;
     }
 
     .btn-mini:hover {
@@ -115,225 +122,283 @@
       transform: scale(0.94);
     }
 
-    /* 重量 / 熱量 / 價格 三合一即時數據條 */
+    /* 3合1 即時數據膠囊列 */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
-      padding: 6px 14px;
-      background: rgba(0, 0, 0, 0.32);
     }
 
-    .stat-box {
+    .stat-pill {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 4px 8px;
+      border-radius: 9px;
+      padding: 3px 8px;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: space-between;
     }
 
     .stat-label {
       font-size: 0.66rem;
       color: var(--text-sub);
+      font-weight: 500;
     }
 
     .stat-value {
-      font-size: 0.94rem;
+      font-size: 0.84rem;
       font-weight: 900;
-      margin-top: 1px;
     }
 
     .stat-weight { color: var(--cyan); }
     .stat-kcal { color: var(--yellow); }
     .stat-price { color: var(--green); }
 
-    /* 白飯大格固定控制區 (1/5 ~ 全飯) */
-    .rice-control-panel {
-      padding: 6px 14px;
-      background: rgba(255, 255, 255, 0.025);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    }
-
-    .rice-header {
+    /* ================= 2. 中央無遮擋便當盒主舞台 (自動彈性滿版) ================= */
+    .bento-stage-wrap {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      position: relative;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: center;
-      font-size: 0.73rem;
-      margin-bottom: 5px;
-      color: #cbd5e1;
+      background: radial-gradient(circle at 50% 52%, rgba(30, 58, 138, 0.28) 0%, rgba(6, 10, 23, 0) 72%);
     }
 
-    .rice-info-tag {
-      color: var(--yellow);
-      font-weight: 700;
-    }
-
-    .rice-buttons {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 4px;
-    }
-
-    .rice-btn {
-      background: #15203f;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #cbd5e1;
-      border-radius: 8px;
-      padding: 4px 2px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.16s;
-    }
-
-    .rice-btn small {
-      display: block;
-      font-size: 0.58rem;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    .rice-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: #ff9a6c;
-      box-shadow: 0 0 10px var(--accent-glow);
-    }
-
-    .rice-btn.active small {
-      color: #ffe4d6;
-    }
-
-    .rice-btn.braised-btn.active {
-      background: #b45309;
-      border-color: #f59e0b;
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
-    }
-
-    /* 4 格便當盒指定選格器 */
-    .slot-selector-bar {
+    /* 舞台上方懸浮 4 格快速選格器 (不遮擋便當盒本體) */
+    .stage-slot-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      padding: 6px 14px 2px;
+      gap: 5px;
+      padding: 6px 12px 0;
+      z-index: 12;
+      flex-shrink: 0;
     }
 
-    .slot-tab {
-      background: rgba(22, 34, 68, 0.8);
+    .slot-pill {
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(6px);
       border: 1.5px solid rgba(255, 255, 255, 0.12);
       border-radius: 10px;
-      padding: 4px 4px;
-      text-align: center;
+      padding: 4px 5px;
       cursor: pointer;
       transition: all 0.18s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       position: relative;
     }
 
-    .slot-tab.active {
+    .slot-pill.active {
       border-color: var(--cyan);
       background: rgba(56, 189, 248, 0.18);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.32);
     }
 
-    .slot-tab-title {
-      font-size: 0.71rem;
-      font-weight: 800;
+    .slot-pill-top {
+      font-size: 0.68rem;
+      font-weight: 900;
       color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 2px;
     }
 
-    .slot-tab-sub {
-      font-size: 0.61rem;
+    .slot-pill-sub {
+      font-size: 0.6rem;
       color: var(--text-sub);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-top: 1px;
+      max-width: 100%;
     }
 
-    /* Phaser 畫布容器 */
-    #phaser-container {
-      width: 100%;
-      height: 276px;
-      position: relative;
-      flex-shrink: 0;
-    }
-
-    /* 菜色分類切換與選單區 */
-    .menu-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: rgba(11, 17, 38, 0.96);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-
-    .category-tabs {
-      display: flex;
-      padding: 6px 14px;
-      gap: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .cat-btn-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    .cat-btn {
-      background: #162244;
-      color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 4px 11px;
-      border-radius: 16px;
-      font-size: 0.75rem;
+    .slot-pill.filled .slot-pill-sub {
+      color: #fde047;
       font-weight: 700;
-      cursor: pointer;
-      transition: 0.18s;
     }
 
-    .cat-btn.active {
-      background: var(--cyan);
-      color: #070c1a;
-      border-color: #bae6fd;
+    /* Phaser 3 畫布容器：佔滿中間所有剩餘空間 */
+    #phaser-container {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 舞台底部懸浮資訊條：即時顯示當前格位細節與一鍵退菜 */
+    .stage-bottom-toast {
+      position: absolute;
+      bottom: 6px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 18, 39, 0.84);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      z-index: 12;
+      pointer-events: auto;
+    }
+
+    .toast-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #e2e8f0;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast-left span.badge {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--cyan);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 0.64rem;
       font-weight: 900;
     }
 
-    .slot-hint {
-      font-size: 0.69rem;
-      color: var(--cyan);
-      font-weight: 700;
+    .toast-clear-slot {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 0.64rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: none;
     }
 
-    /* 菜色網格 */
-    .dishes-grid {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 12px 12px;
+    /* ================= 3. 底部橫向滑動操作塢 (選飯・選配菜・選主菜 左右切換) ================= */
+    .bottom-ux-dock {
+      flex-shrink: 0;
+      background: linear-gradient(180deg, #101936 0%, #080d1e 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+    }
+
+    /* 模式切換導覽列 (1.選飯量 | 2.選配菜 | 3.選主菜) */
+    .dock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px 4px;
+      gap: 6px;
+    }
+
+    .mode-tabs {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      flex: 1;
+    }
+
+    .mode-tab {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 6px 4px;
+      border-radius: 12px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .mode-tab.active {
+      background: var(--cyan);
+      color: #060a17;
+      border-color: #bae6fd;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+      font-weight: 900;
+    }
+
+    /* 左右滑動轉盤外框 (含左右切換按鈕) */
+    .carousel-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 4px 6px;
+    }
+
+    .carousel-nav-btn {
+      width: 28px;
+      height: 76px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      font-size: 0.85rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      z-index: 5;
+    }
+
+    .carousel-nav-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: var(--cyan);
+    }
+
+    .carousel-nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* 橫向滑動軌道 */
+    .horizontal-track {
+      flex: 1;
+      display: flex;
       gap: 8px;
-      align-content: start;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      scroll-snap-type: x mandatory;
+      padding: 6px 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      cursor: grab;
     }
 
-    .dishes-grid::-webkit-scrollbar {
-      width: 5px;
-    }
-    .dishes-grid::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.22);
-      border-radius: 4px;
+    .horizontal-track:active {
+      cursor: grabbing;
     }
 
-    .dish-card {
+    .horizontal-track::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 橫向轉盤卡片 (飯量卡 / 配菜卡 / 主菜卡 共用高質感設計) */
+    .h-card {
+      flex: 0 0 92px;
+      scroll-snap-align: start;
       background: var(--bg-card);
-      border: 1.5px solid rgba(255, 255, 255, 0.09);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
       border-radius: 14px;
-      padding: 5px 4px 6px;
+      padding: 6px 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -343,51 +408,77 @@
       transition: transform 0.15s, border-color 0.15s, background 0.15s;
     }
 
-    .dish-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.3);
+    .h-card:hover {
+      border-color: rgba(255, 255, 255, 0.32);
     }
 
-    .dish-card:active {
+    .h-card:active {
       transform: scale(0.95);
     }
 
-    .dish-card.selected {
+    .h-card.selected {
       border-color: var(--accent);
-      background: rgba(255, 107, 43, 0.16);
-      box-shadow: 0 0 12px rgba(255, 107, 43, 0.32);
+      background: rgba(255, 107, 43, 0.18);
+      box-shadow: 0 0 12px rgba(255, 107, 43, 0.35);
     }
 
-    .dish-thumb-wrap {
-      width: 56px;
-      height: 44px;
-      border-radius: 50%;
+    .h-card.selected-cyan {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.18);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+
+    .h-card-thumb {
+      width: 64px;
+      height: 46px;
+      border-radius: 10px;
       background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       overflow: hidden;
-    }
-
-    .dish-thumb-canvas {
-      width: 54px;
-      height: 42px;
       pointer-events: none;
     }
 
-    .dish-badge-count {
+    .h-card-name {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .h-card-meta {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      margin-top: 1px;
+    }
+
+    .h-card-meta .w { color: var(--cyan); font-weight: 700; }
+    .h-card-meta .k { color: var(--yellow); }
+
+    .h-card-price {
+      margin-top: 2px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #4ade80;
+    }
+
+    .card-badge-check {
       position: absolute;
       top: -5px;
       right: -5px;
       background: var(--accent);
       color: #fff;
-      font-size: 0.64rem;
+      font-size: 0.62rem;
       font-weight: 900;
       min-width: 20px;
       height: 20px;
-      padding: 0 4px;
+      padding: 0 5px;
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -396,13 +487,13 @@
       z-index: 2;
     }
 
-    .dish-remove-btn {
+    .card-btn-minus {
       position: absolute;
       top: -5px;
       left: -5px;
       background: #2563eb;
       color: #fff;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 900;
       width: 21px;
       height: 21px;
@@ -412,56 +503,58 @@
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-      z-index: 2;
+      z-index: 3;
     }
 
-    .dish-name {
-      font-size: 0.71rem;
-      font-weight: 800;
-      color: #f8fafc;
-      margin-bottom: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
+    /* 滑動進度指示點與操作提示列 */
+    .carousel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 14px 4px;
+      font-size: 0.64rem;
+      color: var(--text-sub);
     }
 
-    .dish-meta {
-      font-size: 0.59rem;
-      color: #94a3b8;
-      line-height: 1.2;
+    .scroll-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
     }
 
-    .dish-meta .w-tag { color: #38bdf8; font-weight: 700; }
-    .dish-meta .k-tag { color: #facc15; }
-    .dish-price-tag {
-      margin-top: 2px;
-      font-size: 0.69rem;
-      font-weight: 900;
-      color: #4ade80;
+    .scroll-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.2s;
+    }
+
+    .scroll-dot.active {
+      width: 16px;
+      background: var(--cyan);
     }
 
     /* 底部結帳按鈕列 */
     .bottom-checkout {
-      padding: 8px 14px 12px;
-      background: #060a16;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 12px 10px;
+      background: #080d1e;
     }
 
     .checkout-btn {
       width: 100%;
       background: linear-gradient(90deg, #ea580c 0%, #f97316 50%, #ea580c 100%);
       border: none;
-      border-radius: 28px;
-      padding: 11px 18px;
+      border-radius: 24px;
+      padding: 10px 16px;
       color: #fff;
-      font-size: 0.94rem;
+      font-size: 0.9rem;
       font-weight: 900;
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
+      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45);
       transition: transform 0.15s;
     }
 
@@ -476,24 +569,24 @@
     }
 
     .discount-pill {
-      background: rgba(0, 0, 0, 0.32);
+      background: rgba(0, 0, 0, 0.35);
       padding: 2px 8px;
       border-radius: 12px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: #fde047;
     }
 
-    /* 結帳明細與找錢 Modal */
+    /* ================= 4. 結帳明細與找錢試算 Modal ================= */
     .modal-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(4, 8, 20, 0.84);
-      backdrop-filter: blur(5px);
+      background: rgba(4, 8, 20, 0.85);
+      backdrop-filter: blur(6px);
       display: none;
       justify-content: center;
       align-items: center;
-      padding: 16px;
-      z-index: 50;
+      padding: 14px;
+      z-index: 100;
     }
 
     .modal-backdrop.show {
@@ -506,9 +599,9 @@
       width: 100%;
       max-width: 395px;
       border-radius: 20px;
-      padding: 16px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
-      max-height: 88vh;
+      padding: 15px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+      max-height: 88dvh;
       overflow-y: auto;
       border: 3px solid #f59e0b;
     }
@@ -516,26 +609,26 @@
     .receipt-header {
       text-align: center;
       border-bottom: 2px dashed #cbd5e1;
-      padding-bottom: 10px;
-      margin-bottom: 10px;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
     }
 
     .receipt-header h3 {
-      font-size: 1.12rem;
+      font-size: 1.08rem;
       color: #b91c1c;
       font-weight: 900;
     }
 
     .receipt-list {
-      font-size: 0.8rem;
-      margin-bottom: 10px;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
     }
 
     .receipt-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 0;
+      padding: 4px 0;
       border-bottom: 1px dotted #cbd5e1;
     }
 
@@ -545,55 +638,54 @@
     }
 
     .receipt-row-sub {
-      font-size: 0.69rem;
+      font-size: 0.67rem;
       color: #64748b;
     }
 
     .receipt-summary {
       background: #f1f5f9;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border-radius: 12px;
-      font-size: 0.82rem;
-      margin-bottom: 12px;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
     }
 
     .summary-line {
       display: flex;
       justify-content: space-between;
-      margin: 3px 0;
+      margin: 2px 0;
       font-weight: 700;
     }
 
     .summary-line.total {
-      font-size: 1.08rem;
+      font-size: 1.04rem;
       color: #dc2626;
       border-top: 1px solid #cbd5e1;
-      padding-top: 6px;
-      margin-top: 6px;
+      padding-top: 5px;
+      margin-top: 5px;
       font-weight: 900;
     }
 
     .cash-section {
       border-top: 2px dashed #cbd5e1;
-      padding-top: 10px;
+      padding-top: 8px;
     }
 
     .cash-btns {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 6px;
-      margin: 6px 0 10px;
+      margin: 6px 0 8px;
     }
 
     .cash-btn {
       background: #e2e8f0;
       border: none;
-      padding: 7px 4px;
+      padding: 6px 4px;
       border-radius: 8px;
       font-weight: 800;
       cursor: pointer;
       color: #0f172a;
-      transition: 0.15s;
     }
 
     .cash-btn.active {
@@ -603,11 +695,11 @@
 
     .close-modal-btn {
       width: 100%;
-      margin-top: 10px;
+      margin-top: 8px;
       background: #0f172a;
       color: #fff;
       border: none;
-      padding: 11px;
+      padding: 10px;
       border-radius: 12px;
       font-weight: 800;
       cursor: pointer;
@@ -617,133 +709,131 @@
 <body>
 
 <div class="app-shell">
-  <!-- 頂部列 -->
-  <div class="top-header">
-    <div class="brand-title">
-      <span class="serif">Build your</span>
-      <span class="serif highlight">台式便當 2.0</span>
-    </div>
-    <div class="header-actions">
-      <button class="btn-mini" onclick="randomBento()">🎲 隨機滿漢</button>
-      <button class="btn-mini" onclick="clearAll()">🔄 清空重裝</button>
-    </div>
-  </div>
-
-  <!-- 即時秤重 / 卡路里 / 價格儀表板 -->
-  <div class="stats-bar">
-    <div class="stat-box">
-      <span class="stat-label">⚖️ 便當總重量</span>
-      <span class="stat-value stat-weight" id="ui-total-weight">200 g</span>
-    </div>
-    <div class="stat-box">
-      <span class="stat-label">🔥 總卡路里</span>
-      <span class="stat-value stat-kcal" id="ui-total-kcal">260 kcal</span>
-    </div>
-    <div class="stat-box">
-      <span class="stat-label">💰 便當總價</span>
-      <span class="stat-value stat-price" id="ui-total-price">NT$ 15</span>
-    </div>
-  </div>
-
-  <!-- 白飯大格固定控制區：支援 1/5 (5/1) 到 全飯 -->
-  <div class="rice-control-panel">
-    <div class="rice-header">
-      <span>🍚 <b>前方大格固定白飯</b>（可調飯量 1/5 [5/1] ～ 全飯）</span>
-      <span class="rice-info-tag" id="ui-rice-detail">全飯 200g | 260kcal | $15</span>
-    </div>
-    <div class="rice-buttons">
-      <button class="rice-btn" data-ratio="0.2" onclick="setRicePortion(0.2)">
-        1/5 (5/1)
-        <small>40g·$5</small>
-      </button>
-      <button class="rice-btn" data-ratio="0.4" onclick="setRicePortion(0.4)">
-        2/5 飯
-        <small>80g·$8</small>
-      </button>
-      <button class="rice-btn" data-ratio="0.6" onclick="setRicePortion(0.6)">
-        3/5 半飯
-        <small>120g·$10</small>
-      </button>
-      <button class="rice-btn" data-ratio="0.8" onclick="setRicePortion(0.8)">
-        4/5 飯
-        <small>160g·$12</small>
-      </button>
-      <button class="rice-btn active" data-ratio="1" onclick="setRicePortion(1)">
-        全飯
-        <small>200g·$15</small>
-      </button>
-      <button class="rice-btn braised-btn" id="btn-lurou" onclick="toggleBraisedSauce()">
-        +淋滷汁
-        <small>+15g·+$5</small>
-      </button>
-    </div>
-  </div>
-
-  <!-- 4 格便當盒指定選格器 -->
-  <div class="slot-selector-bar">
-    <div class="slot-tab active" id="slot-tab-0" onclick="selectSlot(0)">
-      <div class="slot-tab-title">📍 左小格 (格1)</div>
-      <div class="slot-tab-sub" id="slot-sub-0">空・點擊選菜</div>
-    </div>
-    <div class="slot-tab" id="slot-tab-1" onclick="selectSlot(1)">
-      <div class="slot-tab-title">📍 中小格 (格2)</div>
-      <div class="slot-tab-sub" id="slot-sub-1">空・點擊選菜</div>
-    </div>
-    <div class="slot-tab" id="slot-tab-2" onclick="selectSlot(2)">
-      <div class="slot-tab-title">📍 右小格 (格3)</div>
-      <div class="slot-tab-sub" id="slot-sub-2">空・點擊選菜</div>
-    </div>
-    <div class="slot-tab" id="slot-tab-main" onclick="selectSlot('main')">
-      <div class="slot-tab-title">🍖 前方大格</div>
-      <div class="slot-tab-sub" id="slot-sub-main">白飯+主菜區</div>
-    </div>
-  </div>
-
-  <!-- Phaser 3 便當盒互動畫布 -->
-  <div id="phaser-container"></div>
-
-  <!-- 菜色選擇區 -->
-  <div class="menu-section">
-    <div class="category-tabs">
-      <div class="cat-btn-group">
-        <button class="cat-btn active" id="cat-side" onclick="switchCategory('side')">🥬 配菜區 (16種)</button>
-        <button class="cat-btn" id="cat-main" onclick="switchCategory('main')">🍗 主菜與加點 (14種)</button>
+  <!-- 1. 頂部整合式 HUD (不佔空間、零捲動) -->
+  <div class="top-hud">
+    <div class="hud-row-top">
+      <div class="brand-title">
+        <span class="serif">Build your</span>
+        <span class="serif highlight">台式便當 3.0</span>
       </div>
-      <span class="slot-hint" id="ui-target-hint">目標：【左小格 (格1)】</span>
-    </div>
-    <div class="dishes-grid" id="dishes-grid"></div>
-  </div>
-
-  <!-- 底部結帳列 -->
-  <div class="bottom-checkout">
-    <button class="checkout-btn" onclick="openCheckoutModal()">
-      <span>🧾 結帳算錢・秤重卡路里明細</span>
-      <div class="checkout-right">
-        <span class="discount-pill" id="ui-discount-pill" style="display:none;">套餐折 -$10</span>
-        <span id="ui-checkout-btn-text">200g | 260kcal | $15</span>
+      <div class="header-actions">
+        <button class="btn-mini" onclick="randomBento()">🎲 隨機滿漢</button>
+        <button class="btn-mini" onclick="clearAll()">🔄 清空重裝</button>
       </div>
-    </button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <span class="stat-label">⚖️ 總重</span>
+        <span class="stat-value stat-weight" id="ui-total-weight">465 g</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">🔥 熱量</span>
+        <span class="stat-value stat-kcal" id="ui-total-kcal">880 kcal</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">💰 總價</span>
+        <span class="stat-value stat-price" id="ui-total-price">NT$ 110</span>
+      </div>
+    </div>
   </div>
 
-  <!-- 結帳收據與找錢 Modal -->
+  <!-- 2. 中央無遮擋便當盒互動舞台 -->
+  <div class="bento-stage-wrap">
+    <!-- 懸浮於頂部的四格快速切換鍵 (可直接點這裡或點便當盒內部格子) -->
+    <div class="stage-slot-bar">
+      <div class="slot-pill active" id="slot-pill-0" onclick="selectSlot(0)">
+        <div class="slot-pill-top">📍左小格(1)</div>
+        <div class="slot-pill-sub" id="slot-sub-0">番茄炒蛋</div>
+      </div>
+      <div class="slot-pill" id="slot-pill-1" onclick="selectSlot(1)">
+        <div class="slot-pill-top">📍中小格(2)</div>
+        <div class="slot-pill-sub" id="slot-sub-1">蒜炒高麗菜</div>
+      </div>
+      <div class="slot-pill" id="slot-pill-2" onclick="selectSlot(2)">
+        <div class="slot-pill-top">📍右小格(3)</div>
+        <div class="slot-pill-sub" id="slot-sub-2">空・點選配菜</div>
+      </div>
+      <div class="slot-pill" id="slot-pill-main" onclick="selectSlot('main')">
+        <div class="slot-pill-top">🍖前方大格</div>
+        <div class="slot-pill-sub" id="slot-sub-main">全飯+2主菜</div>
+      </div>
+    </div>
+
+    <!-- Phaser 3 畫布：100% 呈現便當盒與菜色，標籤移至盒外絕不擋菜 -->
+    <div id="phaser-container"></div>
+
+    <!-- 舞台底部狀態提示與單格退菜鈕 -->
+    <div class="stage-bottom-toast">
+      <div class="toast-left">
+        <span class="badge" id="ui-focus-badge">當前格位</span>
+        <span id="ui-focus-detail">左小格(格1)：番茄炒蛋 (80g · 115kcal · $15)</span>
+      </div>
+      <button class="toast-clear-slot" id="btn-clear-current-slot" onclick="clearCurrentSlot()">✕ 夾走此格</button>
+    </div>
+  </div>
+
+  <!-- 3. 底部橫向滑動操作塢 (左右滑動選飯 / 選配菜 / 選主菜) -->
+  <div class="bottom-ux-dock">
+    <!-- 三大步驟模式切換 -->
+    <div class="dock-header">
+      <div class="mode-tabs">
+        <button class="mode-tab" id="tab-rice" onclick="switchDockMode('rice')">
+          🍚 1.選飯量(大格)
+        </button>
+        <button class="mode-tab active" id="tab-side" onclick="switchDockMode('side')">
+          🥬 2.選配菜(格1~3)
+        </button>
+        <button class="mode-tab" id="tab-main" onclick="switchDockMode('main')">
+          🍗 3.選主菜/加點
+        </button>
+      </div>
+    </div>
+
+    <!-- 左右箭頭 + 橫向滑動軌道 -->
+    <div class="carousel-wrapper">
+      <button class="carousel-nav-btn" onclick="scrollCarousel(-1)" aria-label="向左切換">◀</button>
+      <div class="horizontal-track" id="horizontal-track"></div>
+      <button class="carousel-nav-btn" onclick="scrollCarousel(1)" aria-label="向右切換">▶</button>
+    </div>
+
+    <!-- 橫向頁籤指示點與操作提示 -->
+    <div class="carousel-footer">
+      <span id="ui-carousel-hint">💡 左右滑動或點 ◀ ▶ 切換菜色，點擊便當盒格子可指定位置</span>
+      <div class="scroll-dots" id="scroll-dots"></div>
+    </div>
+
+    <!-- 底部結帳按鈕 -->
+    <div class="bottom-checkout">
+      <button class="checkout-btn" onclick="openCheckoutModal()">
+        <span>🧾 結帳算錢・秤重卡路里明細</span>
+        <div class="checkout-right">
+          <span class="discount-pill" id="ui-discount-pill" style="display:none;">套餐折 -$10</span>
+          <span id="ui-checkout-btn-text">465g | 880kcal | NT$ 110</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. 結帳收據與找錢試算 Modal -->
   <div class="modal-backdrop" id="checkout-modal">
     <div class="receipt-card">
       <div class="receipt-header">
         <h3>🍱 阿霞正宗台式便當・秤重營養結帳單</h3>
-        <p style="font-size:0.73rem;color:#64748b;margin-top:2px;">每格指定菜色・重量(g)・熱量(kcal)・金額明細</p>
+        <p style="font-size:0.71rem;color:#64748b;margin-top:2px;">每格指定菜色・重量(g)・熱量(kcal)・金額明細</p>
       </div>
       <div class="receipt-list" id="receipt-items"></div>
       <div class="receipt-summary" id="receipt-summary"></div>
 
       <div class="cash-section">
-        <div style="font-size:0.8rem;font-weight:800;">💵 付現找錢試算（點選鈔票面額）：</div>
+        <div style="font-size:0.78rem;font-weight:800;">💵 付現找錢試算（點選鈔票面額）：</div>
         <div class="cash-btns">
           <button class="cash-btn active" onclick="setPaidCash(100, this)">$100</button>
           <button class="cash-btn" onclick="setPaidCash(200, this)">$200</button>
           <button class="cash-btn" onclick="setPaidCash(500, this)">$500</button>
           <button class="cash-btn" onclick="setPaidCash(1000, this)">$1000</button>
         </div>
-        <div id="cash-change-result" style="font-size:0.86rem;font-weight:900;color:#0369a1;"></div>
+        <div id="cash-change-result" style="font-size:0.84rem;font-weight:900;color:#0369a1;"></div>
       </div>
 
       <button class="close-modal-btn" onclick="closeCheckoutModal()">繼續調整便當</button>
@@ -757,16 +847,17 @@
  * 1. 資料庫：白飯 5 段份量設定 (固定於前方大格) & 30 道台式經典菜色
  * ============================================================================
  */
-const RICE_PORTIONS = {
-  0.2: { label: '1/5 飯 (5/1)', ratio: 0.2, weight: 40,  kcal: 52,  price: 5 },
-  0.4: { label: '2/5 飯',       ratio: 0.4, weight: 80,  kcal: 104, price: 8 },
-  0.6: { label: '3/5 半飯',     ratio: 0.6, weight: 120, kcal: 156, price: 10 },
-  0.8: { label: '4/5 飯',       ratio: 0.8, weight: 160, kcal: 208, price: 12 },
-  1.0: { label: '全飯',         ratio: 1.0, weight: 200, kcal: 260, price: 15 }
-};
+const RICE_PORTIONS = [
+  { key: 0.2, id: 'rice_1', label: '1/5 飯 (5/1)', short: '1/5飯', ratio: 0.2, weight: 40,  kcal: 52,  price: 5 },
+  { key: 0.4, id: 'rice_2', label: '2/5 少飯',     short: '2/5飯', ratio: 0.4, weight: 80,  kcal: 104, price: 8 },
+  { key: 0.6, id: 'rice_3', label: '3/5 半飯',     short: '3/5飯', ratio: 0.6, weight: 120, kcal: 156, price: 10 },
+  { key: 0.8, id: 'rice_4', label: '4/5 飯',       short: '4/5飯', ratio: 0.8, weight: 160, kcal: 208, price: 12 },
+  { key: 1.0, id: 'rice_5', label: '標準全飯',     short: '全飯',  ratio: 1.0, weight: 200, kcal: 260, price: 15 }
+];
 
 const BRAISED_SAUCE = {
-  name: '古早味淋滷肉燥汁',
+  id: 'braised_sauce',
+  name: '古早味淋滷汁',
   weight: 15,
   kcal: 38,
   price: 5
@@ -812,6 +903,10 @@ const MAIN_DISHES = [
 
 const ALL_DISHES = [...SIDE_DISHES, ...MAIN_DISHES];
 
+function getRiceObj(ratio) {
+  return RICE_PORTIONS.find(r => Math.abs(r.ratio - ratio) < 0.01) || RICE_PORTIONS[4];
+}
+
 /**
  * ============================================================================
  * 2. 遊戲狀態管理與音效合成器
@@ -820,22 +915,22 @@ const ALL_DISHES = [...SIDE_DISHES, ...MAIN_DISHES];
 const state = {
   ricePortion: 1.0,        // 0.2 (1/5) ~ 1.0 (全飯)
   hasBraisedSauce: false,  // 是否淋滷汁
-  selectedSlot: 0,         // 0: 左格, 1: 中格, 2: 右格, 'main': 前方大格
-  activeCategory: 'side',  // 'side' | 'main'
+  selectedSlot: 2,         // 預設鎖定第3小格(空)，讓玩家一進來點配菜就能直接填滿三格！
+  dockMode: 'side',        // 'rice' | 'side' | 'main'
   sideSlots: [
-    SIDE_DISHES[0], // 預設格1：番茄炒蛋
-    SIDE_DISHES[1], // 預設格2：蒜炒高麗菜
-    null            // 預設格3：空
+    SIDE_DISHES[0], // 格1：番茄炒蛋
+    SIDE_DISHES[1], // 格2：蒜炒高麗菜
+    null            // 格3：待選
   ],
   mainAddons: [
-    MAIN_DISHES[0], // 預設主菜：古早味炸排骨
-    MAIN_DISHES[9]  // 預設加點：入味滷蛋
+    MAIN_DISHES[0], // 主菜：古早味炸排骨
+    MAIN_DISHES[9]  // 加點：入味滷蛋
   ],
-  paidCash: 100
+  paidCash: 200
 };
 
 let audioCtx = null;
-function playTone(freq = 440, type = 'sine', duration = 0.09) {
+function playTone(freq = 440, type = 'sine', duration = 0.08) {
   try {
     if (!audioCtx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -847,8 +942,8 @@ function playTone(freq = 440, type = 'sine', duration = 0.09) {
     const gain = audioCtx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.75, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.78, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -859,10 +954,55 @@ function playTone(freq = 440, type = 'sine', duration = 0.09) {
 
 /**
  * ============================================================================
- * 3. 高精細度台式便當菜色 Canvas 2D 繪圖引擎 (30 道獨立手繪質感料理)
- *    同時供下方圓形縮圖與 Phaser 3 便當盒內菜色精靈使用
+ * 3. 高精細度台式便當菜色 & 飯量縮圖 Canvas 2D 繪圖引擎
  * ============================================================================
  */
+function drawRiceCardThumb(ctx, ratio, isSauce, w, h) {
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  // 繪製迷你大格邊框
+  ctx.fillStyle = '#e5e2dc';
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(8, 10, w - 16, h - 20, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  if (isSauce) {
+    // 白飯底 + 濃郁古早味滷肉燥醬汁
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(11, 13, w - 22, h - 26, 4);
+    ctx.fill();
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#78350f' : '#451a03';
+      ctx.beginPath();
+      ctx.ellipse(18 + i * 7, 23 + (i % 2) * 3, 6, 3.5, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // 依照 1/5 ~ 全飯 比例繪製白飯面積
+    const maxW = w - 22;
+    const fillW = Math.max(10, maxW * ratio);
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(11, 13, fillW, h - 26, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // 米粒紋理與黑芝麻
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.arc(16, 22, 1.3, 0, Math.PI * 2);
+    ctx.arc(20, 25, 1.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawCulinaryDish(ctx, id, w, h) {
   ctx.save();
   ctx.clearRect(0, 0, w, h);
@@ -871,31 +1011,22 @@ function drawCulinaryDish(ctx, id, w, h) {
   ctx.scale(scale, scale);
 
   // 柔和底部陰影
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.26)';
   ctx.beginPath();
   ctx.ellipse(0, 4, 38, 22, 0, 0, Math.PI * 2);
   ctx.fill();
 
   switch (id) {
-    // 1. 番茄炒蛋
     case 'tomato_egg': {
-      // 酸甜茄汁底醬
       const sauceGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, 36);
       sauceGrad.addColorStop(0, 'rgba(239, 68, 68, 0.85)');
       sauceGrad.addColorStop(1, 'rgba(220, 38, 38, 0.1)');
       ctx.fillStyle = sauceGrad;
-      ctx.beginPath();
-      ctx.ellipse(0, 2, 36, 22, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 滑嫩炒蛋塊與帶籽番茄塊交錯
+      ctx.beginPath(); ctx.ellipse(0, 2, 36, 22, 0, 0, Math.PI * 2); ctx.fill();
       const lumps = [
-        { t: 'egg', x: -16, y: -4, r: 11 },
-        { t: 'tom', x: -3,  y: -8, r: 10 },
-        { t: 'egg', x: 12,  y: -5, r: 11 },
-        { t: 'tom', x: -12, y: 7,  r: 10 },
-        { t: 'egg', x: 2,   y: 3,  r: 12 },
-        { t: 'tom', x: 15,  y: 6,  r: 10 },
+        { t: 'egg', x: -16, y: -4, r: 11 }, { t: 'tom', x: -3,  y: -8, r: 10 },
+        { t: 'egg', x: 12,  y: -5, r: 11 }, { t: 'tom', x: -12, y: 7,  r: 10 },
+        { t: 'egg', x: 2,   y: 3,  r: 12 }, { t: 'tom', x: 15,  y: 6,  r: 10 },
         { t: 'egg', x: -6,  y: -1, r: 9 }
       ];
       lumps.forEach(p => {
@@ -909,12 +1040,10 @@ function drawCulinaryDish(ctx, id, w, h) {
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#ef4444';
           ctx.beginPath(); ctx.arc(p.x - 1.5, p.y - 1.5, p.r * 0.72, 0, Math.PI * 2); ctx.fill();
-          // 番茄黃籽
           ctx.fillStyle = '#fde047';
           ctx.fillRect(p.x - 2, p.y - 1, 2, 2);
         }
       });
-      // 翠綠蔥花
       ctx.fillStyle = '#16a34a';
       [[-8,-3],[5,-4],[-2,6],[10,2],[0,-2]].forEach(([sx,sy]) => {
         ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, Math.PI * 2); ctx.fill();
@@ -922,7 +1051,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 2. 蒜炒高麗菜
     case 'cabbage': {
       const leaves = [
         { x: -13, y: 2, rx: 16, ry: 11, rot: -0.3, c1: '#4ade80', c2: '#dcfce7' },
@@ -939,14 +1067,12 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.strokeStyle = '#16a34a';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.ellipse(0, 0, l.rx, l.ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        // 高麗菜白色粗梗脈絡
         ctx.strokeStyle = l.c2;
         ctx.lineWidth = 2.6;
         ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(-l.rx * 0.55, 1); ctx.quadraticCurveTo(0, -2, l.rx * 0.45, 0); ctx.stroke();
         ctx.restore();
       });
-      // 紅蘿蔔絲與蒜末
       ctx.strokeStyle = '#f97316';
       ctx.lineWidth = 2.4;
       [[-10,-3,-3,2],[5,-6,12,0],[-2,5,6,8]].forEach(([x1,y1,x2,y2]) => {
@@ -959,9 +1085,7 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 3. 蒜香空心菜
     case 'water_spinach': {
-      // 翠綠菜梗與尖葉
       const stems = [
         [-22, 6, 12, -8], [-16, -6, 18, 4], [-18, 1, 16, 9],
         [-10, -9, 20, -2], [-14, 9, 14, -4]
@@ -971,11 +1095,9 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.lineWidth = 4.2;
         ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo(0, (y1+y2)/2 - 4, x2, y2); ctx.stroke();
-        // 深綠空心菜葉片
         ctx.fillStyle = '#065f46';
         ctx.beginPath(); ctx.ellipse(x2 - 4, y2, 9, 4.5, 0.3, 0, Math.PI * 2); ctx.fill();
       });
-      // 拍碎蒜頭粒與油亮反光
       ctx.fillStyle = '#fef08a';
       [[-8,-2],[6,3],[1,-5],[-3,6]].forEach(([gx,gy]) => {
         ctx.beginPath(); ctx.roundRect(gx-3, gy-2.5, 6, 5, 2); ctx.fill();
@@ -983,13 +1105,10 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 4. 電話線海茸
     case 'seaweed_stem': {
       const coils = [
-        { x: -13, y: 2, rot: -0.3 },
-        { x: 11,  y: 3, rot: 0.35 },
-        { x: 0,   y: -5, rot: 0.08 },
-        { x: -2,  y: 6, rot: -0.12 }
+        { x: -13, y: 2, rot: -0.3 }, { x: 11, y: 3, rot: 0.35 },
+        { x: 0, y: -5, rot: 0.08 },  { x: -2, y: 6, rot: -0.12 }
       ];
       coils.forEach(c => {
         ctx.save();
@@ -1005,7 +1124,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         }
         ctx.restore();
       });
-      // 辣椒圈與九層塔葉
       ctx.fillStyle = '#ef4444';
       [[-8,-3],[8,1],[1,6]].forEach(([cx,cy]) => {
         ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
@@ -1013,15 +1131,11 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 5. 麻婆豆腐
     case 'mapo_tofu': {
-      // 紅油豆瓣醬底
       ctx.fillStyle = '#991b1b';
       ctx.beginPath(); ctx.ellipse(0, 2, 35, 20, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#dc2626';
       ctx.beginPath(); ctx.ellipse(-2, 1, 28, 16, 0, 0, Math.PI * 2); ctx.fill();
-
-      // 立體白嫩豆腐丁
       const cubes = [[-15,-3],[-2,-7],[11,-3],[-11,5],[2,4],[14,5],[-4,0]];
       cubes.forEach(([tx, ty]) => {
         ctx.fillStyle = '#fef3c7';
@@ -1031,7 +1145,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(tx - 4, ty - 3.5, 5, 3);
       });
-      // 肉末與蔥花
       ctx.fillStyle = '#22c55e';
       [[-6,-2],[6,0],[0,5],[9,-2]].forEach(([gx,gy]) => {
         ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
@@ -1039,34 +1152,27 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 6. 塔香茄子
     case 'eggplant': {
       const pieces = [
-        { x: -13, y: -2, rot: -0.35 },
-        { x: 10,  y: -3, rot: 0.25 },
-        { x: -4,  y: 6,  rot: -0.1 },
-        { x: 11,  y: 6,  rot: 0.4 },
+        { x: -13, y: -2, rot: -0.35 }, { x: 10, y: -3, rot: 0.25 },
+        { x: -4,  y: 6,  rot: -0.1 },  { x: 11, y: 6,  rot: 0.4 },
         { x: -1,  y: -4, rot: 0.12 }
       ];
       pieces.forEach(p => {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rot);
-        // 亮紫茄子外皮
         ctx.fillStyle = '#6b21a8';
         ctx.beginPath(); ctx.roundRect(-11, -6, 22, 12, 5); ctx.fill();
         ctx.fillStyle = '#9333ea';
         ctx.beginPath(); ctx.roundRect(-10, -5, 20, 7, 4); ctx.fill();
-        // 茄子米白內肉切面
         ctx.fillStyle = '#fef3c7';
         ctx.beginPath(); ctx.ellipse(4, 1, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
-        // 油亮高光
         ctx.strokeStyle = 'rgba(255,255,255,0.6)';
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(-7, -3); ctx.lineTo(2, -3); ctx.stroke();
         ctx.restore();
       });
-      // 九層塔葉與紅辣椒
       ctx.fillStyle = '#15803d';
       ctx.beginPath(); ctx.ellipse(0, 1, 7, 4, -0.4, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#ef4444';
@@ -1074,7 +1180,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 7. 萬惡三色豆
     case 'three_color': {
       const cols = ['#facc15', '#22c55e', '#f97316'];
       const pts = [
@@ -1096,20 +1201,15 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 8. 螢光咖哩洋芋
     case 'curry_potato': {
       ctx.fillStyle = '#ca8a04';
       ctx.beginPath(); ctx.ellipse(0, 2, 36, 21, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#eab308';
       ctx.beginPath(); ctx.ellipse(-1, 0, 31, 17, 0, 0, Math.PI * 2); ctx.fill();
-
       const chunks = [
-        { x: -12, y: -2, col: '#fef08a', r: 7 },
-        { x: 6,   y: -4, col: '#ea580c', r: 6 },
-        { x: 1,   y: 5,  col: '#fef08a', r: 7 },
-        { x: -8,  y: 5,  col: '#ea580c', r: 5.5 },
-        { x: 13,  y: 3,  col: '#fef08a', r: 6 },
-        { x: -2,  y: -5, col: '#78350f', r: 5 }
+        { x: -12, y: -2, col: '#fef08a', r: 7 }, { x: 6, y: -4, col: '#ea580c', r: 6 },
+        { x: 1,   y: 5,  col: '#fef08a', r: 7 }, { x: -8, y: 5, col: '#ea580c', r: 5.5 },
+        { x: 13,  y: 3,  col: '#fef08a', r: 6 }, { x: -2, y: -5, col: '#78350f', r: 5 }
       ];
       chunks.forEach(c => {
         ctx.fillStyle = c.col;
@@ -1118,9 +1218,7 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 9. 紅豆枝麵筋
     case 'sweet_bean': {
-      // 圓滾滾金黃麵筋球
       const balls = [[-11, -3], [5, -5], [-2, 5], [12, 3]];
       balls.forEach(([bx, by]) => {
         const g = ctx.createRadialGradient(bx-2, by-2, 1, bx, by, 9);
@@ -1129,7 +1227,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2); ctx.fill();
       });
-      // 蜜汁紅豆棗條與白芝麻
       const strips = [[-16, 4, -0.3], [-4, -2, 0.2], [7, 2, -0.25], [-8, -6, 0.4]];
       strips.forEach(([sx, sy, rot]) => {
         ctx.save();
@@ -1145,9 +1242,7 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 10. 滷海帶豆干
     case 'kelp_tofu': {
-      // 切片滷豆干
       const tofus = [[-12, -4, -0.25], [8, -5, 0.2], [-8, 5, 0.15], [10, 5, -0.2]];
       tofus.forEach(([tx, ty, rot]) => {
         ctx.save();
@@ -1161,7 +1256,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.fillRect(-9, -2, 18, 4);
         ctx.restore();
       });
-      // 深墨綠海帶結
       const kelps = [[-1, -1], [-14, 2], [12, 0]];
       kelps.forEach(([kx, ky]) => {
         ctx.fillStyle = '#1c1917';
@@ -1172,24 +1266,17 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 11. 苦瓜鹹蛋
     case 'bitter_melon': {
-      // 翠玉白苦瓜彎月片
       const slices = [[-12,-2,-0.4],[8,-3,0.3],[-4,5,0.1],[11,5,-0.25],[-1,-5,0.2]];
       slices.forEach(([mx, my, rot]) => {
         ctx.save();
         ctx.translate(mx, my);
         ctx.rotate(rot);
-        ctx.fillStyle = '#bbf7d0';
-        ctx.strokeStyle = '#4ade80';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(0, 0, 10, 0.2, Math.PI - 0.2); ctx.stroke();
         ctx.lineWidth = 5;
         ctx.strokeStyle = '#dcfce7';
         ctx.beginPath(); ctx.arc(0, 0, 8, 0.2, Math.PI - 0.2); ctx.stroke();
         ctx.restore();
       });
-      // 金沙鹹蛋黃碎粒
       ctx.fillStyle = '#f59e0b';
       [[-8,-1],[3,-2],[-2,4],[7,3],[-11,4],[0,-4],[10,-1]].forEach(([ex,ey]) => {
         ctx.beginPath(); ctx.arc(ex, ey, 3.2, 0, Math.PI * 2); ctx.fill();
@@ -1197,9 +1284,7 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 12. 玉米炒蛋
     case 'corn_egg': {
-      // 蓬鬆金黃炒蛋底
       const curds = [[-13,-2,12],[2,-5,13],[13,1,11],[-8,5,11],[4,5,12]];
       curds.forEach(([cx, cy, r]) => {
         ctx.fillStyle = '#facc15';
@@ -1207,7 +1292,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.fillStyle = '#fef08a';
         ctx.beginPath(); ctx.arc(cx - 2, cy - 2, r * 0.65, 0, Math.PI * 2); ctx.fill();
       });
-      // 飽滿甜玉米粒與蔥花
       ctx.fillStyle = '#eab308';
       [[-14,-1],[-6,-5],[3,-3],[11,-1],[-9,4],[0,3],[8,5],[-2,-1]].forEach(([kx,ky]) => {
         ctx.beginPath(); ctx.arc(kx, ky, 3.5, 0, Math.PI * 2); ctx.fill();
@@ -1219,11 +1303,9 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 13. 螞蟻上樹 (肉末炒冬粉)
     case 'glass_noodle': {
       ctx.fillStyle = '#78350f';
       ctx.beginPath(); ctx.ellipse(0, 2, 33, 18, 0, 0, Math.PI * 2); ctx.fill();
-      // 晶瑩醬色冬粉線條
       ctx.strokeStyle = 'rgba(253, 230, 138, 0.78)';
       ctx.lineWidth = 2.2;
       for (let i = 0; i < 12; i++) {
@@ -1232,7 +1314,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.bezierCurveTo(-8, -14 + i * 2, 8, 14 - i * 2, 24 - (i * 2), 6 - (i % 3) * 4);
         ctx.stroke();
       }
-      // 醬香肉末(螞蟻)與蔥花辣椒
       ctx.fillStyle = '#451a03';
       [[-12,-2],[-4,3],[5,-4],[11,2],[0,0],[-8,5],[7,5]].forEach(([mx,my]) => {
         ctx.beginPath(); ctx.arc(mx, my, 2.4, 0, Math.PI * 2); ctx.fill();
@@ -1244,13 +1325,10 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 14. 涼拌小黃瓜
     case 'cucumber': {
       const segs = [
-        { x: -13, y: -2, rot: -0.3 },
-        { x: 9,   y: -3, rot: 0.25 },
-        { x: -4,  y: 5,  rot: 0.1 },
-        { x: 11,  y: 5,  rot: -0.2 },
+        { x: -13, y: -2, rot: -0.3 }, { x: 9, y: -3, rot: 0.25 },
+        { x: -4,  y: 5,  rot: 0.1 },  { x: 11, y: 5, rot: -0.2 },
         { x: -1,  y: -4, rot: 0.05 }
       ];
       segs.forEach(s => {
@@ -1263,27 +1341,19 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.beginPath(); ctx.roundRect(-8, -3, 16, 5, 2); ctx.fill();
         ctx.restore();
       });
-      // 蒜碎與辣椒末
       ctx.fillStyle = '#ef4444';
       [[-6,0],[6,-1],[1,5]].forEach(([cx,cy]) => {
         ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
       });
-      ctx.fillStyle = '#fef9c3';
-      [[-2,-2],[4,3],[-9,3]].forEach(([gx,gy]) => {
-        ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
-      });
       break;
     }
 
-    // 15. 韭菜豆芽菜
     case 'bean_sprout': {
-      // 翠綠韭菜段
       ctx.strokeStyle = '#16a34a';
       ctx.lineWidth = 3;
       [[-18,-4,-4,4],[2,-6,16,2],[-10,6,6,8],[-6,-7,8,-1]].forEach(([x1,y1,x2,y2]) => {
         ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
       });
-      // 銀白豆芽菜與黃豆芽頭
       const sprouts = [[-15,2,-2,-5],[-8,-2,6,5],[0,-6,14,3],[-12,6,4,2],[4,6,17,-2],[-4,1,9,-4]];
       sprouts.forEach(([x1, y1, x2, y2]) => {
         ctx.strokeStyle = '#f8fafc';
@@ -1296,17 +1366,12 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 16. 木耳炒紅蘿蔔
     case 'stir_carrot': {
-      // 黑木耳捲片
       const ears = [[-12,-2],[8,-3],[-4,5],[11,4],[0,-4]];
       ears.forEach(([ex, ey]) => {
         ctx.fillStyle = '#1c1917';
         ctx.beginPath(); ctx.ellipse(ex, ey, 9, 6, 0.3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#44403c';
-        ctx.beginPath(); ctx.arc(ex - 2, ey - 1, 3, 0, Math.PI * 2); ctx.fill();
       });
-      // 鮮橘紅蘿蔔絲
       ctx.strokeStyle = '#f97316';
       ctx.lineWidth = 2.8;
       ctx.lineCap = 'round';
@@ -1316,19 +1381,13 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // ================== 14 道霸氣主菜與加點 ==================
-
-    // 17. 古早味炸排骨
     case 'pork_chop': {
       ctx.save();
       ctx.rotate(-0.06);
-      // 左側排骨白色骨頭柄
       ctx.fillStyle = '#fef3c7';
       ctx.strokeStyle = '#d6d3d1';
       ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.roundRect(-38, -6, 14, 9, 3); ctx.fill(); ctx.stroke();
-
-      // 5 片切塊金黃酥炸排骨條
       const slices = [-22, -11, 0, 11, 22];
       slices.forEach((sx, idx) => {
         const sh = (idx === 0 || idx === 4) ? 30 : 36;
@@ -1340,28 +1399,21 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.strokeStyle = '#451a03';
         ctx.lineWidth = 1.2;
         ctx.beginPath(); ctx.roundRect(sx - 5.2, -sh / 2, 10.4, sh, 4); ctx.fill(); ctx.stroke();
-        // 胡椒鹽顆粒與酥皮高光
         ctx.fillStyle = '#fef08a';
         ctx.beginPath(); ctx.arc(sx - 1, -sh * 0.2, 1.4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#1c1917';
-        ctx.beginPath(); ctx.arc(sx + 1.5, sh * 0.15, 1.1, 0, Math.PI * 2); ctx.fill();
       });
       ctx.restore();
       break;
     }
 
-    // 18. 酥炸大雞腿
     case 'chicken_leg': {
       ctx.save();
       ctx.rotate(-0.15);
-      // 右側雞腿骨頭握柄與錫箔紙頭
       ctx.fillStyle = '#fef3c7';
       ctx.strokeStyle = '#d6d3d1';
       ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.roundRect(12, -4, 24, 8, 3); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(35, -3.5, 4.5, 0, Math.PI * 2); ctx.arc(35, 3.5, 4.5, 0, Math.PI * 2); ctx.fill();
-
-      // 飽滿酥脆雞腿肉身
       const legGrad = ctx.createRadialGradient(-10, -6, 3, -8, 0, 28);
       legGrad.addColorStop(0, '#fbbf24');
       legGrad.addColorStop(0.55, '#d97706');
@@ -1370,8 +1422,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       ctx.strokeStyle = '#451a03';
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.ellipse(-8, 0, 26, 17, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-      // 酥炸裂紋切口 (露出嫩肉高光)
       ctx.strokeStyle = '#fef08a';
       ctx.lineWidth = 2;
       [[-18,-7,-11,7],[-8,-9,-1,8],[2,-7,7,5]].forEach(([x1,y1,x2,y2]) => {
@@ -1381,23 +1431,18 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 19. 蜜汁烤雞腿
     case 'roast_leg': {
       ctx.save();
       ctx.rotate(-0.12);
       ctx.fillStyle = '#fef3c7';
       ctx.beginPath(); ctx.roundRect(12, -4, 22, 8, 3); ctx.fill();
       ctx.beginPath(); ctx.arc(34, -3, 4, 0, Math.PI * 2); ctx.arc(34, 3, 4, 0, Math.PI * 2); ctx.fill();
-
-      // 焦糖蜜汁紅褐色烤雞腿
       const roastGrad = ctx.createRadialGradient(-10, -5, 3, -8, 0, 28);
       roastGrad.addColorStop(0, '#ea580c');
       roastGrad.addColorStop(0.55, '#9a3412');
       roastGrad.addColorStop(1, '#431407');
       ctx.fillStyle = roastGrad;
       ctx.beginPath(); ctx.ellipse(-8, 0, 26, 16.5, 0, 0, Math.PI * 2); ctx.fill();
-
-      // 炙烤網紋與白芝麻
       ctx.strokeStyle = '#27272a';
       ctx.lineWidth = 2.2;
       [[-17,-8,-9,8],[-7,-9,1,8],[3,-7,9,5]].forEach(([x1,y1,x2,y2]) => {
@@ -1411,20 +1456,15 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 20. 秘製滷控肉 (三層五花肉)
     case 'braised_pork': {
       ctx.save();
       ctx.rotate(0.05);
-      // 上層焦糖琥珀色豬皮
       ctx.fillStyle = '#7c2d12';
       ctx.beginPath(); ctx.roundRect(-24, -15, 48, 10, [8, 8, 0, 0]); ctx.fill();
-      // 中層晶瑩油脂層
       ctx.fillStyle = '#fde68a';
       ctx.fillRect(-24, -5, 48, 7);
-      // 下層入味瘦肉層
       ctx.fillStyle = '#9a3412';
       ctx.beginPath(); ctx.roundRect(-24, 2, 48, 12, [0, 0, 8, 8]); ctx.fill();
-      // 油亮膠質高光與香菜點綴
       ctx.strokeStyle = 'rgba(255,255,255,0.7)';
       ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
@@ -1435,7 +1475,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 21. 黃金炸雞排
     case 'chicken_cutlet': {
       const strips = [-24, -12, 0, 12, 24];
       strips.forEach((sx, idx) => {
@@ -1444,7 +1483,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.strokeStyle = '#a16207';
         ctx.lineWidth = 1.2;
         ctx.beginPath(); ctx.roundRect(sx - 5.5, -sh / 2, 11, sh, 4); ctx.fill(); ctx.stroke();
-        // 地瓜粉酥脆顆粒與辣椒粉點綴
         ctx.fillStyle = '#fef08a';
         ctx.beginPath(); ctx.arc(sx - 1.5, -5, 2, 0, Math.PI * 2); ctx.arc(sx + 1.5, 6, 1.8, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#dc2626';
@@ -1453,7 +1491,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 22. 塔塔炸鱈魚排
     case 'cod_fish': {
       ctx.fillStyle = '#f59e0b';
       ctx.strokeStyle = '#b45309';
@@ -1461,29 +1498,17 @@ function drawCulinaryDish(ctx, id, w, h) {
       ctx.beginPath(); ctx.roundRect(-28, -14, 56, 28, 12); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath(); ctx.roundRect(-24, -11, 48, 22, 10); ctx.fill();
-
-      // 白色塔塔美乃滋波浪淋醬
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3.2;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(-18, -5);
-      ctx.lineTo(-10, 6);
-      ctx.lineTo(-2, -6);
-      ctx.lineTo(6, 6);
-      ctx.lineTo(14, -5);
-      ctx.lineTo(20, 4);
+      ctx.moveTo(-18, -5); ctx.lineTo(-10, 6); ctx.lineTo(-2, -6);
+      ctx.lineTo(6, 6); ctx.lineTo(14, -5); ctx.lineTo(20, 4);
       ctx.stroke();
-      // 巴西里綠碎葉
-      ctx.fillStyle = '#16a34a';
-      [[-8,0],[2,-1],[10,1]].forEach(([px,py]) => {
-        ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
-      });
       break;
     }
 
-    // 23. 挪威鹽烤鯖魚
     case 'mackerel': {
       ctx.save();
       ctx.rotate(-0.08);
@@ -1495,14 +1520,11 @@ function drawCulinaryDish(ctx, id, w, h) {
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.ellipse(0, 0, 30, 13, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-      // 鯖魚虎斑紋與金黃焦香烤痕
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 2;
       for (let x = -18; x <= 18; x += 7) {
         ctx.beginPath(); ctx.moveTo(x, -11); ctx.lineTo(x - 4, 8); ctx.stroke();
       }
-      // 鮮黃檸檬角
       ctx.fillStyle = '#facc15';
       ctx.strokeStyle = '#fef08a';
       ctx.lineWidth = 1.5;
@@ -1511,9 +1533,7 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 24. 蔥爆牛肉
     case 'scallion_beef': {
-      // 醬香嫩牛肉片
       const beefs = [[-12,-2],[6,-4],[-4,5],[10,4],[0,-1],[-14,4]];
       beefs.forEach(([bx, by]) => {
         ctx.fillStyle = '#5c240e';
@@ -1521,7 +1541,6 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.ellipse(bx, by, 10, 6, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       });
-      // 翠綠蔥段與紅辣椒斜片
       ctx.strokeStyle = '#22c55e';
       ctx.lineWidth = 3.5;
       ctx.lineCap = 'round';
@@ -1535,7 +1554,6 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 25. 糖醋排骨
     case 'sweet_sour_pork': {
       const ribs = [[-12,-3],[4,-5],[-6,5],[9,4],[0,0]];
       ribs.forEach(([rx, ry]) => {
@@ -1544,19 +1562,13 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.fillStyle = '#ef4444';
         ctx.beginPath(); ctx.roundRect(rx - 6, ry - 4, 12, 6, 3); ctx.fill();
       });
-      // 青椒、黃鳳梨塊與白芝麻
       ctx.fillStyle = '#22c55e';
       ctx.fillRect(-4, -6, 6, 5);
       ctx.fillStyle = '#facc15';
       ctx.fillRect(5, -1, 6, 5);
-      ctx.fillStyle = '#fef9c3';
-      [[-10,-2],[3,-4],[-4,4],[9,3]].forEach(([sx,sy]) => {
-        ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2); ctx.fill();
-      });
       break;
     }
 
-    // 26. 入味滷蛋
     case 'braised_egg': {
       ctx.save();
       ctx.rotate(-0.1);
@@ -1573,30 +1585,22 @@ function drawCulinaryDish(ctx, id, w, h) {
       break;
     }
 
-    // 27. 半熟荷包蛋
     case 'fried_egg': {
-      // 焦脆金黃荷包蛋白邊
       ctx.fillStyle = '#b45309';
       ctx.beginPath(); ctx.ellipse(0, 1, 24, 17, 0.08, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.ellipse(0, 0, 22, 15, 0.08, 0, Math.PI * 2); ctx.fill();
-      // 太陽蛋黃與醬油膏淋醬
       ctx.fillStyle = '#f97316';
       ctx.beginPath(); ctx.arc(2, -1, 7.5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fde047';
-      ctx.beginPath(); ctx.arc(0, -3, 2.2, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#451a03';
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(-10, 3); ctx.quadraticCurveTo(0, 7, 11, 2); ctx.stroke();
       break;
     }
 
-    // 28. 蒜片烤香腸
     case 'sausage': {
       const slices = [
-        { x: -13, y: 2, rot: -0.25 },
-        { x: 0,   y: -2, rot: -0.1 },
-        { x: 13,  y: 2, rot: 0.15 }
+        { x: -13, y: 2, rot: -0.25 }, { x: 0, y: -2, rot: -0.1 }, { x: 13, y: 2, rot: 0.15 }
       ];
       slices.forEach(s => {
         ctx.save();
@@ -1612,13 +1616,11 @@ function drawCulinaryDish(ctx, id, w, h) {
         });
         ctx.restore();
       });
-      // 雪白生蒜片
       ctx.fillStyle = '#fefce8';
       ctx.beginPath(); ctx.ellipse(-6, 5, 4.5, 3, 0.2, 0, Math.PI * 2); ctx.ellipse(7, 5, 4.5, 3, -0.2, 0, Math.PI * 2); ctx.fill();
       break;
     }
 
-    // 29. 椒鹽炸甜不辣
     case 'tempura': {
       const bars = [
         [-14, -4, -0.2], [-2, -6, 0.15], [10, -2, -0.1],
@@ -1636,21 +1638,16 @@ function drawCulinaryDish(ctx, id, w, h) {
         ctx.beginPath(); ctx.roundRect(-9, -2, 18, 3, 2); ctx.fill();
         ctx.restore();
       });
-      // 酥炸九層塔葉
       ctx.fillStyle = '#15803d';
       ctx.beginPath(); ctx.ellipse(0, 0, 6, 3.5, 0.4, 0, Math.PI * 2); ctx.fill();
       break;
     }
 
-    // 30. 酸菜辣菜脯
     case 'pickled_radish': {
       const bits = [
-        { x: -10, y: 2, col: '#65a30d', r: 5.5 },
-        { x: 4,   y: -3, col: '#ca8a04', r: 6 },
-        { x: 10,  y: 3, col: '#4d7c0f', r: 5 },
-        { x: -2,  y: 5, col: '#a16207', r: 5.5 },
-        { x: -4,  y: -3, col: '#84cc16', r: 5 },
-        { x: 2,   y: 1, col: '#dc2626', r: 3.5 },
+        { x: -10, y: 2, col: '#65a30d', r: 5.5 }, { x: 4, y: -3, col: '#ca8a04', r: 6 },
+        { x: 10,  y: 3, col: '#4d7c0f', r: 5 },   { x: -2, y: 5, col: '#a16207', r: 5.5 },
+        { x: -4,  y: -3, col: '#84cc16', r: 5 },  { x: 2, y: 1, col: '#dc2626', r: 3.5 },
         { x: -7,  y: -2, col: '#dc2626', r: 3 }
       ];
       bits.forEach(b => {
@@ -1666,18 +1663,13 @@ function drawCulinaryDish(ctx, id, w, h) {
 
 /**
  * ============================================================================
- * 4. 零破圖！高解析度 Canvas 2D 台式四格白色紙便當盒立體繪製引擎
- *    分為 3 個前後景深圖層：
- *    - Layer A (box_back): 石板托盤 + 掀開白色紙上蓋(含左右側折耳) + 盒底 + 後三格立體隔板
- *    - Layer B (box_mid_divider): 前大格與後三小格之間的立體橫向紙隔板
- *    - Layer C (box_front_wall): 前方傾斜盒壁與右側卡榫折口 (遮擋大格白飯與主菜下緣)
+ * 4. 3D 台式四格白色紙便當盒立體繪製引擎 (3 層景深遮罩，標籤不遮擋菜色)
  * ============================================================================
  */
 function generateBentoBoxTextures(scene) {
   const W = 460;
-  const H = 276;
+  const H = 260;
 
-  // 輔助多邊形繪製函式
   function drawPoly(ctx, pts, fillStyle, strokeStyle = null, lineWidth = 1) {
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]);
@@ -1696,138 +1688,102 @@ function generateBentoBoxTextures(scene) {
     }
   }
 
-  // ---------------- LAYER A: 便當盒背景、上蓋、底座與後三格垂直隔板 ----------------
+  // LAYER A: 便當盒背景、掀蓋、底座與後三格垂直隔板
   const backTex = scene.textures.createCanvas('bento_box_back', W, H);
   const bCtx = backTex.getContext();
 
-  // 1. 底部深色石板圓盤與柔和陰影
+  // 石板圓盤底托
   bCtx.fillStyle = 'rgba(2, 6, 23, 0.75)';
-  bCtx.beginPath(); bCtx.ellipse(230, 206, 204, 62, 0, 0, Math.PI * 2); bCtx.fill();
+  bCtx.beginPath(); bCtx.ellipse(230, 194, 206, 58, 0, 0, Math.PI * 2); bCtx.fill();
 
-  const slateGrad = bCtx.createRadialGradient(230, 190, 20, 230, 200, 198);
+  const slateGrad = bCtx.createRadialGradient(230, 180, 20, 230, 188, 198);
   slateGrad.addColorStop(0, '#334155');
   slateGrad.addColorStop(0.75, '#1e293b');
   slateGrad.addColorStop(1, '#0f172a');
   bCtx.fillStyle = slateGrad;
-  bCtx.beginPath(); bCtx.ellipse(230, 198, 196, 58, 0, 0, Math.PI * 2); bCtx.fill();
+  bCtx.beginPath(); bCtx.ellipse(230, 186, 198, 55, 0, 0, Math.PI * 2); bCtx.fill();
   bCtx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
   bCtx.lineWidth = 1.5;
   bCtx.stroke();
 
-  // 便當盒底座投影在石板上的陰影
-  drawPoly(bCtx, [[88, 224], [116, 108], [352, 114], [348, 236]], 'rgba(9, 13, 28, 0.75)');
+  // 便當盒投影
+  drawPoly(bCtx, [[86, 214], [116, 96], [352, 102], [350, 226]], 'rgba(9, 13, 28, 0.75)');
 
-  // 2. 掀開的白色紙盒上蓋 (還原照片微傾透視與左右折耳)
-  // 左側折耳 (Left Flap)
-  drawPoly(bCtx, [[122, 106], [109, 101], [113, 18], [127, 11]], '#dcd9d2', '#c7c3ba', 1);
-  // 右側折耳 (Right Flap)
-  drawPoly(bCtx, [[346, 112], [359, 107], [366, 26], [353, 17]], '#e5e2dc', '#c7c3ba', 1);
+  // 掀開的白色紙盒上蓋 (稍微壓低上蓋高度，讓下方四格餐盒本體視野更大更清楚)
+  drawPoly(bCtx, [[122, 94], [108, 89], [113, 14], [127, 8]], '#dcd9d2', '#c7c3ba', 1);
+  drawPoly(bCtx, [[346, 100], [359, 95], [365, 22], [353, 14]], '#e5e2dc', '#c7c3ba', 1);
 
-  // 上蓋主平面 (含紙張自然漸層光影)
-  const lidGrad = bCtx.createLinearGradient(120, 12, 350, 112);
+  const lidGrad = bCtx.createLinearGradient(120, 8, 350, 100);
   lidGrad.addColorStop(0, '#ffffff');
   lidGrad.addColorStop(0.6, '#f6f5f2');
   lidGrad.addColorStop(1, '#eae7e1');
-  drawPoly(bCtx, [[122, 106], [346, 112], [353, 17], [127, 11]], lidGrad, '#d5d1c8', 1.5);
+  drawPoly(bCtx, [[122, 94], [346, 100], [353, 14], [127, 8]], lidGrad, '#d5d1c8', 1.5);
+  drawPoly(bCtx, [[127, 8], [353, 14], [346, 5], [134, 1]], '#ffffff', '#dcd9d2', 1);
 
-  // 上蓋頂部前折唇邊 (Top Folded Lip)
-  drawPoly(bCtx, [[127, 11], [353, 17], [346, 8], [134, 3]], '#ffffff', '#dcd9d2', 1);
-
-  // 3. 便當盒內部底面與後/左/右內壁
   // 盒底總平面
-  drawPoly(bCtx, [[122, 106], [346, 112], [326, 224], [96, 214]], '#ebe8e2');
+  drawPoly(bCtx, [[122, 94], [346, 100], [326, 218], [94, 208]], '#ebe8e2');
 
-  // 後方內壁 (連接上蓋折線下方)
-  const backWallGrad = bCtx.createLinearGradient(0, 106, 0, 124);
+  // 後方內壁
+  const backWallGrad = bCtx.createLinearGradient(0, 94, 0, 112);
   backWallGrad.addColorStop(0, '#d5d1c8');
   backWallGrad.addColorStop(1, '#e6e3dc');
-  drawPoly(bCtx, [[122, 106], [346, 112], [340, 126], [127, 120]], backWallGrad, '#c8c4bc', 1);
+  drawPoly(bCtx, [[122, 94], [346, 100], [340, 115], [127, 109]], backWallGrad, '#c8c4bc', 1);
 
-  // 左側後半內壁 (左小格左壁)
-  drawPoly(bCtx, [[122, 106], [127, 120], [115, 162], [107, 152]], '#dfdCD5', '#ccc8c0', 1);
-  // 右側後半內壁 (右小格右壁)
-  drawPoly(bCtx, [[346, 112], [340, 126], [332, 168], [342, 158]], '#d4d0c8', '#c4c0b8', 1);
+  // 左右後半內壁
+  drawPoly(bCtx, [[122, 94], [127, 109], [115, 154], [106, 143]], '#dfdcd5', '#ccc8c0', 1);
+  drawPoly(bCtx, [[346, 100], [340, 115], [332, 160], [342, 149]], '#d4d0c8', '#c4c0b8', 1);
 
-  // 後三格底部淺陰影與角落折線 (仿真紙盒折角)
-  bCtx.strokeStyle = '#ccc8bf';
-  bCtx.lineWidth = 1.2;
-  bCtx.beginPath();
-  bCtx.moveTo(122, 106); bCtx.lineTo(133, 122);
-  bCtx.moveTo(346, 112); bCtx.lineTo(334, 128);
-  bCtx.stroke();
+  // 後方三小格的兩道立體垂直隔板
+  drawPoly(bCtx, [[194, 107], [202, 107], [196, 152], [188, 152]], '#d6d2c9');
+  drawPoly(bCtx, [[194, 98], [201, 98], [195, 143], [188, 143]], '#ffffff', '#d0ccc3', 1);
 
-  // 4. 後方三小格的兩道立體垂直隔板 (分隔 左小格 / 中小格 / 右小格)
-  // 左垂直隔板 (格1 與 格2 之間)
-  drawPoly(bCtx, [[194, 118], [202, 118], [196, 160], [188, 160]], '#d6d2c9');
-  drawPoly(bCtx, [[194, 109], [201, 109], [195, 151], [188, 151]], '#ffffff', '#d0ccc3', 1);
-
-  // 右垂直隔板 (格2 與 格3 之間)
-  drawPoly(bCtx, [[268, 120], [276, 120], [272, 162], [264, 162]], '#d6d2c9');
-  drawPoly(bCtx, [[268, 111], [275, 111], [271, 153], [264, 153]], '#ffffff', '#d0ccc3', 1);
+  drawPoly(bCtx, [[268, 109], [276, 109], [272, 154], [264, 154]], '#d6d2c9');
+  drawPoly(bCtx, [[268, 100], [275, 100], [271, 145], [264, 145]], '#ffffff', '#d0ccc3', 1);
 
   backTex.refresh();
 
-  // ---------------- LAYER B: 中央橫向立體隔板 (遮擋後三格配菜下緣，分隔前方大格) ----------------
+  // LAYER B: 中央橫向立體隔板
   const midTex = scene.textures.createCanvas('bento_box_mid', W, H);
   const mCtx = midTex.getContext();
-
-  // 橫向隔板前立面 (面向前方大格)
-  const midWallGrad = mCtx.createLinearGradient(0, 148, 0, 168);
+  const midWallGrad = mCtx.createLinearGradient(0, 140, 0, 162);
   midWallGrad.addColorStop(0, '#e5e2dc');
   midWallGrad.addColorStop(1, '#d0ccc2');
-  drawPoly(mCtx, [[107, 150], [341, 157], [337, 171], [111, 164]], midWallGrad, '#c7c3ba', 1);
-
-  // 橫向隔板頂部純白折邊棱線
-  drawPoly(mCtx, [[106, 147], [342, 154], [341, 158], [107, 151]], '#ffffff', '#d5d1c8', 0.8);
-
+  drawPoly(mCtx, [[106, 141], [342, 148], [338, 163], [110, 156]], midWallGrad, '#c7c3ba', 1);
+  drawPoly(mCtx, [[105, 138], [343, 145], [342, 149], [106, 142]], '#ffffff', '#d5d1c8', 0.8);
   midTex.refresh();
 
-  // ---------------- LAYER C: 前方大格前盒壁與左右前側壁 (遮擋大格白飯與主菜下緣) ----------------
+  // LAYER C: 前方大格前盒壁與左右前側壁
   const frontTex = scene.textures.createCanvas('bento_box_front', W, H);
   const fCtx = frontTex.getContext();
+  drawPoly(fCtx, [[106, 140], [111, 155], [98, 208], [89, 192]], '#efede8', '#d0ccc3', 1);
+  drawPoly(fCtx, [[343, 146], [353, 196], [336, 220], [326, 162]], '#dad6ce', '#c4c0b7', 1);
 
-  // 左前側外牆
-  drawPoly(fCtx, [[107, 149], [112, 163], [100, 214], [91, 198]], '#efede8', '#d0ccc3', 1);
-
-  // 右前側外牆 (含照片中經典的紙盒側邊卡榫凹槽折線)
-  drawPoly(fCtx, [[342, 155], [352, 202], [336, 226], [326, 170]], '#dad6ce', '#c4c0b7', 1);
-  // 右側卡榫折線細節
-  fCtx.strokeStyle = '#b8b3a8';
-  fCtx.lineWidth = 1.5;
-  fCtx.beginPath();
-  fCtx.moveTo(339, 188); fCtx.lineTo(344, 212);
-  fCtx.stroke();
-
-  // 最前方傾斜盒壁主立面
-  const frontLipGrad = fCtx.createLinearGradient(0, 198, 0, 228);
+  const frontLipGrad = fCtx.createLinearGradient(0, 192, 0, 222);
   frontLipGrad.addColorStop(0, '#f5f3ef');
   frontLipGrad.addColorStop(1, '#dedad2');
-  drawPoly(fCtx, [[91, 198], [346, 208], [336, 227], [98, 217]], frontLipGrad, '#c7c3ba', 1.2);
+  drawPoly(fCtx, [[89, 192], [347, 202], [336, 221], [96, 211]], frontLipGrad, '#c7c3ba', 1.2);
 
-  // 前盒壁頂部純白高光邊緣
   fCtx.strokeStyle = '#ffffff';
   fCtx.lineWidth = 2.5;
   fCtx.beginPath();
-  fCtx.moveTo(91, 198);
-  fCtx.lineTo(346, 208);
+  fCtx.moveTo(89, 192);
+  fCtx.lineTo(347, 202);
   fCtx.stroke();
-
   frontTex.refresh();
 }
 
 /**
  * ============================================================================
- * 5. Phaser 3 互動便當場景 (BentoScene)
+ * 5. Phaser 3 互動便當場景 (BentoScene) - 標籤置於上蓋下緣，100% 不遮擋菜色
  * ============================================================================
  */
 let phaserScene = null;
 
-// 定義四格座標中心與點擊區域
 const SLOT_COORDS = {
-  0:    { x: 156, y: 134, w: 66, h: 42, label: '左小格 (格1)' },
-  1:    { x: 231, y: 136, w: 66, h: 42, label: '中小格 (格2)' },
-  2:    { x: 305, y: 138, w: 66, h: 42, label: '右小格 (格3)' },
-  main: { x: 222, y: 186, w: 226, h: 54, label: '前方大格 (白飯+主菜)' }
+  0:    { x: 156, y: 124, w: 68, h: 44, label: '左小格 (格1)' },
+  1:    { x: 231, y: 126, w: 68, h: 44, label: '中小格 (格2)' },
+  2:    { x: 305, y: 128, w: 68, h: 44, label: '右小格 (格3)' },
+  main: { x: 222, y: 179, w: 230, h: 56, label: '前方大格 (白飯+主菜)' }
 };
 
 class BentoScene extends Phaser.Scene {
@@ -1836,10 +1792,8 @@ class BentoScene extends Phaser.Scene {
   }
 
   preload() {
-    // 1. 生成零破圖 3D 白色紙便當盒三層結構材質
     generateBentoBoxTextures(this);
 
-    // 2. 將全部 30 道菜色生成高解析度 Phaser 材質
     ALL_DISHES.forEach(dish => {
       const texW = dish.isBigMain !== undefined ? 116 : 92;
       const texH = dish.isBigMain !== undefined ? 82 : 66;
@@ -1853,8 +1807,8 @@ class BentoScene extends Phaser.Scene {
   create() {
     phaserScene = this;
 
-    // 圖層 10：便當盒後蓋、底座與後三格垂直隔板
-    this.add.image(230, 138, 'bento_box_back').setDepth(10);
+    // 圖層 10：便當盒背景與上蓋
+    this.add.image(230, 130, 'bento_box_back').setDepth(10);
 
     // 圖層 18：後三格配菜精靈容器
     this.sideContainers = [
@@ -1863,42 +1817,40 @@ class BentoScene extends Phaser.Scene {
       this.add.container(SLOT_COORDS[2].x, SLOT_COORDS[2].y).setDepth(18)
     ];
 
-    // 圖層 25：中央橫向立體隔板 (遮擋後三格配菜底部，讓配菜完美嵌在格子裡)
-    this.add.image(230, 138, 'bento_box_mid').setDepth(25);
+    // 圖層 25：中央橫向立體隔板
+    this.add.image(230, 130, 'bento_box_mid').setDepth(25);
 
-    // 圖層 30：前方大格白飯繪圖層 (支援 1/5 ~ 全飯動態變化)
+    // 圖層 30：前方大格白飯繪圖層
     this.riceGraphics = this.add.graphics().setDepth(30);
 
     // 圖層 38：前方大格主菜與加點精靈容器
     this.mainFoodContainer = this.add.container(0, 0).setDepth(38);
 
-    // 圖層 50：便當盒最前方盒壁與側牆 (遮擋大格白飯與主菜下緣，營造真實立體感)
-    this.add.image(230, 138, 'bento_box_front').setDepth(50);
+    // 圖層 50：便當盒最前方傾斜盒壁
+    this.add.image(230, 130, 'bento_box_front').setDepth(50);
 
-    // 圖層 60：選格呼吸燈高亮外框與每格克數/熱量標籤
+    // 圖層 60：選格呼吸燈高亮外框 & 盒蓋上方輕量資訊標籤 (不擋菜色！)
     this.highlightLayer = this.add.graphics().setDepth(60);
     this.labelsContainer = this.add.container(0, 0).setDepth(65);
 
     this.setupInteractiveZones();
     this.refreshVisuals();
 
-    // 選格呼吸燈動畫
     this.tweens.add({
       targets: this.highlightLayer,
-      alpha: { from: 1, to: 0.35 },
+      alpha: { from: 0.95, to: 0.3 },
       duration: 650,
       yoyo: true,
       repeat: -1
     });
   }
 
-  // 點擊畫布上的任一格即可切換選格
   setupInteractiveZones() {
     [0, 1, 2, 'main'].forEach(slotKey => {
       const c = SLOT_COORDS[slotKey];
       const zone = this.add.zone(c.x, c.y, c.w, c.h).setInteractive({ useHandCursor: true }).setDepth(70);
       zone.on('pointerdown', () => {
-        selectSlot(slotKey);
+        selectSlot(slotKey, true);
       });
     });
   }
@@ -1908,20 +1860,19 @@ class BentoScene extends Phaser.Scene {
     this.drawSideDishes(animatedSlot);
     this.drawMainAddons(animatedSlot === 'main');
     this.drawSelectedHighlight();
-    this.drawCompartmentBadges();
+    this.drawUnobstructedLidNotes();
   }
 
-  // 在前方大格繪製白飯（支援 1/5 到 全飯 面積、厚度與米粒數量動態變化）
   drawRiceInMainSlot() {
     const g = this.riceGraphics;
     g.clear();
-    const ratio = state.ricePortion; // 0.2, 0.4, 0.6, 0.8, 1.0
+    const ratio = state.ricePortion;
 
-    const startX = 113;
-    const maxW = 216;
-    const currentW = maxW * (0.26 + ratio * 0.74); // 1/5 飯佔左區，全飯鋪滿整個大格
-    const centerY = 188;
-    const currentH = 30 + ratio * 15;
+    const startX = 112;
+    const maxW = 218;
+    const currentW = maxW * (0.25 + ratio * 0.75);
+    const centerY = 180;
+    const currentH = 30 + ratio * 16;
 
     // 白飯底層立體陰影與團塊
     g.fillStyle(0xe2ddd3, 1);
@@ -1930,7 +1881,7 @@ class BentoScene extends Phaser.Scene {
     g.fillStyle(0xfdfcf9, 1);
     g.fillRoundedRect(startX, centerY - currentH / 2, currentW, currentH, 14);
 
-    // 飽滿立體白米粒紋理
+    // 飽滿米粒紋理
     const cols = Math.floor(6 + ratio * 12);
     const rows = 4;
     for (let r = 0; r < rows; r++) {
@@ -1942,7 +1893,7 @@ class BentoScene extends Phaser.Scene {
       }
     }
 
-    // 若有開啟「+淋滷汁」：繪製油亮古早味滷肉燥與醬汁
+    // 古早味淋滷汁 vs 黑芝麻
     if (state.hasBraisedSauce) {
       const blobs = Math.max(2, Math.floor(7 * ratio));
       for (let i = 0; i < blobs; i++) {
@@ -1954,14 +1905,13 @@ class BentoScene extends Phaser.Scene {
         g.fillRoundedRect(bx - 4, by - 3, 7, 5, 2);
       }
     } else {
-      // 經典黑芝麻點綴於白飯上
       g.fillStyle(0x1e293b, 0.85);
-      const sesames = [[startX + 18, centerY - 2], [startX + 24, centerY + 2], [startX + 29, centerY - 3]];
-      sesames.forEach(([sx, sy]) => g.fillCircle(sx, sy, 1.5));
+      [[startX + 18, centerY - 2], [startX + 24, centerY + 2], [startX + 29, centerY - 3]].forEach(([sx, sy]) => {
+        g.fillCircle(sx, sy, 1.5);
+      });
     }
   }
 
-  // 繪製後方三小格的配菜精靈
   drawSideDishes(animatedSlot = null) {
     for (let i = 0; i < 3; i++) {
       const container = this.sideContainers[i];
@@ -1969,54 +1919,52 @@ class BentoScene extends Phaser.Scene {
       const dish = state.sideSlots[i];
       if (!dish) continue;
 
-      const sp = this.add.image(0, 2, 'dish_' + dish.id).setScale(0.76);
+      const sp = this.add.image(0, 2, 'dish_' + dish.id).setScale(0.78);
       container.add(sp);
 
       if (animatedSlot === i) {
-        sp.y = -35;
+        sp.y = -32;
         sp.setScale(0.5, 0.95);
         this.tweens.add({
           targets: sp,
           y: 2,
-          scaleX: 0.76,
-          scaleY: 0.76,
-          duration: 280,
+          scaleX: 0.78,
+          scaleY: 0.78,
+          duration: 260,
           ease: 'Bounce.easeOut'
         });
       }
     }
   }
 
-  // 繪製前方大格白飯上的主菜與加點精靈
   drawMainAddons(animateLast = false) {
     this.mainFoodContainer.removeAll(true);
     const total = state.mainAddons.length;
 
     state.mainAddons.forEach((dish, idx) => {
-      // 智慧排列在大格白飯上方
       const spreadX = total === 1 ? 222 : 155 + (idx / Math.max(1, total - 1)) * 136;
-      const posY = dish.isBigMain ? 182 - (idx % 2) * 5 : 186 - (idx % 2) * 4;
-      const targetScale = dish.isBigMain ? 0.98 : 0.82;
+      const posY = dish.isBigMain ? 174 - (idx % 2) * 5 : 178 - (idx % 2) * 4;
+      const targetScale = dish.isBigMain ? 0.98 : 0.84;
 
       const sp = this.add.image(spreadX, posY, 'dish_' + dish.id).setScale(targetScale);
       this.mainFoodContainer.add(sp);
 
       if (animateLast && idx === total - 1) {
-        sp.y = posY - 45;
+        sp.y = posY - 40;
         sp.setScale(targetScale * 0.7, targetScale * 1.2);
         this.tweens.add({
           targets: sp,
           y: posY,
           scaleX: targetScale,
           scaleY: targetScale,
-          duration: 320,
+          duration: 300,
           ease: 'Bounce.easeOut'
         });
       }
     });
   }
 
-  // 繪製目前選中格子的高亮外框
+  // 只繪製輕巧的選格邊框（內部完全透明不遮擋食物）
   drawSelectedHighlight() {
     const hg = this.highlightLayer;
     hg.clear();
@@ -2025,62 +1973,46 @@ class BentoScene extends Phaser.Scene {
 
     hg.lineStyle(2.8, 0x38bdf8, 1);
     hg.strokeRoundedRect(target.x - target.w / 2, target.y - target.h / 2, target.w, target.h, 8);
-    hg.fillStyle(0x38bdf8, 0.12);
-    hg.fillRoundedRect(target.x - target.w / 2, target.y - target.h / 2, target.w, target.h, 8);
   }
 
-  // 在每一格上方顯示即時重量 (g) 與熱量 (kcal) 小標籤
-  drawCompartmentBadges() {
+  // 將格位重量與卡路里印在「白色紙盒上蓋空白處」，完全不遮住任何一格菜色！
+  drawUnobstructedLidNotes() {
     this.labelsContainer.removeAll(true);
 
-    // 後方三小格標籤
+    // 在白色紙盒蓋上半部印出復古紅字便當店章與三格對應克數
+    const stamp = this.add.text(236, 30, '🍱 阿霞台式便當・點格子即可換菜', {
+      fontSize: '11px',
+      fontFamily: 'Noto Sans TC, sans-serif',
+      fontStyle: 'bold',
+      color: '#b91c1c'
+    }).setOrigin(0.5).setRotation(0.025);
+    this.labelsContainer.add(stamp);
+
+    // 對應下方三小格的垂直對齊位置，將菜名與克數印在「紙盒蓋下緣」(y=74)，完全不壓在菜上面
     for (let i = 0; i < 3; i++) {
       const c = SLOT_COORDS[i];
       const dish = state.sideSlots[i];
       const isSel = state.selectedSlot === i;
-      const textStr = dish
-        ? `${dish.name}\n${dish.weight}g·${dish.kcal}卡`
-        : (isSel ? `📍格${i + 1}(待選菜)` : `格${i + 1}(空)`);
+      const str = dish
+        ? `${dish.name}\n${dish.weight}g·$${dish.price}`
+        : `格${i + 1} (空)\n點選配菜`;
 
-      const txt = this.add.text(c.x, c.y - 26, textStr, {
+      const tag = this.add.text(c.x + 2, 72, str, {
         fontSize: '10px',
         fontFamily: 'Noto Sans TC, sans-serif',
         fontStyle: 'bold',
-        color: dish ? '#ffffff' : (isSel ? '#38bdf8' : '#cbd5e1'),
-        backgroundColor: dish ? 'rgba(15,23,42,0.82)' : 'rgba(15,23,42,0.55)',
+        color: isSel ? '#0284c7' : (dish ? '#334155' : '#94a3b8'),
+        backgroundColor: isSel ? 'rgba(224,242,254,0.92)' : 'rgba(255,255,255,0.75)',
         padding: { x: 4, y: 2 },
         align: 'center'
       }).setOrigin(0.5);
-      this.labelsContainer.add(txt);
+      this.labelsContainer.add(tag);
     }
-
-    // 前方大格底部標籤 (顯示白飯份量 + 主菜總重與總卡路里)
-    const riceObj = RICE_PORTIONS[state.ricePortion];
-    const mainWeight = state.mainAddons.reduce((s, d) => s + d.weight, 0) +
-                       riceObj.weight +
-                       (state.hasBraisedSauce ? BRAISED_SAUCE.weight : 0);
-    const mainKcal = state.mainAddons.reduce((s, d) => s + d.kcal, 0) +
-                     riceObj.kcal +
-                     (state.hasBraisedSauce ? BRAISED_SAUCE.kcal : 0);
-
-    const mainLabel = `🍚 ${riceObj.label}${state.hasBraisedSauce ? '+滷汁' : ''}${state.mainAddons.length > 0 ? ` + ${state.mainAddons.length}道主菜/加點` : ''} ｜ 大格合計 ${mainWeight}g · ${mainKcal}kcal`;
-
-    const mainTxt = this.add.text(225, 252, mainLabel, {
-      fontSize: '11px',
-      fontFamily: 'Noto Sans TC, sans-serif',
-      fontStyle: 'bold',
-      color: '#fde047',
-      backgroundColor: 'rgba(9,13,28,0.88)',
-      padding: { x: 8, y: 3 },
-      align: 'center'
-    }).setOrigin(0.5);
-    this.labelsContainer.add(mainTxt);
   }
 
-  // 放菜時的浮動文字特效 (+80g | +115kcal | +$15)
   spawnFloatingTag(slotKey, text) {
     const c = SLOT_COORDS[slotKey] || SLOT_COORDS.main;
-    const floatTxt = this.add.text(c.x, c.y - 12, text, {
+    const floatTxt = this.add.text(c.x, c.y - 10, text, {
       fontSize: '12px',
       fontStyle: 'bold',
       fontFamily: 'Noto Sans TC, sans-serif',
@@ -2091,9 +2023,9 @@ class BentoScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: floatTxt,
-      y: c.y - 46,
+      y: c.y - 44,
       alpha: 0,
-      duration: 850,
+      duration: 820,
       onComplete: () => floatTxt.destroy()
     });
   }
@@ -2101,43 +2033,47 @@ class BentoScene extends Phaser.Scene {
 
 /**
  * ============================================================================
- * 6. 介面互動與算錢・算卡路里・算重量邏輯
+ * 6. UX 互動控制：選格、切換底部轉盤模式、左右滑動選菜與選飯
  * ============================================================================
  */
-function selectSlot(slotKey) {
+function selectSlot(slotKey, autoSwitchTab = true) {
   state.selectedSlot = slotKey;
   playTone(520, 'sine', 0.06);
 
-  // 選格1~3時自動切到「配菜區」，選前方大格時自動切到「主菜與加點」
-  if (slotKey === 'main' && state.activeCategory !== 'main') {
-    state.activeCategory = 'main';
-  } else if (slotKey !== 'main' && state.activeCategory !== 'side') {
-    state.activeCategory = 'side';
+  if (autoSwitchTab) {
+    if (slotKey === 'main' && state.dockMode === 'side') {
+      state.dockMode = 'main';
+    } else if (slotKey !== 'main' && state.dockMode !== 'side') {
+      state.dockMode = 'side';
+    }
   }
 
   updateUI();
   if (phaserScene) phaserScene.refreshVisuals();
 }
 
-function switchCategory(cat) {
-  state.activeCategory = cat;
-  if (cat === 'main' && state.selectedSlot !== 'main') {
+function switchDockMode(mode) {
+  state.dockMode = mode;
+  playTone(460, 'triangle', 0.06);
+
+  if (mode === 'rice' || mode === 'main') {
     state.selectedSlot = 'main';
-  } else if (cat === 'side' && state.selectedSlot === 'main') {
+  } else if (mode === 'side' && state.selectedSlot === 'main') {
     const emptyIdx = state.sideSlots.findIndex(s => s === null);
     state.selectedSlot = emptyIdx !== -1 ? emptyIdx : 0;
   }
-  playTone(460, 'triangle', 0.06);
-  updateUI();
+
+  updateUI(true);
   if (phaserScene) phaserScene.refreshVisuals();
 }
 
 function setRicePortion(ratio) {
   state.ricePortion = ratio;
+  state.selectedSlot = 'main';
   playTone(340 + ratio * 220, 'sine', 0.08);
   updateUI();
   if (phaserScene) {
-    const r = RICE_PORTIONS[ratio];
+    const r = getRiceObj(ratio);
     phaserScene.refreshVisuals();
     phaserScene.spawnFloatingTag('main', `${r.label} (${r.weight}g | ${r.kcal}kcal | $${r.price})`);
   }
@@ -2145,6 +2081,7 @@ function setRicePortion(ratio) {
 
 function toggleBraisedSauce() {
   state.hasBraisedSauce = !state.hasBraisedSauce;
+  state.selectedSlot = 'main';
   playTone(state.hasBraisedSauce ? 580 : 320, 'sine', 0.08);
   updateUI();
   if (phaserScene) {
@@ -2155,7 +2092,7 @@ function toggleBraisedSauce() {
   }
 }
 
-// 點擊菜色卡片：放入目前指定的格子
+// 點擊橫向轉盤中的配菜或主菜卡
 function handleDishClick(dishId, type) {
   if (type === 'side') {
     const dish = SIDE_DISHES.find(d => d.id === dishId);
@@ -2173,10 +2110,10 @@ function handleDishClick(dishId, type) {
 
     if (phaserScene) {
       phaserScene.refreshVisuals(targetSlot);
-      phaserScene.spawnFloatingTag(targetSlot, `${dish.name} ${dish.weight}g | ${dish.kcal}kcal | +$${dish.price}`);
+      phaserScene.spawnFloatingTag(targetSlot, `${dish.name} ${dish.weight}g | +$${dish.price}`);
     }
 
-    // 若還有其他空的小格，自動跳到下一個空小格方便連續點菜；若已滿則留在原格方便直接換菜
+    // 智慧 UX：若還有其他空的小格，自動跳到下一格方便連續選滿 3 菜
     const nextEmpty = state.sideSlots.findIndex(s => s === null);
     if (nextEmpty !== -1) {
       state.selectedSlot = nextEmpty;
@@ -2194,14 +2131,14 @@ function handleDishClick(dishId, type) {
 
     if (phaserScene) {
       phaserScene.refreshVisuals('main');
-      phaserScene.spawnFloatingTag('main', `+${dish.name} ${dish.weight}g | ${dish.kcal}kcal | +$${dish.price}`);
+      phaserScene.spawnFloatingTag('main', `+${dish.name} ${dish.weight}g | +$${dish.price}`);
     }
   }
 
   updateUI();
 }
 
-// 移除某道菜
+// 單道菜退菜按鈕
 function removeDish(dishId, type, event) {
   event.stopPropagation();
   playTone(280, 'sine', 0.08);
@@ -2223,9 +2160,25 @@ function removeDish(dishId, type, event) {
   if (phaserScene) phaserScene.refreshVisuals();
 }
 
+// 舞台底部「✕ 夾走此格」快捷鈕
+function clearCurrentSlot() {
+  playTone(280, 'sine', 0.08);
+  if (state.selectedSlot === 'main') {
+    if (state.mainAddons.length > 0) {
+      state.mainAddons.pop();
+    } else if (state.hasBraisedSauce) {
+      state.hasBraisedSauce = false;
+    }
+  } else {
+    state.sideSlots[state.selectedSlot] = null;
+  }
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
 // 計算總重量 (g)、總卡路里 (kcal)、總金額 ($) 與套餐優惠
 function calculateTotals() {
-  const rice = RICE_PORTIONS[state.ricePortion];
+  const rice = getRiceObj(state.ricePortion);
   let totalWeight = rice.weight;
   let totalKcal = rice.kcal;
   let rawPrice = rice.price;
@@ -2254,112 +2207,214 @@ function calculateTotals() {
     if (d.isBigMain) hasBigMain = true;
   });
 
-  // 湊齊「三格配菜 + 任一主菜肉排」享便當套餐折抵 $10
   const discount = (filledSideCount === 3 && hasBigMain) ? 10 : 0;
   const finalPrice = Math.max(0, rawPrice - discount);
 
   return { totalWeight, totalKcal, rawPrice, discount, finalPrice };
 }
 
-// 更新 DOM 畫面與繪製下方菜色手繪縮圖
-function updateUI() {
+/**
+ * ============================================================================
+ * 7. 左右滑動轉盤渲染與滾動控制 (支援觸控滑動、滑鼠拖曳、滾輪與左右按鈕)
+ * ============================================================================
+ */
+function scrollCarousel(dir) {
+  const track = document.getElementById('horizontal-track');
+  if (!track) return;
+  playTone(400 + dir * 60, 'sine', 0.05);
+  track.scrollBy({ left: dir * 280, behavior: 'smooth' });
+}
+
+function updateScrollDots() {
+  const track = document.getElementById('horizontal-track');
+  const dotsWrap = document.getElementById('scroll-dots');
+  if (!track || !dotsWrap) return;
+
+  const maxScroll = Math.max(1, track.scrollWidth - track.clientWidth);
+  const pageCount = Math.max(1, Math.ceil(track.scrollWidth / Math.max(1, track.clientWidth)));
+  const currentIdx = Math.min(pageCount - 1, Math.round((track.scrollLeft / maxScroll) * (pageCount - 1)));
+
+  dotsWrap.innerHTML = '';
+  for (let i = 0; i < pageCount; i++) {
+    const dot = document.createElement('div');
+    dot.className = `scroll-dot ${i === currentIdx ? 'active' : ''}`;
+    dotsWrap.appendChild(dot);
+  }
+}
+
+function updateUI(resetCarouselScroll = false) {
   const totals = calculateTotals();
+  const rice = getRiceObj(state.ricePortion);
 
   // 1. 頂部三合一數據
   document.getElementById('ui-total-weight').textContent = `${totals.totalWeight} g`;
   document.getElementById('ui-total-kcal').textContent = `${totals.totalKcal} kcal`;
   document.getElementById('ui-total-price').textContent = `NT$ ${totals.finalPrice}`;
 
-  // 2. 白飯按鈕狀態
-  const rice = RICE_PORTIONS[state.ricePortion];
-  const sauceText = state.hasBraisedSauce ? ` + 滷汁(${BRAISED_SAUCE.weight}g)` : '';
-  document.getElementById('ui-rice-detail').textContent =
-    `${rice.label}${sauceText} | ${rice.weight + (state.hasBraisedSauce ? BRAISED_SAUCE.weight : 0)}g | ${rice.kcal + (state.hasBraisedSauce ? BRAISED_SAUCE.kcal : 0)}kcal | $${rice.price + (state.hasBraisedSauce ? BRAISED_SAUCE.price : 0)}`;
-
-  document.querySelectorAll('.rice-btn[data-ratio]').forEach(btn => {
-    btn.classList.toggle('active', parseFloat(btn.dataset.ratio) === state.ricePortion);
-  });
-  document.getElementById('btn-lurou').classList.toggle('active', state.hasBraisedSauce);
-
-  // 3. 四格選格器狀態
+  // 2. 舞台頂部 4 格選格膠囊狀態
   [0, 1, 2].forEach(i => {
-    const tab = document.getElementById(`slot-tab-${i}`);
+    const pill = document.getElementById(`slot-pill-${i}`);
     const sub = document.getElementById(`slot-sub-${i}`);
-    tab.classList.toggle('active', state.selectedSlot === i);
     const d = state.sideSlots[i];
-    sub.textContent = d ? `${d.name}(${d.weight}g)` : '空・點擊選菜';
+    pill.classList.toggle('active', state.selectedSlot === i);
+    pill.classList.toggle('filled', !!d);
+    sub.textContent = d ? `${d.name}(${d.weight}g)` : '空・點選配菜';
   });
 
-  const mainTab = document.getElementById('slot-tab-main');
+  const mainPill = document.getElementById('slot-pill-main');
   const mainSub = document.getElementById('slot-sub-main');
-  mainTab.classList.toggle('active', state.selectedSlot === 'main');
+  mainPill.classList.toggle('active', state.selectedSlot === 'main');
+  mainPill.classList.add('filled');
   mainSub.textContent = state.mainAddons.length > 0
-    ? `飯+${state.mainAddons.map(d => d.name).join('、')}`
-    : `${rice.label}・點選主菜`;
+    ? `${rice.short}+${state.mainAddons.length}樣主菜`
+    : `${rice.short}${state.hasBraisedSauce ? '+滷汁' : ''}`;
 
-  // 4. 分類按鈕與目標提示
-  document.getElementById('cat-side').classList.toggle('active', state.activeCategory === 'side');
-  document.getElementById('cat-main').classList.toggle('active', state.activeCategory === 'main');
-  document.getElementById('ui-target-hint').textContent =
-    `目標：【${SLOT_COORDS[state.selectedSlot].label}】`;
+  // 3. 舞台底部當前格位即時提示與退菜按鈕
+  const focusBadge = document.getElementById('ui-focus-badge');
+  const focusDetail = document.getElementById('ui-focus-detail');
+  const clearBtn = document.getElementById('btn-clear-current-slot');
 
-  // 5. 渲染菜色卡片網格 (每張卡片內嵌獨立 Canvas 繪製的精細菜色插畫)
-  const grid = document.getElementById('dishes-grid');
-  grid.innerHTML = '';
-  const list = state.activeCategory === 'side' ? SIDE_DISHES : MAIN_DISHES;
-
-  list.forEach(dish => {
-    let count = 0;
-    if (state.activeCategory === 'side') {
-      count = state.sideSlots.filter(d => d && d.id === dish.id).length;
+  if (state.selectedSlot === 'main') {
+    focusBadge.textContent = '🍖 前方大格';
+    const mainNames = state.mainAddons.map(d => d.name).join('、');
+    const mainW = rice.weight + (state.hasBraisedSauce ? BRAISED_SAUCE.weight : 0) + state.mainAddons.reduce((s, d) => s + d.weight, 0);
+    focusDetail.textContent = `${rice.label}${state.hasBraisedSauce ? '+滷汁' : ''}${mainNames ? ' + ' + mainNames : ''} (共 ${mainW}g)`;
+    clearBtn.style.display = state.mainAddons.length > 0 ? 'inline-block' : 'none';
+    clearBtn.textContent = '✕ 退最後主菜';
+  } else {
+    const idx = state.selectedSlot;
+    const d = state.sideSlots[idx];
+    focusBadge.textContent = `📍 配菜格 ${idx + 1}`;
+    if (d) {
+      focusDetail.textContent = `${d.name} (${d.weight}g · ${d.kcal}kcal · $${d.price}) — 點下方可換菜`;
+      clearBtn.style.display = 'inline-block';
+      clearBtn.textContent = '✕ 夾走此格';
     } else {
-      count = state.mainAddons.filter(d => d.id === dish.id).length;
+      focusDetail.textContent = `目前為空 — 請左右滑動下方轉盤點選配菜放入`;
+      clearBtn.style.display = 'none';
     }
+  }
 
-    const card = document.createElement('div');
-    card.className = `dish-card ${count > 0 ? 'selected' : ''}`;
-    card.onclick = () => handleDishClick(dish.id, state.activeCategory);
+  // 4. 底部三大步驟 Tab 狀態
+  document.getElementById('tab-rice').classList.toggle('active', state.dockMode === 'rice');
+  document.getElementById('tab-side').classList.toggle('active', state.dockMode === 'side');
+  document.getElementById('tab-main').classList.toggle('active', state.dockMode === 'main');
 
-    if (count > 0) {
-      const remBtn = document.createElement('div');
-      remBtn.className = 'dish-remove-btn';
-      remBtn.textContent = '−';
-      remBtn.onclick = (e) => removeDish(dish.id, state.activeCategory, e);
-      card.appendChild(remBtn);
+  // 5. 渲染橫向滑動軌道內容
+  const track = document.getElementById('horizontal-track');
+  const prevScroll = track.scrollLeft;
+  track.innerHTML = '';
 
+  if (state.dockMode === 'rice') {
+    document.getElementById('ui-carousel-hint').textContent = '🍚 點選切換前方大格白飯份量（1/5 [5/1] ～ 全飯）與古早味滷汁';
+
+    // 渲染 5 段飯量卡片
+    RICE_PORTIONS.forEach(r => {
+      const isSel = Math.abs(state.ricePortion - r.ratio) < 0.01;
+      const card = document.createElement('div');
+      card.className = `h-card ${isSel ? 'selected-cyan' : ''}`;
+      card.onclick = () => setRicePortion(r.ratio);
+
+      if (isSel) {
+        const badge = document.createElement('div');
+        badge.className = 'card-badge-check';
+        badge.style.background = '#0284c7';
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+
+      const thumb = document.createElement('div');
+      thumb.className = 'h-card-thumb';
+      const cvs = document.createElement('canvas');
+      cvs.width = 64; cvs.height = 46;
+      drawRiceCardThumb(cvs.getContext('2d'), r.ratio, false, 64, 46);
+      thumb.appendChild(cvs);
+      card.appendChild(thumb);
+
+      card.insertAdjacentHTML('beforeend', `
+        <div class="h-card-name">${r.label}</div>
+        <div class="h-card-meta"><span class="w">${r.weight}g</span> · <span class="k">${r.kcal}卡</span></div>
+        <div class="h-card-price">$${r.price}</div>
+      `);
+      track.appendChild(card);
+    });
+
+    // 渲染「+古早味淋滷汁」加購卡
+    const sauceCard = document.createElement('div');
+    sauceCard.className = `h-card ${state.hasBraisedSauce ? 'selected' : ''}`;
+    sauceCard.onclick = () => toggleBraisedSauce();
+    if (state.hasBraisedSauce) {
       const badge = document.createElement('div');
-      badge.className = 'dish-badge-count';
-      badge.textContent = count > 1 ? `×${count}` : '✓';
-      card.appendChild(badge);
+      badge.className = 'card-badge-check';
+      badge.textContent = '已淋';
+      sauceCard.appendChild(badge);
     }
+    const sThumb = document.createElement('div');
+    sThumb.className = 'h-card-thumb';
+    const sCvs = document.createElement('canvas');
+    sCvs.width = 64; sCvs.height = 46;
+    drawRiceCardThumb(sCvs.getContext('2d'), 1, true, 64, 46);
+    sThumb.appendChild(sCvs);
+    sauceCard.appendChild(sThumb);
+    sauceCard.insertAdjacentHTML('beforeend', `
+      <div class="h-card-name">+${BRAISED_SAUCE.name}</div>
+      <div class="h-card-meta"><span class="w">+${BRAISED_SAUCE.weight}g</span> · <span class="k">+${BRAISED_SAUCE.kcal}卡</span></div>
+      <div class="h-card-price">+$${BRAISED_SAUCE.price}</div>
+    `);
+    track.appendChild(sauceCard);
 
-    const thumbWrap = document.createElement('div');
-    thumbWrap.className = 'dish-thumb-wrap';
-    const cvs = document.createElement('canvas');
-    cvs.width = 76;
-    cvs.height = 58;
-    cvs.className = 'dish-thumb-canvas';
-    drawCulinaryDish(cvs.getContext('2d'), dish.id, 76, 58);
-    thumbWrap.appendChild(cvs);
-    card.appendChild(thumbWrap);
+  } else {
+    const isSide = state.dockMode === 'side';
+    const list = isSide ? SIDE_DISHES : MAIN_DISHES;
+    document.getElementById('ui-carousel-hint').textContent = isSide
+      ? `🥬 左右滑動挑選配菜（共16道），點選即放入【配菜格 ${state.selectedSlot === 'main' ? 1 : state.selectedSlot + 1}】`
+      : `🍗 左右滑動挑選主菜與小菜（共14道），點選即疊加於【前方大格白飯上】`;
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'dish-name';
-    nameEl.textContent = dish.name;
-    card.appendChild(nameEl);
+    list.forEach(dish => {
+      const count = isSide
+        ? state.sideSlots.filter(d => d && d.id === dish.id).length
+        : state.mainAddons.filter(d => d.id === dish.id).length;
 
-    const metaEl = document.createElement('div');
-    metaEl.className = 'dish-meta';
-    metaEl.innerHTML = `<span class="w-tag">${dish.weight}g</span> · <span class="k-tag">${dish.kcal}卡</span>`;
-    card.appendChild(metaEl);
+      const card = document.createElement('div');
+      card.className = `h-card ${count > 0 ? 'selected' : ''}`;
+      card.onclick = () => handleDishClick(dish.id, state.dockMode);
 
-    const priceEl = document.createElement('div');
-    priceEl.className = 'dish-price-tag';
-    priceEl.textContent = `$${dish.price}`;
-    card.appendChild(priceEl);
+      if (count > 0) {
+        const minusBtn = document.createElement('div');
+        minusBtn.className = 'card-btn-minus';
+        minusBtn.textContent = '−';
+        minusBtn.onclick = (e) => removeDish(dish.id, state.dockMode, e);
+        card.appendChild(minusBtn);
 
-    grid.appendChild(card);
-  });
+        const badge = document.createElement('div');
+        badge.className = 'card-badge-check';
+        badge.textContent = count > 1 ? `×${count}` : '✓';
+        card.appendChild(badge);
+      }
+
+      const thumb = document.createElement('div');
+      thumb.className = 'h-card-thumb';
+      const cvs = document.createElement('canvas');
+      cvs.width = 68; cvs.height = 50;
+      drawCulinaryDish(cvs.getContext('2d'), dish.id, 68, 50);
+      thumb.appendChild(cvs);
+      card.appendChild(thumb);
+
+      card.insertAdjacentHTML('beforeend', `
+        <div class="h-card-name">${dish.name}</div>
+        <div class="h-card-meta"><span class="w">${dish.weight}g</span> · <span class="k">${dish.kcal}卡</span></div>
+        <div class="h-card-price">$${dish.price}</div>
+      `);
+      track.appendChild(card);
+    });
+  }
+
+  if (resetCarouselScroll) {
+    track.scrollLeft = 0;
+  } else {
+    track.scrollLeft = prevScroll;
+  }
+  setTimeout(updateScrollDots, 30);
 
   // 6. 底部結帳欄
   const discountPill = document.getElementById('ui-discount-pill');
@@ -2368,7 +2423,7 @@ function updateUI() {
     `${totals.totalWeight}g | ${totals.totalKcal}kcal | NT$ ${totals.finalPrice}`;
 }
 
-// 隨機配好一個豐盛便當
+// 隨機滿漢便當
 function randomBento() {
   const ratios = [0.2, 0.4, 0.6, 0.8, 1.0];
   state.ricePortion = ratios[Math.floor(Math.random() * ratios.length)];
@@ -2396,9 +2451,9 @@ function clearAll() {
   state.sideSlots = [null, null, null];
   state.mainAddons = [];
   state.selectedSlot = 0;
-  state.activeCategory = 'side';
+  state.dockMode = 'side';
   playTone(300, 'sine', 0.1);
-  updateUI();
+  updateUI(true);
   if (phaserScene) phaserScene.refreshVisuals();
 }
 
@@ -2406,7 +2461,7 @@ function clearAll() {
 function openCheckoutModal() {
   playTone(740, 'triangle', 0.12);
   const totals = calculateTotals();
-  const rice = RICE_PORTIONS[state.ricePortion];
+  const rice = getRiceObj(state.ricePortion);
   const listEl = document.getElementById('receipt-items');
   listEl.innerHTML = '';
 
@@ -2500,14 +2555,51 @@ function updateCashChangeUI() {
   }
 }
 
-// 啟動 Phaser 3 與初始化介面
+// 綁定橫向滑動轉盤的滑鼠拖曳、滾輪轉橫向、以及進度點更新
+function initHorizontalTrackUX() {
+  const track = document.getElementById('horizontal-track');
+  if (!track) return;
+
+  track.addEventListener('scroll', () => {
+    updateScrollDots();
+  }, { passive: true });
+
+  // 支援電腦滑鼠滾輪直接左右滑動菜色
+  track.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      track.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+
+  // 支援滑鼠按住左右拖曳
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  track.addEventListener('mousedown', (e) => {
+    isDown = true;
+    startX = e.pageX - track.offsetLeft;
+    scrollLeft = track.scrollLeft;
+  });
+  window.addEventListener('mouseup', () => { isDown = false; });
+  track.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - track.offsetLeft;
+    track.scrollLeft = scrollLeft - (x - startX) * 1.4;
+  });
+}
+
+// 啟動 Phaser 3 與初始化滿版 UX 介面
 window.onload = function () {
-  updateUI();
+  initHorizontalTrackUX();
+  updateUI(true);
+
   const config = {
     type: Phaser.AUTO,
     parent: 'phaser-container',
     width: 460,
-    height: 276,
+    height: 260,
     transparent: true,
     scene: [BentoScene],
     scale: {
