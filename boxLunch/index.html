@@ -1,2314 +1,2522 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>打造你的台式便當 - Build Your Bento</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phaser 3 Game Engine -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>打造你的台式便當 - 選格・飯量・熱量・秤重算錢</title>
+  <!-- Phaser 3 遊戲引擎 -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070c1a;
+      --bg-panel: #101935;
+      --bg-card: #162244;
+      --accent: #ff6b2b;
+      --accent-glow: rgba(255, 107, 43, 0.45);
+      --cyan: #38bdf8;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+    }
 
-    <style>
-        :root {
-            --bg-navy: #070b19;
-            --bg-card: #11182d;
-            --accent-orange: #ea580c;
-            --accent-amber: #f59e0b;
-        }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+    body {
+      background: radial-gradient(circle at 50% 18%, #17254a 0%, #050811 100%);
+      color: var(--text-main);
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #03060c;
-            color: #f8fafc;
-            font-family: 'Noto Sans TC', sans-serif;
-            overflow-x: hidden;
-        }
+    .app-shell {
+      width: 100%;
+      max-width: 490px;
+      height: 100vh;
+      max-height: 950px;
+      background: linear-gradient(180deg, #0d152e 0%, #070b18 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
 
-        .serif-title {
-            font-family: 'Playfair Display', 'Noto Sans TC', serif;
-        }
+    @media (min-width: 520px) {
+      .app-shell {
+        height: 94vh;
+        border-radius: 34px;
+      }
+    }
 
-        /* Custom subtle scrollbar for ingredient tray if needed */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+    /* 頂部標題列 */
+    .top-header {
+      padding: 10px 14px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
 
-        /* Ingredient circle button animations */
-        .ingredient-btn {
-            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .ingredient-btn:active {
-            transform: scale(0.92);
-        }
-        .ingredient-selected {
-            border-color: #f97316 !important;
-            box-shadow: 0 0 16px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.18);
-        }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
 
-        /* Badge pop animation */
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.15); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .badge-pop {
-            animation: popIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+    .brand-title .serif {
+      font-family: 'Playfair Display', serif;
+    }
 
-        /* Price bump animation */
-        @keyframes priceBump {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.14); color: #fde047; }
-            100% { transform: scale(1); }
-        }
-        .price-bump {
-            animation: priceBump 0.25s ease-out;
-        }
+    .brand-title span.highlight {
+      color: var(--yellow);
+      font-style: italic;
+      margin-left: 3px;
+    }
 
-        /* Phone shell glow on desktop */
-        .app-shell {
-            background: radial-gradient(circle at 50% 34%, #172342 0%, #090e1f 58%, #060914 100%);
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
-        }
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            touch-action: manipulation;
-        }
-    </style>
+    .btn-mini {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .btn-mini:hover {
+      background: rgba(255, 107, 43, 0.25);
+      border-color: var(--accent);
+    }
+
+    .btn-mini:active {
+      transform: scale(0.94);
+    }
+
+    /* 重量 / 熱量 / 價格 三合一即時數據條 */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(0, 0, 0, 0.32);
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 0.66rem;
+      color: var(--text-sub);
+    }
+
+    .stat-value {
+      font-size: 0.94rem;
+      font-weight: 900;
+      margin-top: 1px;
+    }
+
+    .stat-weight { color: var(--cyan); }
+    .stat-kcal { color: var(--yellow); }
+    .stat-price { color: var(--green); }
+
+    /* 白飯大格固定控制區 (1/5 ~ 全飯) */
+    .rice-control-panel {
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .rice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.73rem;
+      margin-bottom: 5px;
+      color: #cbd5e1;
+    }
+
+    .rice-info-tag {
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    .rice-buttons {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+    }
+
+    .rice-btn {
+      background: #15203f;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      border-radius: 8px;
+      padding: 4px 2px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.16s;
+    }
+
+    .rice-btn small {
+      display: block;
+      font-size: 0.58rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .rice-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: #ff9a6c;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .rice-btn.active small {
+      color: #ffe4d6;
+    }
+
+    .rice-btn.braised-btn.active {
+      background: #b45309;
+      border-color: #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+    }
+
+    /* 4 格便當盒指定選格器 */
+    .slot-selector-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 6px 14px 2px;
+    }
+
+    .slot-tab {
+      background: rgba(22, 34, 68, 0.8);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 4px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      position: relative;
+    }
+
+    .slot-tab.active {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.18);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+
+    .slot-tab-title {
+      font-size: 0.71rem;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    .slot-tab-sub {
+      font-size: 0.61rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    /* Phaser 畫布容器 */
+    #phaser-container {
+      width: 100%;
+      height: 276px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* 菜色分類切換與選單區 */
+    .menu-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(11, 17, 38, 0.96);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .category-tabs {
+      display: flex;
+      padding: 6px 14px;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cat-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cat-btn {
+      background: #162244;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 11px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+
+    .cat-btn.active {
+      background: var(--cyan);
+      color: #070c1a;
+      border-color: #bae6fd;
+      font-weight: 900;
+    }
+
+    .slot-hint {
+      font-size: 0.69rem;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    /* 菜色網格 */
+    .dishes-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      align-content: start;
+    }
+
+    .dishes-grid::-webkit-scrollbar {
+      width: 5px;
+    }
+    .dishes-grid::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 4px;
+    }
+
+    .dish-card {
+      background: var(--bg-card);
+      border: 1.5px solid rgba(255, 255, 255, 0.09);
+      border-radius: 14px;
+      padding: 5px 4px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .dish-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .dish-card:active {
+      transform: scale(0.95);
+    }
+
+    .dish-card.selected {
+      border-color: var(--accent);
+      background: rgba(255, 107, 43, 0.16);
+      box-shadow: 0 0 12px rgba(255, 107, 43, 0.32);
+    }
+
+    .dish-thumb-wrap {
+      width: 56px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 3px;
+      overflow: hidden;
+    }
+
+    .dish-thumb-canvas {
+      width: 54px;
+      height: 42px;
+      pointer-events: none;
+    }
+
+    .dish-badge-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.64rem;
+      font-weight: 900;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 4px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+
+    .dish-remove-btn {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+
+    .dish-name {
+      font-size: 0.71rem;
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .dish-meta {
+      font-size: 0.59rem;
+      color: #94a3b8;
+      line-height: 1.2;
+    }
+
+    .dish-meta .w-tag { color: #38bdf8; font-weight: 700; }
+    .dish-meta .k-tag { color: #facc15; }
+    .dish-price-tag {
+      margin-top: 2px;
+      font-size: 0.69rem;
+      font-weight: 900;
+      color: #4ade80;
+    }
+
+    /* 底部結帳按鈕列 */
+    .bottom-checkout {
+      padding: 8px 14px 12px;
+      background: #060a16;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .checkout-btn {
+      width: 100%;
+      background: linear-gradient(90deg, #ea580c 0%, #f97316 50%, #ea580c 100%);
+      border: none;
+      border-radius: 28px;
+      padding: 11px 18px;
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
+      transition: transform 0.15s;
+    }
+
+    .checkout-btn:active {
+      transform: scale(0.98);
+    }
+
+    .checkout-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .discount-pill {
+      background: rgba(0, 0, 0, 0.32);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      color: #fde047;
+    }
+
+    /* 結帳明細與找錢 Modal */
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(4, 8, 20, 0.84);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .receipt-card {
+      background: #fffdf9;
+      color: #1e293b;
+      width: 100%;
+      max-width: 395px;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      max-height: 88vh;
+      overflow-y: auto;
+      border: 3px solid #f59e0b;
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #cbd5e1;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .receipt-header h3 {
+      font-size: 1.12rem;
+      color: #b91c1c;
+      font-weight: 900;
+    }
+
+    .receipt-list {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px dotted #cbd5e1;
+    }
+
+    .receipt-row-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .receipt-row-sub {
+      font-size: 0.69rem;
+      color: #64748b;
+    }
+
+    .receipt-summary {
+      background: #f1f5f9;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 3px 0;
+      font-weight: 700;
+    }
+
+    .summary-line.total {
+      font-size: 1.08rem;
+      color: #dc2626;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 6px;
+      margin-top: 6px;
+      font-weight: 900;
+    }
+
+    .cash-section {
+      border-top: 2px dashed #cbd5e1;
+      padding-top: 10px;
+    }
+
+    .cash-btns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 6px 0 10px;
+    }
+
+    .cash-btn {
+      background: #e2e8f0;
+      border: none;
+      padding: 7px 4px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #0f172a;
+      transition: 0.15s;
+    }
+
+    .cash-btn.active {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .close-modal-btn {
+      width: 100%;
+      margin-top: 10px;
+      background: #0f172a;
+      color: #fff;
+      border: none;
+      padding: 11px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center sm:py-4">
+<body>
 
-    <!-- Mobile App Container -->
-    <div class="app-shell w-full max-w-[440px] min-h-screen sm:min-h-[860px] sm:max-h-[920px] sm:rounded-[38px] flex flex-col justify-between relative overflow-hidden">
-
-        <!-- TOP NAVIGATION & HEADER -->
-        <header class="pt-3 pb-1 px-5 z-20 flex flex-col items-center">
-            <!-- Top Row Icons (matching reference app UI) -->
-            <div class="w-full flex items-center justify-between mb-2">
-                <!-- Challenge / Customer Order Mode Button -->
-                <button id="btn-challenge" onclick="toggleChallengeMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/80 text-xs text-slate-200 transition active:scale-95" title="阿姨出題挑戰">
-                    <span class="text-amber-400">🎯</span>
-                    <span id="challenge-btn-text" class="font-medium">阿姨出題</span>
-                </button>
-
-                <!-- Center Brand Emblem -->
-                <div class="flex flex-col items-center">
-                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-md shadow-orange-500/20">
-                        <span class="text-sm font-black text-slate-950">🍱</span>
-                    </div>
-                </div>
-
-                <!-- Right Action Icons: Reset & Order Bag -->
-                <div class="flex items-center gap-2.5">
-                    <button onclick="resetBento()" class="w-8 h-8 rounded-full bg-slate-800/70 hover:bg-slate-700 border border-slate-700/80 flex items-center justify-center text-slate-300 hover:text-white transition active:rotate-[-90deg]" title="清空重裝">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                    </button>
-
-                    <button onclick="openHistoryModal()" class="relative w-8 h-8 rounded-full bg-slate-800/70 hover:bg-slate-700 border border-slate-700/80 flex items-center justify-center text-slate-300 hover:text-white transition" title="已結帳便當袋">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                        </svg>
-                        <span id="bag-count-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange-500 text-[10px] font-bold text-white flex items-center justify-center shadow">0</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main App Title (Build your bento) -->
-            <div class="text-center mb-2">
-                <h1 class="text-2xl sm:text-[26px] font-bold tracking-tight text-slate-100 leading-tight">
-                    <span class="serif-title">Build your</span>
-                    <span class="serif-title italic text-amber-400 font-bold ml-1">台式便當</span>
-                </h1>
-            </div>
-
-            <!-- Challenge Banner (Hidden unless Challenge Mode is active) -->
-            <div id="challenge-banner" class="hidden w-full mb-2 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-200 text-xs flex items-center justify-between">
-                <div class="flex items-center gap-1.5 truncate">
-                    <span class="text-sm">👩‍🍳</span>
-                    <span id="challenge-desc" class="truncate font-medium">任務：滷肉飯 + 3配菜 + 炸雞腿</span>
-                </div>
-                <button onclick="generateNewChallenge()" class="ml-2 text-[11px] bg-amber-400/20 hover:bg-amber-400/30 px-2 py-0.5 rounded text-amber-300 shrink-0">換一題</button>
-            </div>
-
-            <!-- Rice Base Toggle Pill (Matches Beef / Chicken toggle in screenshot) -->
-            <div class="inline-flex p-1 rounded-full bg-slate-900/90 border border-slate-800 shadow-inner">
-                <button id="rice-btn-white" onclick="selectRice('white')" class="rice-pill px-3.5 py-1 rounded-full text-xs font-bold transition-all bg-sky-100 text-slate-900 shadow">
-                    白飯 <span class=" opacity-75 font-normal">$15</span>
-                </button>
-                <button id="rice-btn-braised" onclick="selectRice('braised')" class="rice-pill px-3.5 py-1 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
-                    滷肉飯 <span class="opacity-75 font-normal">$25</span>
-                </button>
-                <button id="rice-btn-purple" onclick="selectRice('purple')" class="rice-pill px-3.5 py-1 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
-                    紫米飯 <span class="opacity-75 font-normal">$20</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- CENTER STAGE: PHASER 3 INTERACTIVE BENTO BOX CANVAS -->
-        <div class="relative w-full h-[290px] sm:h-[320px] flex items-center justify-center my-auto z-10">
-            <!-- Compartment Status Floating Pills -->
-            <div class="absolute top-1 left-4 z-20 flex items-center gap-1.5 pointer-events-none">
-                <span class="px-2.5 py-0.5 rounded-full bg-slate-900/75 border border-slate-700/70 text-[11px] text-slate-300 backdrop-blur-sm">
-                    配菜三格: <strong id="side-slot-counter" class="text-amber-400">0/3</strong>
-                </span>
-                <span id="combo-status-pill" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[11px] text-emerald-300 font-medium backdrop-blur-sm">
-                    ✨ 套餐折 -$15
-                </span>
-            </div>
-
-            <!-- Quick Interaction Hint -->
-            <div class="absolute bottom-1 right-4 z-20 pointer-events-none">
-                <span class="text-[10px] text-slate-400/80 bg-slate-900/60 px-2 py-0.5 rounded-full">
-                    💡 點擊便當內菜色可彈跳或夾走
-                </span>
-            </div>
-
-            <!-- Phaser Canvas Mount -->
-            <div id="phaser-bento-stage" class="w-full h-full"></div>
-        </div>
-
-        <!-- BOTTOM CONTROLS: INGREDIENT GRID & CHECKOUT BAR -->
-        <section class="px-4 pb-4 pt-1 z-20 flex flex-col gap-2.5 bg-gradient-to-t from-[#060914] via-[#090e1f]/95 to-transparent">
-
-            <!-- Category Filter & Live Mini Summary -->
-            <div class="flex items-center justify-between px-1">
-                <div class="flex items-center gap-1.5">
-                    <button id="tab-all" onclick="filterCategory('all')" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40 transition">
-                        全部菜色 (8)
-                    </button>
-                    <button id="tab-sides" onclick="filterCategory('sides')" class="px-2.5 py-0.5 rounded-full text-[11px] font-medium text-slate-400 hover:text-slate-200 border border-transparent transition">
-                        後方配菜 (6)
-                    </button>
-                    <button id="tab-mains" onclick="filterCategory('mains')" class="px-2.5 py-0.5 rounded-full text-[11px] font-medium text-slate-400 hover:text-slate-200 border border-transparent transition">
-                        主菜加點 (6)
-                    </button>
-                </div>
-                <button onclick="openReceiptPreview()" class="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-0.5 font-medium">
-                    <span>算錢明細</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Ingredient Circular Buttons Grid (4 columns x 2 rows visible, or scrollable 12) -->
-            <div id="ingredient-grid" class="grid grid-cols-4 gap-y-2.5 gap-x-2 max-h-[196px] overflow-y-auto no-scrollbar py-1 px-0.5">
-                <!-- Populated dynamically via JS with procedural canvas icons -->
-            </div>
-
-            <!-- Prominent Orange Checkout Bar (Matches "Add to order -$0.60 $15.90") -->
-            <div class="pt-0.5">
-                <button id="btn-checkout" onclick="submitBentoOrder()" class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#e85d1a] via-[#f06418] to-[#ea580c] hover:from-[#f97316] hover:to-[#ea580c] active:scale-[0.98] text-white font-bold shadow-lg shadow-orange-600/30 flex items-center justify-between transition-all">
-                    <div class="flex items-center gap-2">
-                        <span class="text-base sm:text-lg tracking-wide">加入訂單結帳</span>
-                        <span id="item-count-pill" class="px-2 py-0.5 rounded-full bg-black/25 text-xs font-semibold text-orange-100">
-                            1 項
-                        </span>
-                    </div>
-                    <div class="flex items-baseline gap-2.5">
-                        <span id="discount-display" class="hidden text-sm font-semibold text-orange-200/90 line-through">
-                            -$15
-                        </span>
-                        <span id="total-price-display" class="text-lg sm:text-xl font-black tracking-tight">
-                            NT$ 15
-                        </span>
-                    </div>
-                </button>
-            </div>
-        </section>
-
-        <!-- MODAL: RECEIPT & PRICE BREAKDOWN ("算錢明細 / 結帳單") -->
-        <div id="receipt-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-            <div class="w-full max-w-sm bg-[#fffdf9] text-slate-900 rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500/30 animate-[popIn_0.22s_ease-out]">
-                <!-- Classic Taiwanese Bento Top Header -->
-                <div class="bg-gradient-to-r from-red-700 to-red-600 text-white px-5 py-4 flex items-center justify-between">
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="px-1.5 py-0.5 text-[10px] font-black bg-amber-300 text-red-900 rounded">正宗台式</span>
-                            <h3 class="text-lg font-black tracking-wider">阿霞懷舊木片便當</h3>
-                        </div>
-                        <p id="receipt-subtitle" class="text-xs text-red-100 mt-0.5">現點現做・熱騰騰算錢明細單</p>
-                    </div>
-                    <div class="w-11 h-11 rounded-full border-2 border-amber-300/80 flex items-center justify-center text-amber-200 font-black text-xs leading-tight text-center rotate-12 shadow-inner">
-                        美味<br>合格
-                    </div>
-                </div>
-
-                <!-- Receipt Body -->
-                <div class="p-5">
-                    <!-- Challenge Result Banner (if active) -->
-                    <div id="receipt-challenge-box" class="hidden mb-3 p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-900">
-                    </div>
-
-                    <!-- Dashed Item List -->
-                    <div class="text-xs text-slate-500 flex justify-between pb-1.5 border-b border-dashed border-slate-300 font-bold">
-                        <span>品項名稱 (部位/格位)</span>
-                        <span>單價 / 小計</span>
-                    </div>
-
-                    <div id="receipt-items-list" class="divide-y divide-dashed divide-slate-200 max-h-56 overflow-y-auto my-1 pr-1 text-sm">
-                        <!-- Dynamically filled -->
-                    </div>
-
-                    <!-- Totals & Auntie Comment -->
-                    <div class="mt-3 pt-3 border-t-2 border-slate-800 space-y-1">
-                        <div class="flex justify-between text-xs text-slate-600">
-                            <span>原始總計</span>
-                            <span id="receipt-subtotal">NT$ 0</span>
-                        </div>
-                        <div id="receipt-discount-row" class="flex justify-between text-xs text-emerald-700 font-bold">
-                            <span>✨ 便當套餐優惠 (飯+3配菜+主菜)</span>
-                            <span id="receipt-discount">-NT$ 15</span>
-                        </div>
-                        <div class="flex justify-between items-baseline pt-1">
-                            <span class="text-base font-black text-slate-900">應付總金額</span>
-                            <span id="receipt-final-total" class="text-2xl font-black text-red-600">NT$ 0</span>
-                        </div>
-                    </div>
-
-                    <!-- Quick Cash Register Change Calculator (互動找錢機) -->
-                    <div class="mt-3 p-3 rounded-2xl bg-slate-100 border border-slate-200">
-                        <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
-                            <span>💵 付現找錢試算 (點選鈔票測試)：</span>
-                            <span id="change-result" class="text-emerald-700 font-black">剛剛好免找錢</span>
-                        </div>
-                        <div class="grid grid-cols-4 gap-1.5">
-                            <button onclick="calculateChange('exact')" class="py-1 px-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-amber-50 active:scale-95">剛剛好</button>
-                            <button onclick="calculateChange(100)" class="py-1 px-2 rounded-lg bg-red-50 border border-red-200 text-xs font-bold text-red-700 hover:bg-red-100 active:scale-95">$100 鈔</button>
-                            <button onclick="calculateChange(200)" class="py-1 px-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 hover:bg-emerald-100 active:scale-95">$200 鈔</button>
-                            <button onclick="calculateChange(500)" class="py-1 px-2 rounded-lg bg-amber-50 border border-amber-200 text-xs font-bold text-amber-800 hover:bg-amber-100 active:scale-95">$500 鈔</button>
-                        </div>
-                    </div>
-
-                    <!-- Auntie's Funny Evaluation -->
-                    <div id="auntie-comment" class="mt-3 px-3 py-2 rounded-xl bg-amber-50/90 border border-amber-200/80 text-xs text-amber-900 flex items-center gap-2">
-                        <span class="text-lg">👩‍🍳</span>
-                        <span id="auntie-comment-text">阿姨說：「帥哥/美女，今天菜色很均衡喔！」</span>
-                    </div>
-
-                    <!-- Modal Buttons -->
-                    <div class="mt-4 flex gap-2">
-                        <button onclick="closeReceiptModal()" class="flex-1 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition">
-                            繼續加菜
-                        </button>
-                        <button id="modal-confirm-btn" onclick="finalizeOrderAndNew()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-bold text-sm shadow-md shadow-orange-600/20 transition">
-                            打包下一個便當
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL: ORDER HISTORY BAG -->
-        <div id="history-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-            <div class="w-full max-w-sm bg-slate-900 text-white rounded-3xl border border-slate-700 shadow-2xl overflow-hidden p-5">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                    <h3 class="text-base font-bold flex items-center gap-2">
-                        <span>🛍️</span>
-                        <span>已打包的便當袋</span>
-                    </h3>
-                    <button onclick="closeHistoryModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">✕</button>
-                </div>
-                <div id="history-list" class="my-3 max-h-64 overflow-y-auto space-y-2 text-xs">
-                    <!-- Populated dynamically -->
-                </div>
-                <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
-                    <span class="text-xs text-slate-400">累計營業額總計：</span>
-                    <span id="history-grand-total" class="text-lg font-black text-amber-400">NT$ 0</span>
-                </div>
-            </div>
-        </div>
-
+<div class="app-shell">
+  <!-- 頂部列 -->
+  <div class="top-header">
+    <div class="brand-title">
+      <span class="serif">Build your</span>
+      <span class="serif highlight">台式便當 2.0</span>
     </div>
+    <div class="header-actions">
+      <button class="btn-mini" onclick="randomBento()">🎲 隨機滿漢</button>
+      <button class="btn-mini" onclick="clearAll()">🔄 清空重裝</button>
+    </div>
+  </div>
 
-    <script>
-        /******************************************************************
-         * 1. GAME DATA & TAIWANESE BENTO CATALOG
-         ******************************************************************/
-        const RICE_BASES = {
-            white:   { id: 'white',   name: '香Q白飯',   price: 15, desc: '池上特選白米' },
-            braised: { id: 'braised', name: '古早滷肉飯', price: 25, desc: '淋上慢火膠質肉燥' },
-            purple:  { id: 'purple',  name: '養生紫米飯', price: 20, desc: '富含花青素Q彈紫米' }
-        };
+  <!-- 即時秤重 / 卡路里 / 價格儀表板 -->
+  <div class="stats-bar">
+    <div class="stat-box">
+      <span class="stat-label">⚖️ 便當總重量</span>
+      <span class="stat-value stat-weight" id="ui-total-weight">200 g</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">🔥 總卡路里</span>
+      <span class="stat-value stat-kcal" id="ui-total-kcal">260 kcal</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">💰 便當總價</span>
+      <span class="stat-value stat-price" id="ui-total-price">NT$ 15</span>
+    </div>
+  </div>
 
-        // 12 Iconic Taiwanese Bento Ingredients
-        // 6 Side Dishes (go into the 3 back compartments of the white paper box)
-        // 6 Main Dishes & Toppings (stack onto the large front compartment over the rice)
-        const INGREDIENTS = [
-            // --- 靈魂配菜 (Back 3 Slots) ---
-            {
-                id: 'tomato_egg',
-                name: '番茄炒蛋',
-                price: 15,
-                category: 'sides',
-                maxQty: 3,
-                calories: 140,
-                desc: '便當界不敗霸主，酸甜滑嫩'
-            },
-            {
-                id: 'cabbage',
-                name: '蒜炒高麗菜',
-                price: 15,
-                category: 'sides',
-                maxQty: 3,
-                calories: 65,
-                desc: '梨山脆甜高麗菜爆香蒜片'
-            },
-            {
-                id: 'seaweed',
-                name: '電話線海茸',
-                price: 15,
-                category: 'sides',
-                maxQty: 3,
-                calories: 55,
-                desc: '台式便當必備捲曲Q脆海茸'
-            },
-            {
-                id: 'mapo_tofu',
-                name: '麻婆豆腐',
-                price: 20,
-                category: 'sides',
-                maxQty: 3,
-                calories: 160,
-                desc: '香麻微辣超下飯嫩豆腐'
-            },
-            {
-                id: 'three_color',
-                name: '萬惡三色豆',
-                price: 10,
-                category: 'sides',
-                maxQty: 3,
-                calories: 80,
-                desc: '青豆、玉米、紅蘿蔔傳奇組合'
-            },
-            {
-                id: 'curry',
-                name: '螢光咖哩',
-                price: 15,
-                category: 'sides',
-                maxQty: 3,
-                calories: 130,
-                desc: '台式便當特有濃郁馬鈴薯咖哩'
-            },
+  <!-- 白飯大格固定控制區：支援 1/5 (5/1) 到 全飯 -->
+  <div class="rice-control-panel">
+    <div class="rice-header">
+      <span>🍚 <b>前方大格固定白飯</b>（可調飯量 1/5 [5/1] ～ 全飯）</span>
+      <span class="rice-info-tag" id="ui-rice-detail">全飯 200g | 260kcal | $15</span>
+    </div>
+    <div class="rice-buttons">
+      <button class="rice-btn" data-ratio="0.2" onclick="setRicePortion(0.2)">
+        1/5 (5/1)
+        <small>40g·$5</small>
+      </button>
+      <button class="rice-btn" data-ratio="0.4" onclick="setRicePortion(0.4)">
+        2/5 飯
+        <small>80g·$8</small>
+      </button>
+      <button class="rice-btn" data-ratio="0.6" onclick="setRicePortion(0.6)">
+        3/5 半飯
+        <small>120g·$10</small>
+      </button>
+      <button class="rice-btn" data-ratio="0.8" onclick="setRicePortion(0.8)">
+        4/5 飯
+        <small>160g·$12</small>
+      </button>
+      <button class="rice-btn active" data-ratio="1" onclick="setRicePortion(1)">
+        全飯
+        <small>200g·$15</small>
+      </button>
+      <button class="rice-btn braised-btn" id="btn-lurou" onclick="toggleBraisedSauce()">
+        +淋滷汁
+        <small>+15g·+$5</small>
+      </button>
+    </div>
+  </div>
 
-            // --- 霸氣主菜 & 加點 (Front Large Compartment) ---
-            {
-                id: 'pork_chop',
-                name: '古早味炸排骨',
-                price: 60,
-                category: 'mains',
-                isMainMeat: true,
-                maxQty: 2,
-                calories: 420,
-                desc: '先滷後炸金黃酥香大排骨'
-            },
-            {
-                id: 'chicken_leg',
-                name: '酥炸大雞腿',
-                price: 75,
-                category: 'mains',
-                isMainMeat: true,
-                maxQty: 2,
-                calories: 510,
-                desc: '外皮酥脆咔滋、肉汁滿溢'
-            },
-            {
-                id: 'braised_pork',
-                name: '秘製控肉',
-                price: 55,
-                category: 'mains',
-                isMainMeat: true,
-                maxQty: 2,
-                calories: 460,
-                desc: '肥瘦相間、入口即化筍乾控肉'
-            },
-            {
-                id: 'braised_egg',
-                name: '入味滷蛋',
-                price: 15,
-                category: 'mains',
-                isMainMeat: false,
-                maxQty: 3,
-                calories: 85,
-                desc: '老滷汁浸泡對切滷蛋'
-            },
-            {
-                id: 'sausage',
-                name: '烤台灣香腸',
-                price: 20,
-                category: 'mains',
-                isMainMeat: false,
-                maxQty: 3,
-                calories: 150,
-                desc: '蒜味高粱酒香切片烤香腸'
-            },
-            {
-                id: 'pickles',
-                name: '酸菜辣菜脯',
-                price: 5,
-                category: 'mains',
-                isMainMeat: false,
-                maxQty: 2,
-                calories: 25,
-                desc: '白飯殺手！古早味客家酸菜與菜脯'
-            }
-        ];
+  <!-- 4 格便當盒指定選格器 -->
+  <div class="slot-selector-bar">
+    <div class="slot-tab active" id="slot-tab-0" onclick="selectSlot(0)">
+      <div class="slot-tab-title">📍 左小格 (格1)</div>
+      <div class="slot-tab-sub" id="slot-sub-0">空・點擊選菜</div>
+    </div>
+    <div class="slot-tab" id="slot-tab-1" onclick="selectSlot(1)">
+      <div class="slot-tab-title">📍 中小格 (格2)</div>
+      <div class="slot-tab-sub" id="slot-sub-1">空・點擊選菜</div>
+    </div>
+    <div class="slot-tab" id="slot-tab-2" onclick="selectSlot(2)">
+      <div class="slot-tab-title">📍 右小格 (格3)</div>
+      <div class="slot-tab-sub" id="slot-sub-2">空・點擊選菜</div>
+    </div>
+    <div class="slot-tab" id="slot-tab-main" onclick="selectSlot('main')">
+      <div class="slot-tab-title">🍖 前方大格</div>
+      <div class="slot-tab-sub" id="slot-sub-main">白飯+主菜區</div>
+    </div>
+  </div>
 
-        // Featured 8 items in default "All" view (matching 2x4 Burger App layout), or all 12 when scrolling
-        const DEFAULT_GRID_ORDER = [
-            'pork_chop', 'chicken_leg', 'tomato_egg', 'cabbage',
-            'seaweed', 'braised_egg', 'sausage', 'three_color',
-            'braised_pork', 'mapo_tofu', 'curry', 'pickles'
-        ];
+  <!-- Phaser 3 便當盒互動畫布 -->
+  <div id="phaser-container"></div>
 
-        // Current Bento State
-        const bentoState = {
-            rice: 'white',
-            // Back 3 slots: array of 3 slots [slot0, slot1, slot2], each null or ingredientId
-            sideSlots: ['tomato_egg', 'cabbage', null],
-            // Front compartment stack: array of { uid, id }
-            mainItems: [
-                { uid: 101, id: 'pork_chop' },
-                { uid: 102, id: 'braised_egg' }
-            ],
-            currentCategory: 'all',
-            completedOrders: [],
-            challengeMode: false,
-            currentChallenge: null
-        };
+  <!-- 菜色選擇區 -->
+  <div class="menu-section">
+    <div class="category-tabs">
+      <div class="cat-btn-group">
+        <button class="cat-btn active" id="cat-side" onclick="switchCategory('side')">🥬 配菜區 (16種)</button>
+        <button class="cat-btn" id="cat-main" onclick="switchCategory('main')">🍗 主菜與加點 (14種)</button>
+      </div>
+      <span class="slot-hint" id="ui-target-hint">目標：【左小格 (格1)】</span>
+    </div>
+    <div class="dishes-grid" id="dishes-grid"></div>
+  </div>
 
-        let nextUid = 200;
-        let phaserScene = null;
+  <!-- 底部結帳列 -->
+  <div class="bottom-checkout">
+    <button class="checkout-btn" onclick="openCheckoutModal()">
+      <span>🧾 結帳算錢・秤重卡路里明細</span>
+      <div class="checkout-right">
+        <span class="discount-pill" id="ui-discount-pill" style="display:none;">套餐折 -$10</span>
+        <span id="ui-checkout-btn-text">200g | 260kcal | $15</span>
+      </div>
+    </button>
+  </div>
 
-        /******************************************************************
-         * 2. SYNTHESIZED WEB AUDIO API SOUND ENGINE
-         ******************************************************************/
-        class SoundFX {
-            constructor() {
-                this.ctx = null;
-            }
-            init() {
-                if (!this.ctx) {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (AudioCtx) this.ctx = new AudioCtx();
-                }
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            }
-            // Soft bounce / plop when food lands in bento
-            playDrop(isHeavy = false) {
-                try {
-                    this.init();
-                    if (!this.ctx) return;
-                    const now = this.ctx.currentTime;
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = isHeavy ? 'triangle' : 'sine';
-                    const startFreq = isHeavy ? 140 : 260;
-                    const endFreq = isHeavy ? 55 : 110;
-                    osc.frequency.setValueAtTime(startFreq, now);
-                    osc.frequency.exponentialRampToValueAtTime(endFreq, now + 0.14);
+  <!-- 結帳收據與找錢 Modal -->
+  <div class="modal-backdrop" id="checkout-modal">
+    <div class="receipt-card">
+      <div class="receipt-header">
+        <h3>🍱 阿霞正宗台式便當・秤重營養結帳單</h3>
+        <p style="font-size:0.73rem;color:#64748b;margin-top:2px;">每格指定菜色・重量(g)・熱量(kcal)・金額明細</p>
+      </div>
+      <div class="receipt-list" id="receipt-items"></div>
+      <div class="receipt-summary" id="receipt-summary"></div>
 
-                    gain.gain.setValueAtTime(0.25, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      <div class="cash-section">
+        <div style="font-size:0.8rem;font-weight:800;">💵 付現找錢試算（點選鈔票面額）：</div>
+        <div class="cash-btns">
+          <button class="cash-btn active" onclick="setPaidCash(100, this)">$100</button>
+          <button class="cash-btn" onclick="setPaidCash(200, this)">$200</button>
+          <button class="cash-btn" onclick="setPaidCash(500, this)">$500</button>
+          <button class="cash-btn" onclick="setPaidCash(1000, this)">$1000</button>
+        </div>
+        <div id="cash-change-result" style="font-size:0.86rem;font-weight:900;color:#0369a1;"></div>
+      </div>
 
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.17);
-                } catch (e) {}
-            }
-            // Pop sound when clicking UI
-            playPop(pitch = 520) {
-                try {
-                    this.init();
-                    if (!this.ctx) return;
-                    const now = this.ctx.currentTime;
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(pitch, now);
-                    osc.frequency.exponentialRampToValueAtTime(pitch * 1.4, now + 0.08);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.09);
-                } catch (e) {}
-            }
-            // Remove item swoosh
-            playRemove() {
-                try {
-                    this.init();
-                    if (!this.ctx) return;
-                    const now = this.ctx.currentTime;
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(340, now);
-                    osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.13);
-                } catch (e) {}
-            }
-            // Cash register Ka-Ching!
-            playCashRegister() {
-                try {
-                    this.init();
-                    if (!this.ctx) return;
-                    const now = this.ctx.currentTime;
-                    const notes = [987.77, 1318.51, 1567.98, 2093.00];
-                    notes.forEach((freq, idx) => {
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        osc.type = 'triangle';
-                        osc.frequency.setValueAtTime(freq, now + idx * 0.055);
-                        gain.gain.setValueAtTime(0.18, now + idx * 0.055);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.28);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start(now + idx * 0.055);
-                        osc.stop(now + idx * 0.055 + 0.3);
-                    });
-                } catch (e) {}
-            }
+      <button class="close-modal-btn" onclick="closeCheckoutModal()">繼續調整便當</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * ============================================================================
+ * 1. 資料庫：白飯 5 段份量設定 (固定於前方大格) & 30 道台式經典菜色
+ * ============================================================================
+ */
+const RICE_PORTIONS = {
+  0.2: { label: '1/5 飯 (5/1)', ratio: 0.2, weight: 40,  kcal: 52,  price: 5 },
+  0.4: { label: '2/5 飯',       ratio: 0.4, weight: 80,  kcal: 104, price: 8 },
+  0.6: { label: '3/5 半飯',     ratio: 0.6, weight: 120, kcal: 156, price: 10 },
+  0.8: { label: '4/5 飯',       ratio: 0.8, weight: 160, kcal: 208, price: 12 },
+  1.0: { label: '全飯',         ratio: 1.0, weight: 200, kcal: 260, price: 15 }
+};
+
+const BRAISED_SAUCE = {
+  name: '古早味淋滷肉燥汁',
+  weight: 15,
+  kcal: 38,
+  price: 5
+};
+
+// 16 種經典配菜（放入後方左、中、右三格）
+const SIDE_DISHES = [
+  { id: 'tomato_egg',    name: '番茄炒蛋',     weight: 80, kcal: 115, price: 15 },
+  { id: 'cabbage',       name: '蒜炒高麗菜',   weight: 75, kcal: 45,  price: 15 },
+  { id: 'water_spinach', name: '蒜香空心菜',   weight: 75, kcal: 40,  price: 15 },
+  { id: 'seaweed_stem',  name: '電話線海茸',   weight: 70, kcal: 65,  price: 15 },
+  { id: 'mapo_tofu',     name: '麻婆豆腐',     weight: 90, kcal: 135, price: 15 },
+  { id: 'eggplant',      name: '塔香茄子',     weight: 80, kcal: 95,  price: 15 },
+  { id: 'three_color',   name: '萬惡三色豆',   weight: 75, kcal: 85,  price: 10 },
+  { id: 'curry_potato',  name: '螢光咖哩洋芋', weight: 90, kcal: 140, price: 15 },
+  { id: 'sweet_bean',    name: '紅豆枝麵筋',   weight: 50, kcal: 160, price: 10 },
+  { id: 'kelp_tofu',     name: '滷海帶豆干',   weight: 80, kcal: 110, price: 15 },
+  { id: 'bitter_melon',  name: '苦瓜鹹蛋',     weight: 75, kcal: 105, price: 15 },
+  { id: 'corn_egg',      name: '玉米炒蛋',     weight: 80, kcal: 125, price: 15 },
+  { id: 'glass_noodle',  name: '螞蟻上樹',     weight: 85, kcal: 130, price: 15 },
+  { id: 'cucumber',      name: '涼拌小黃瓜',   weight: 70, kcal: 35,  price: 15 },
+  { id: 'bean_sprout',   name: '韭菜豆芽菜',   weight: 75, kcal: 32,  price: 10 },
+  { id: 'stir_carrot',   name: '木耳炒紅蘿蔔', weight: 75, kcal: 48,  price: 12 }
+];
+
+// 14 種霸氣主菜與大格加點（疊加在前方大格白飯上）
+const MAIN_DISHES = [
+  { id: 'pork_chop',       name: '古早味炸排骨', weight: 130, kcal: 380, price: 50, isBigMain: true },
+  { id: 'chicken_leg',     name: '酥炸大雞腿',   weight: 180, kcal: 490, price: 65, isBigMain: true },
+  { id: 'roast_leg',       name: '蜜汁烤雞腿',   weight: 170, kcal: 420, price: 65, isBigMain: true },
+  { id: 'braised_pork',    name: '秘製滷控肉',   weight: 120, kcal: 450, price: 55, isBigMain: true },
+  { id: 'chicken_cutlet',  name: '黃金炸雞排',   weight: 160, kcal: 460, price: 60, isBigMain: true },
+  { id: 'cod_fish',        name: '塔塔炸鱈魚排', weight: 125, kcal: 310, price: 55, isBigMain: true },
+  { id: 'mackerel',        name: '挪威鹽烤鯖魚', weight: 110, kcal: 340, price: 60, isBigMain: true },
+  { id: 'scallion_beef',   name: '蔥爆牛肉',     weight: 110, kcal: 260, price: 60, isBigMain: true },
+  { id: 'sweet_sour_pork', name: '糖醋排骨',     weight: 125, kcal: 350, price: 55, isBigMain: true },
+  { id: 'braised_egg',     name: '入味滷蛋',     weight: 55,  kcal: 80,  price: 15, isBigMain: false },
+  { id: 'fried_egg',       name: '半熟荷包蛋',   weight: 50,  kcal: 92,  price: 15, isBigMain: false },
+  { id: 'sausage',         name: '蒜片烤香腸',   weight: 45,  kcal: 165, price: 20, isBigMain: false },
+  { id: 'tempura',         name: '椒鹽炸甜不辣', weight: 60,  kcal: 150, price: 20, isBigMain: false },
+  { id: 'pickled_radish',  name: '酸菜辣菜脯',   weight: 30,  kcal: 25,  price: 5,  isBigMain: false }
+];
+
+const ALL_DISHES = [...SIDE_DISHES, ...MAIN_DISHES];
+
+/**
+ * ============================================================================
+ * 2. 遊戲狀態管理與音效合成器
+ * ============================================================================
+ */
+const state = {
+  ricePortion: 1.0,        // 0.2 (1/5) ~ 1.0 (全飯)
+  hasBraisedSauce: false,  // 是否淋滷汁
+  selectedSlot: 0,         // 0: 左格, 1: 中格, 2: 右格, 'main': 前方大格
+  activeCategory: 'side',  // 'side' | 'main'
+  sideSlots: [
+    SIDE_DISHES[0], // 預設格1：番茄炒蛋
+    SIDE_DISHES[1], // 預設格2：蒜炒高麗菜
+    null            // 預設格3：空
+  ],
+  mainAddons: [
+    MAIN_DISHES[0], // 預設主菜：古早味炸排骨
+    MAIN_DISHES[9]  // 預設加點：入味滷蛋
+  ],
+  paidCash: 100
+};
+
+let audioCtx = null;
+function playTone(freq = 440, type = 'sine', duration = 0.09) {
+  try {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.75, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {}
+}
+
+/**
+ * ============================================================================
+ * 3. 高精細度台式便當菜色 Canvas 2D 繪圖引擎 (30 道獨立手繪質感料理)
+ *    同時供下方圓形縮圖與 Phaser 3 便當盒內菜色精靈使用
+ * ============================================================================
+ */
+function drawCulinaryDish(ctx, id, w, h) {
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  ctx.translate(w / 2, h / 2);
+  const scale = Math.min(w / 96, h / 72);
+  ctx.scale(scale, scale);
+
+  // 柔和底部陰影
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+  ctx.beginPath();
+  ctx.ellipse(0, 4, 38, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  switch (id) {
+    // 1. 番茄炒蛋
+    case 'tomato_egg': {
+      // 酸甜茄汁底醬
+      const sauceGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, 36);
+      sauceGrad.addColorStop(0, 'rgba(239, 68, 68, 0.85)');
+      sauceGrad.addColorStop(1, 'rgba(220, 38, 38, 0.1)');
+      ctx.fillStyle = sauceGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 2, 36, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 滑嫩炒蛋塊與帶籽番茄塊交錯
+      const lumps = [
+        { t: 'egg', x: -16, y: -4, r: 11 },
+        { t: 'tom', x: -3,  y: -8, r: 10 },
+        { t: 'egg', x: 12,  y: -5, r: 11 },
+        { t: 'tom', x: -12, y: 7,  r: 10 },
+        { t: 'egg', x: 2,   y: 3,  r: 12 },
+        { t: 'tom', x: 15,  y: 6,  r: 10 },
+        { t: 'egg', x: -6,  y: -1, r: 9 }
+      ];
+      lumps.forEach(p => {
+        if (p.t === 'egg') {
+          ctx.fillStyle = '#eab308';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath(); ctx.arc(p.x - 2, p.y - 2, p.r * 0.65, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.fillStyle = '#b91c1c';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath(); ctx.arc(p.x - 1.5, p.y - 1.5, p.r * 0.72, 0, Math.PI * 2); ctx.fill();
+          // 番茄黃籽
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(p.x - 2, p.y - 1, 2, 2);
         }
-        const sfx = new SoundFX();
+      });
+      // 翠綠蔥花
+      ctx.fillStyle = '#16a34a';
+      [[-8,-3],[5,-4],[-2,6],[10,2],[0,-2]].forEach(([sx,sy]) => {
+        ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
 
-        /******************************************************************
-         * 3. PROCEDURAL FOOD ART DRAWING ENGINE (Shared for UI Icons & Phaser)
-         * Draws realistic, appetizing Taiwanese Bento dishes onto any 2D context
-         ******************************************************************/
-        function drawDishArtwork(ctx, id, w, h) {
-            ctx.save();
-            ctx.translate(w / 2, h / 2);
+    // 2. 蒜炒高麗菜
+    case 'cabbage': {
+      const leaves = [
+        { x: -13, y: 2, rx: 16, ry: 11, rot: -0.3, c1: '#4ade80', c2: '#dcfce7' },
+        { x: 12,  y: 3, rx: 16, ry: 11, rot: 0.35, c1: '#86efac', c2: '#f0fdf4' },
+        { x: 0,   y: -6, rx: 17, ry: 11, rot: 0.1, c1: '#86efac', c2: '#ffffff' },
+        { x: -5,  y: 6, rx: 15, ry: 10, rot: -0.15, c1: '#bbf7d0', c2: '#ffffff' },
+        { x: 8,   y: -2, rx: 14, ry: 9, rot: 0.2, c1: '#4ade80', c2: '#dcfce7' }
+      ];
+      leaves.forEach(l => {
+        ctx.save();
+        ctx.translate(l.x, l.y);
+        ctx.rotate(l.rot);
+        ctx.fillStyle = l.c1;
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(0, 0, l.rx, l.ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 高麗菜白色粗梗脈絡
+        ctx.strokeStyle = l.c2;
+        ctx.lineWidth = 2.6;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(-l.rx * 0.55, 1); ctx.quadraticCurveTo(0, -2, l.rx * 0.45, 0); ctx.stroke();
+        ctx.restore();
+      });
+      // 紅蘿蔔絲與蒜末
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.4;
+      [[-10,-3,-3,2],[5,-6,12,0],[-2,5,6,8]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      ctx.fillStyle = '#fef3c7';
+      [[-4,-2],[4,3],[0,-6]].forEach(([gx,gy]) => {
+        ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
 
-            switch (id) {
-                case 'tomato_egg': {
-                    // Soft sauce glow
-                    const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, w * 0.42);
-                    grad.addColorStop(0, 'rgba(239, 68, 68, 0.75)');
-                    grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 2, w * 0.42, h * 0.34, 0, 0, Math.PI * 2);
-                    ctx.fill();
+    // 3. 蒜香空心菜
+    case 'water_spinach': {
+      // 翠綠菜梗與尖葉
+      const stems = [
+        [-22, 6, 12, -8], [-16, -6, 18, 4], [-18, 1, 16, 9],
+        [-10, -9, 20, -2], [-14, 9, 14, -4]
+      ];
+      stems.forEach(([x1, y1, x2, y2], idx) => {
+        ctx.strokeStyle = idx % 2 === 0 ? '#15803d' : '#16a34a';
+        ctx.lineWidth = 4.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo(0, (y1+y2)/2 - 4, x2, y2); ctx.stroke();
+        // 深綠空心菜葉片
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath(); ctx.ellipse(x2 - 4, y2, 9, 4.5, 0.3, 0, Math.PI * 2); ctx.fill();
+      });
+      // 拍碎蒜頭粒與油亮反光
+      ctx.fillStyle = '#fef08a';
+      [[-8,-2],[6,3],[1,-5],[-3,6]].forEach(([gx,gy]) => {
+        ctx.beginPath(); ctx.roundRect(gx-3, gy-2.5, 6, 5, 2); ctx.fill();
+      });
+      break;
+    }
 
-                    // Fluffy scrambled egg curds & tomato wedges
-                    const pieces = [
-                        { type: 'egg', x: -14, y: -5, r: 12 },
-                        { type: 'tomato', x: 6, y: -8, r: 11 },
-                        { type: 'egg', x: 13, y: 4, r: 11 },
-                        { type: 'tomato', x: -8, y: 8, r: 10 },
-                        { type: 'egg', x: 0, y: 0, r: 13 },
-                        { type: 'tomato', x: 15, y: -4, r: 9 },
-                        { type: 'egg', x: -16, y: 5, r: 9 }
-                    ];
-                    pieces.forEach(p => {
-                        ctx.beginPath();
-                        if (p.type === 'egg') {
-                            ctx.fillStyle = '#facc15';
-                            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = '#fef08a';
-                            ctx.beginPath();
-                            ctx.arc(p.x - 2, p.y - 2, p.r * 0.55, 0, Math.PI * 2);
-                            ctx.fill();
-                        } else {
-                            ctx.fillStyle = '#dc2626';
-                            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = '#f87171';
-                            ctx.beginPath();
-                            ctx.arc(p.x - 2, p.y - 2, p.r * 0.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    });
-                    // Chopped green scallions
-                    ctx.fillStyle = '#16a34a';
-                    [[-6, -3], [5, 4], [0, -7], [-9, 4], [9, -2]].forEach(([sx, sy]) => {
-                        ctx.beginPath();
-                        ctx.arc(sx, sy, 2.3, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    break;
-                }
-
-                case 'cabbage': {
-                    // Wavy crisp cabbage leaves
-                    const leaves = [
-                        { x: -12, y: 2, rx: 16, ry: 11, rot: -0.3, col: '#86efac' },
-                        { x: 11, y: 3, rx: 16, ry: 11, rot: 0.4, col: '#4ade80' },
-                        { x: 0, y: -5, rx: 17, ry: 12, rot: 0.1, col: '#bbf7d0' },
-                        { x: -5, y: 6, rx: 15, ry: 10, rot: -0.15, col: '#86efac' },
-                        { x: 7, y: -2, rx: 13, ry: 9, rot: 0.25, col: '#dcfce7' }
-                    ];
-                    leaves.forEach(l => {
-                        ctx.save();
-                        ctx.translate(l.x, l.y);
-                        ctx.rotate(l.rot);
-                        ctx.fillStyle = l.col;
-                        ctx.strokeStyle = '#22c55e';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.ellipse(0, 0, l.rx, l.ry, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                        // Leaf vein
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 1.5;
-                        ctx.beginPath();
-                        ctx.moveTo(-l.rx * 0.5, 0);
-                        ctx.quadraticCurveTo(0, 2, l.rx * 0.4, -1);
-                        ctx.stroke();
-                        ctx.restore();
-                    });
-                    // Carrot slivers & garlic bits
-                    ctx.strokeStyle = '#f97316';
-                    ctx.lineWidth = 2.4;
-                    ctx.lineCap = 'round';
-                    [[-8, -2, -2, 3], [6, -5, 12, 1], [-2, 6, 5, 8]].forEach(([x1, y1, x2, y2]) => {
-                        ctx.beginPath();
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.stroke();
-                    });
-                    break;
-                }
-
-                case 'seaweed': {
-                    // Iconic Taiwanese "Telephone Cord" spiral kelp coils
-                    const coils = [
-                        { x: -12, y: 3, rot: -0.35 },
-                        { x: 11, y: 4, rot: 0.4 },
-                        { x: 0, y: -5, rot: 0.1 },
-                        { x: -3, y: 6, rot: -0.1 }
-                    ];
-                    coils.forEach(c => {
-                        ctx.save();
-                        ctx.translate(c.x, c.y);
-                        ctx.rotate(c.rot);
-                        for (let i = -2; i <= 2; i++) {
-                            ctx.strokeStyle = '#1c1917';
-                            ctx.lineWidth = 5.5;
-                            ctx.beginPath();
-                            ctx.arc(i * 4.5, 0, 5, 0, Math.PI * 1.65);
-                            ctx.stroke();
-                            // Glossy highlight
-                            ctx.strokeStyle = '#57534e';
-                            ctx.lineWidth = 1.6;
-                            ctx.beginPath();
-                            ctx.arc(i * 4.5 - 1, -1, 4, 0.2, Math.PI * 1.1);
-                            ctx.stroke();
-                        }
-                        ctx.restore();
-                    });
-                    // Red chili rings & garlic
-                    ctx.fillStyle = '#ef4444';
-                    [[-7, -2], [8, 1], [1, 6]].forEach(([cx, cy]) => {
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#fde047';
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, 1, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#ef4444';
-                    });
-                    break;
-                }
-
-                case 'mapo_tofu': {
-                    // Spicy chili oil pool
-                    ctx.fillStyle = '#991b1b';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 2, w * 0.38, h * 0.28, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Soft white tofu cubes in 3D perspective
-                    const cubes = [
-                        [-13, -3], [2, -6], [12, -1],
-                        [-9, 5], [3, 4], [-3, -1]
-                    ];
-                    cubes.forEach(([tx, ty]) => {
-                        ctx.fillStyle = '#fef3c7';
-                        ctx.strokeStyle = '#dc2626';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.roundRect(tx - 6, ty - 5, 12, 10, 2.5);
-                        ctx.fill();
-                        ctx.stroke();
-                        // Highlight
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(tx - 4, ty - 3, 5, 3);
-                    });
-                    // Green scallion dots
-                    ctx.fillStyle = '#22c55e';
-                    [[-5, -2], [6, 1], [-1, 5], [9, -3]].forEach(([gx, gy]) => {
-                        ctx.beginPath();
-                        ctx.arc(gx, gy, 2, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    break;
-                }
-
-                case 'three_color': {
-                    // Classic corn (yellow), peas (green), diced carrots (orange-red)
-                    const colors = ['#facc15', '#22c55e', '#f97316'];
-                    const coords = [
-                        [-16, 2, 0], [-10, -5, 1], [-3, -7, 2], [5, -6, 0], [13, -2, 1],
-                        [-13, 7, 2], [-6, 2, 0], [1, 0, 1], [8, 2, 2], [15, 5, 0],
-                        [-8, 8, 1], [0, 7, 2], [7, 8, 0], [-2, -3, 0], [4, 4, 1],
-                        [-11, 0, 2], [10, -4, 0], [-4, 5, 0]
-                    ];
-                    coords.forEach(([bx, by, cIdx]) => {
-                        ctx.fillStyle = colors[cIdx];
-                        if (cIdx === 2) {
-                            // Carrot cube
-                            ctx.beginPath();
-                            ctx.roundRect(bx - 4, by - 4, 8, 8, 2);
-                            ctx.fill();
-                        } else {
-                            // Pea or Corn kernel
-                            ctx.beginPath();
-                            ctx.arc(bx, by, 4.4, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = 'rgba(255,255,255,0.45)';
-                            ctx.beginPath();
-                            ctx.arc(bx - 1.2, by - 1.2, 1.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    });
-                    break;
-                }
-
-                case 'curry': {
-                    // Iconic bright fluorescent yellow-gold Taiwanese curry sauce
-                    ctx.fillStyle = '#eab308';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 2, w * 0.40, h * 0.30, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = '#facc15';
-                    ctx.beginPath();
-                    ctx.ellipse(-2, 0, w * 0.33, h * 0.23, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Potato & carrot chunks
-                    const chunks = [
-                        { x: -10, y: -1, col: '#fef08a', r: 6.5 },
-                        { x: 6, y: -3, col: '#ea580c', r: 6 },
-                        { x: 1, y: 5, col: '#fef08a', r: 6.5 },
-                        { x: -8, y: 5, col: '#ea580c', r: 5 },
-                        { x: 11, y: 3, col: '#fef08a', r: 5.5 }
-                    ];
-                    chunks.forEach(ch => {
-                        ctx.fillStyle = ch.col;
-                        ctx.beginPath();
-                        ctx.roundRect(ch.x - ch.r, ch.y - ch.r * 0.8, ch.r * 2, ch.r * 1.6, 3);
-                        ctx.fill();
-                    });
-                    break;
-                }
-
-                case 'pork_chop': {
-                    // Deep-fried golden Taiwanese Pork Chop sliced into strips
-                    ctx.save();
-                    ctx.rotate(-0.08);
-                    // Drop shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-                    ctx.beginPath();
-                    ctx.ellipse(2, 6, w * 0.43, h * 0.27, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // 5 Sliced cutlet strips showing golden crust
-                    const slices = [-22, -11, 0, 11, 22];
-                    slices.forEach((sx, idx) => {
-                        const sh = (idx === 0 || idx === 4) ? h * 0.42 : h * 0.52;
-                        // Golden fried batter crust
-                        const grad = ctx.createLinearGradient(sx - 6, -sh/2, sx + 6, sh/2);
-                        grad.addColorStop(0, '#f59e0b');
-                        grad.addColorStop(0.5, '#d97706');
-                        grad.addColorStop(1, '#92400e');
-                        ctx.fillStyle = grad;
-                        ctx.strokeStyle = '#78350f';
-                        ctx.lineWidth = 1.2;
-
-                        ctx.beginPath();
-                        ctx.roundRect(sx - 5.5, -sh / 2, 11, sh, 4);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        // Crispy batter texture & white pepper salt specks
-                        ctx.fillStyle = '#fde68a';
-                        ctx.beginPath();
-                        ctx.arc(sx - 1, -sh * 0.2, 1.5, 0, Math.PI * 2);
-                        ctx.arc(sx + 2, sh * 0.15, 1.3, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    ctx.restore();
-                    break;
-                }
-
-                case 'chicken_leg': {
-                    // Crispy Giant Taiwanese Fried Chicken Drumstick (酥炸大雞腿)
-                    ctx.save();
-                    ctx.rotate(-0.18);
-
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-                    ctx.beginPath();
-                    ctx.ellipse(-2, 6, w * 0.42, h * 0.24, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Bone handle on the right
-                    ctx.fillStyle = '#fef3c7';
-                    ctx.strokeStyle = '#d6d3d1';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.roundRect(10, -4, 22, 8, 3);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(31, -3, 4.5, 0, Math.PI * 2);
-                    ctx.arc(31, 3, 4.5, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Meaty drumstick body
-                    const legGrad = ctx.createRadialGradient(-10, -6, 4, -6, 0, 28);
-                    legGrad.addColorStop(0, '#fbbf24');
-                    legGrad.addColorStop(0.55, '#d97706');
-                    legGrad.addColorStop(1, '#7c2d12');
-                    ctx.fillStyle = legGrad;
-                    ctx.strokeStyle = '#78350f';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.ellipse(-8, 0, 24, 16, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Scored crispy skin marks
-                    ctx.strokeStyle = '#fef08a';
-                    ctx.lineWidth = 1.8;
-                    [[-16, -8, -10, 6], [-7, -9, -1, 7], [2, -7, 6, 5]].forEach(([x1, y1, x2, y2]) => {
-                        ctx.beginPath();
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.stroke();
-                    });
-                    ctx.restore();
-                    break;
-                }
-
-                case 'braised_pork': {
-                    // Glossy Soy-Braised Pork Belly (秘製控肉) with skin, fat, and lean layers
-                    ctx.save();
-                    ctx.rotate(0.06);
-                    // Shadow
-                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-                    ctx.beginPath();
-                    ctx.roundRect(-22, -12, 46, 28, 8);
-                    ctx.fill();
-
-                    // Top caramelized soy skin layer
-                    ctx.fillStyle = '#7c2d12';
-                    ctx.beginPath();
-                    ctx.roundRect(-22, -14, 44, 10, [7, 7, 0, 0]);
-                    ctx.fill();
-
-                    // Middle translucent fat layer
-                    ctx.fillStyle = '#fde68a';
-                    ctx.fillRect(-22, -5, 44, 7);
-
-                    // Bottom tender lean meat layer
-                    ctx.fillStyle = '#9a3412';
-                    ctx.beginPath();
-                    ctx.roundRect(-22, 2, 44, 11, [0, 0, 7, 7]);
-                    ctx.fill();
-
-                    // Glossy white highlight on skin
-                    ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-                    ctx.lineWidth = 2.2;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(-15, -10);
-                    ctx.lineTo(8, -10);
-                    ctx.stroke();
-
-                    // Green scallion garnish
-                    ctx.fillStyle = '#22c55e';
-                    ctx.beginPath();
-                    ctx.arc(0, -2, 3, 0, Math.PI * 2);
-                    ctx.arc(5, 0, 2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                    break;
-                }
-
-                case 'braised_egg': {
-                    // Halved Soy-Braised Egg (入味滷蛋)
-                    ctx.save();
-                    ctx.rotate(-0.12);
-                    // Outer dark soy rim
-                    ctx.fillStyle = '#78350f';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 2, 16, 12.5, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Light soy-tinted egg white
-                    ctx.fillStyle = '#fef3c7';
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 14, 10.5, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Rich orange-gold yolk
-                    const yolkGrad = ctx.createRadialGradient(-2, -1, 1, 0, 0, 8);
-                    yolkGrad.addColorStop(0, '#f59e0b');
-                    yolkGrad.addColorStop(1, '#ea580c');
-                    ctx.fillStyle = yolkGrad;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, 7.5, 6, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                    break;
-                }
-
-                case 'sausage': {
-                    // Sliced Grilled Taiwanese Red Sausage (烤香腸)
-                    const slices = [
-                        { x: -12, y: 2, rot: -0.25 },
-                        { x: 0, y: -2, rot: -0.1 },
-                        { x: 12, y: 2, rot: 0.15 }
-                    ];
-                    slices.forEach(s => {
-                        ctx.save();
-                        ctx.translate(s.x, s.y);
-                        ctx.rotate(s.rot);
-                        ctx.fillStyle = '#b91c1c';
-                        ctx.strokeStyle = '#7f1d1d';
-                        ctx.lineWidth = 1.5;
-                        ctx.beginPath();
-                        ctx.ellipse(0, 0, 10, 7, 0, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        // White pork fat specks inside sausage slice
-                        ctx.fillStyle = '#fecaca';
-                        [[-3, -1], [3, 1], [0, -2], [2, -2]].forEach(([fx, fy]) => {
-                            ctx.beginPath();
-                            ctx.arc(fx, fy, 1.6, 0, Math.PI * 2);
-                            ctx.fill();
-                        });
-                        ctx.restore();
-                    });
-                    break;
-                }
-
-                case 'pickles': {
-                    // Taiwanese Pickled Mustard Greens (酸菜) & Spicy Radish (辣菜脯)
-                    const bits = [
-                        { x: -8, y: 2, col: '#65a30d', r: 5 },
-                        { x: 4, y: -3, col: '#ca8a04', r: 5.5 },
-                        { x: 9, y: 3, col: '#4d7c0f', r: 4.5 },
-                        { x: -2, y: 4, col: '#a16207', r: 5 },
-                        { x: -3, y: -3, col: '#84cc16', r: 4.5 },
-                        { x: 3, y: 2, col: '#dc2626', r: 3.5 } // red chili bit
-                    ];
-                    bits.forEach(b => {
-                        ctx.fillStyle = b.col;
-                        ctx.beginPath();
-                        ctx.roundRect(b.x - b.r, b.y - b.r * 0.7, b.r * 2, b.r * 1.4, 2);
-                        ctx.fill();
-                    });
-                    break;
-                }
-            }
-
-            ctx.restore();
+    // 4. 電話線海茸
+    case 'seaweed_stem': {
+      const coils = [
+        { x: -13, y: 2, rot: -0.3 },
+        { x: 11,  y: 3, rot: 0.35 },
+        { x: 0,   y: -5, rot: 0.08 },
+        { x: -2,  y: 6, rot: -0.12 }
+      ];
+      coils.forEach(c => {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rot);
+        for (let i = -2; i <= 2; i++) {
+          ctx.strokeStyle = '#292524';
+          ctx.lineWidth = 5.2;
+          ctx.beginPath(); ctx.arc(i * 4.5, 0, 5, 0, Math.PI * 1.65); ctx.stroke();
+          ctx.strokeStyle = '#78716c';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(i * 4.5 - 1, -1, 4, 0.2, Math.PI * 1.1); ctx.stroke();
         }
-
-        /******************************************************************
-         * 4. PHASER 3 BENTO BOX SCENE
-         * Renders the 3D White 4-Compartment Paper Bento Box & Interactive Food
-         ******************************************************************/
-        class BentoStageScene extends Phaser.Scene {
-            constructor() {
-                super({ key: 'BentoStageScene' });
-                this.sideSprites = [null, null, null];
-                this.mainSprites = [];
-                this.boxShakeOffset = 0;
-            }
-
-             preload() {
-                // Generate Phaser textures from our procedural dish art engine
-                INGREDIENTS.forEach(item => {
-                    const texW = item.category === 'mains' ? 110 : 88;
-                    const texH = item.category === 'mains' ? 76 : 64;
-                    const canvasTex = this.textures.createCanvas('dish_' + item.id, texW, texH);
-                    const ctx = canvasTex.getContext();
-                    drawDishArtwork(ctx, item.id, texW, texH);
-                    canvasTex.refresh();
-                });
-
-                // Soft steam/crumb particle texture
-                const partTex = this.textures.createCanvas('crumb_particle', 12, 12);
-                const pCtx = partTex.getContext();
-                pCtx.fillStyle = '#ffffff';
-                pCtx.beginPath();
-                pCtx.arc(6, 6, 5, 0, Math.PI * 2);
-                pCtx.fill();
-                partTex.refresh();
-            }
-
-            create() {
-                phaserScene = this;
-                const W = this.scale.width;
-                const H = this.scale.height;
-                this.centerX = W / 2;
-                this.centerY = H / 2 + 12;
-
-                // Define coordinates for the 4 compartments inside the white bento box
-                this.updateCompartmentCoordinates();
-
-                // Layer 1: Dark Slate Platter & Bento Box Back/Lid/Base (depth 10)
-                this.bgGraphics = this.add.graphics().setDepth(10);
-
-                // Layer 2: Rice Base in front compartment (depth 20)
-                this.riceGraphics = this.add.graphics().setDepth(20);
-
-                // Layer 3: Back 3 Compartment Side Dishes sit at depth 25
-
-                // Layer 4: Middle Horizontal Divider & Vertical Slot Dividers (depth 30)
-                // Drawn OVER the bottom of the back compartments so side dishes look nestled inside!
-                this.dividerGraphics = this.add.graphics().setDepth(30);
-
-                // Layer 5: Front Compartment Main Dishes & Add-ons sit at depth 35 - 45
-
-                // Layer 6: Front Lip & Side Front Walls of the Bento Box (depth 50)
-                this.frontWallGraphics = this.add.graphics().setDepth(50);
-
-                // Layer 7: Stamp Overlay for Checkout Animation (depth 90)
-                this.stampContainer = this.add.container(this.centerX, this.centerY).setDepth(90).setAlpha(0);
-                this.createCheckoutStamp();
-
-                // Draw static box layers & initial food state
-                this.drawBentoBoxStructure();
-                this.drawRiceLayer();
-                this.syncAllFoodSprites(false);
-
-                // Handle responsive canvas resize
-                this.scale.on('resize', (gameSize) => {
-                    this.centerX = gameSize.width / 2;
-                    this.centerY = gameSize.height / 2 + 12;
-                    this.updateCompartmentCoordinates();
-                    this.drawBentoBoxStructure();
-                    this.drawRiceLayer();
-                    this.repositionExistingSprites();
-                });
-            }
-
-            updateCompartmentCoordinates() {
-                const cx = this.centerX;
-                const cy = this.centerY;
-
-                // Back 3 small square compartments (Left, Center, Right)
-                this.backSlotCoords = [
-                    { x: cx - 72, y: cy - 11 }, // Slot 0: Back-Left
-                    { x: cx + 2,  y: cy - 8 },  // Slot 1: Back-Center
-                    { x: cx + 76, y: cy - 5 }   // Slot 2: Back-Right
-                ];
-
-                // Front large rectangular compartment center (for Rice & Mains)
-                this.frontCenter = { x: cx - 4, y: cy + 48 };
-            }
-
-            /**
-             * Draws the 3D White 4-Compartment Paper Bento Box matching the user's reference photo
-             * Sitting on a sleek dark slate stone platter (matching the burger app UI)
-             */
-            drawBentoBoxStructure() {
-                const cx = this.centerX;
-                const cy = this.centerY;
-
-                this.bgGraphics.clear();
-                this.dividerGraphics.clear();
-                this.frontWallGraphics.clear();
-
-                // 1. Dark Slate Stone Platter underneath (like the Burger Builder screenshot)
-                this.bgGraphics.fillStyle(0x040711, 0.75);
-                this.bgGraphics.fillEllipse(cx, cy + 56, 368, 128);
-
-                // Slate rim edge
-                this.bgGraphics.fillStyle(0x1e293b, 1);
-                this.bgGraphics.fillEllipse(cx, cy + 49, 356, 118);
-
-                // Slate top surface
-                this.bgGraphics.fillStyle(0x334155, 1);
-                this.bgGraphics.fillEllipse(cx, cy + 44, 350, 112);
-
-                // Subtle stone ring highlight
-                this.bgGraphics.lineStyle(1.5, 0x475569, 0.7);
-                this.bgGraphics.strokeEllipse(cx, cy + 44, 336, 102);
-
-                // Drop shadow of the white bento box on the slate platter
-                this.bgGraphics.fillStyle(0x0f172a, 0.85);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 144, y: cy + 68 },
-                    { x: cx - 108, y: cy - 32 },
-                    { x: cx + 124, y: cy - 22 },
-                    { x: cx + 140, y: cy + 84 }
-                ], true);
-
-                // 2. UPRIGHT OPEN WHITE PAPER LID (Back of the box)
-                // Left ear flap of lid
-                this.bgGraphics.fillStyle(0xd6d3cd, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 110, y: cy - 38 },
-                    { x: cx - 122, y: cy - 42 },
-                    { x: cx - 118, y: cy - 142 },
-                    { x: cx - 104, y: cy - 150 }
-                ], true);
-
-                // Right ear flap of lid
-                this.bgGraphics.fillStyle(0xe7e5e0, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx + 114, y: cy - 28 },
-                    { x: cx + 127, y: cy - 34 },
-                    { x: cx + 135, y: cy - 130 },
-                    { x: cx + 122, y: cy - 140 }
-                ], true);
-
-                // Main upright lid inner surface
-                this.bgGraphics.fillStyle(0xf5f5f2, 1);
-                this.bgGraphics.lineStyle(1.5, 0xd6d3cd, 1);
-                const lidPoints = [
-                    { x: cx - 110, y: cy - 38 }, // Bottom-left hinge
-                    { x: cx + 114, y: cy - 28 }, // Bottom-right hinge
-                    { x: cx + 124, y: cy - 142 }, // Top-right lid corner
-                    { x: cx - 104, y: cy - 152 }  // Top-left lid corner
-                ];
-                this.bgGraphics.fillPoints(lidPoints, true);
-                this.bgGraphics.strokePoints(lidPoints, true);
-
-                // Top folded lip of the lid
-                this.bgGraphics.fillStyle(0xffffff, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 104, y: cy - 152 },
-                    { x: cx + 124, y: cy - 142 },
-                    { x: cx + 117, y: cy - 152 },
-                    { x: cx - 96,  y: cy - 160 }
-                ], true);
-
-                // Subtle paper crease line at the hinge
-                this.bgGraphics.lineStyle(2, 0xc7c3bc, 0.8);
-                this.bgGraphics.lineBetween(cx - 110, cy - 38, cx + 114, cy - 28);
-
-                // 3. BENTO BOX FLOOR & BACK/SIDE INTERIOR WALLS
-                // Main floor polygon
-                this.bgGraphics.fillStyle(0xebe8e1, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 108, y: cy - 34 },
-                    { x: cx + 112, y: cy - 24 },
-                    { x: cx + 118, y: cy + 72 },
-                    { x: cx - 128, y: cy + 58 }
-                ], true);
-
-                // Back interior wall under the hinge
-                this.bgGraphics.fillStyle(0xdcd8d0, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 110, y: cy - 38 },
-                    { x: cx + 114, y: cy - 28 },
-                    { x: cx + 108, y: cy - 14 },
-                    { x: cx - 104, y: cy - 22 }
-                ], true);
-
-                // Left interior wall (Back half)
-                this.bgGraphics.fillStyle(0xe2dfd7, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx - 110, y: cy - 38 },
-                    { x: cx - 104, y: cy - 22 },
-                    { x: cx - 114, y: cy + 16 },
-                    { x: cx - 124, y: cy + 4 }
-                ], true);
-
-                // Right interior wall (Back half)
-                this.bgGraphics.fillStyle(0xd5d1c8, 1);
-                this.bgGraphics.fillPoints([
-                    { x: cx + 114, y: cy - 28 },
-                    { x: cx + 108, y: cy - 14 },
-                    { x: cx + 112, y: cy + 24 },
-                    { x: cx + 124, y: cy + 12 }
-                ], true);
-
-                // 4. COMPARTMENT DIVIDERS (Depth 30 - overlaps bottom of back slots)
-                // Vertical Divider 1 (between Back Slot 0 and Back Slot 1)
-                this.dividerGraphics.fillStyle(0xd6d3cb, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx - 38, y: cy - 20 },
-                    { x: cx - 30, y: cy - 20 },
-                    { x: cx - 35, y: cy + 16 },
-                    { x: cx - 44, y: cy + 16 }
-                ], true);
-                // Top ridge of Vertical Divider 1
-                this.dividerGraphics.fillStyle(0xffffff, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx - 38, y: cy - 31 },
-                    { x: cx - 31, y: cy - 31 },
-                    { x: cx - 36, y: cy + 5 },
-                    { x: cx - 43, y: cy + 5 }
-                ], true);
-
-                // Vertical Divider 2 (between Back Slot 1 and Back Slot 2)
-                this.dividerGraphics.fillStyle(0xd6d3cb, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx + 36, y: cy - 17 },
-                    { x: cx + 44, y: cy - 17 },
-                    { x: cx + 41, y: cy + 20 },
-                    { x: cx + 33, y: cy + 20 }
-                ], true);
-                // Top ridge of Vertical Divider 2
-                this.dividerGraphics.fillStyle(0xffffff, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx + 36, y: cy - 28 },
-                    { x: cx + 43, y: cy - 28 },
-                    { x: cx + 40, y: cy + 8 },
-                    { x: cx + 33, y: cy + 8 }
-                ], true);
-
-                // Horizontal Main Divider Wall (separating the 3 back slots from the front large compartment)
-                // Front face of the horizontal divider
-                this.dividerGraphics.fillStyle(0xe5e2dc, 1);
-                this.dividerGraphics.lineStyle(1, 0xcfcac2, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx - 120, y: cy + 5 },
-                    { x: cx + 118, y: cy + 16 },
-                    { x: cx + 114, y: cy + 30 },
-                    { x: cx - 116, y: cy + 20 }
-                ], true);
-
-                // Crisp white top fold of the horizontal divider
-                this.dividerGraphics.fillStyle(0xffffff, 1);
-                this.dividerGraphics.fillPoints([
-                    { x: cx - 122, y: cy + 2 },
-                    { x: cx + 120, y: cy + 13 },
-                    { x: cx + 118, y: cy + 18 },
-                    { x: cx - 120, y: cy + 7 }
-                ], true);
-
-                // 5. FRONT & SIDE EXTERIOR WALLS (Depth 50 - drawn in front of food in the front compartment)
-                // Left front wall
-                this.frontWallGraphics.fillStyle(0xf0eee9, 1);
-                this.frontWallGraphics.lineStyle(1, 0xd4d0c8, 1);
-                this.frontWallGraphics.fillPoints([
-                    { x: cx - 122, y: cy + 4 },
-                    { x: cx - 116, y: cy + 18 },
-                    { x: cx - 126, y: cy + 60 },
-                    { x: cx - 138, y: cy + 46 }
-                ], true);
-
-                // Right front exterior wall with the iconic cardboard fold notch (matching reference photo!)
-                this.frontWallGraphics.fillStyle(0xd8d4cc, 1);
-                this.frontWallGraphics.fillPoints([
-                    { x: cx + 122, y: cy + 12 },
-                    { x: cx + 134, y: cy + 56 },
-                    { x: cx + 122, y: cy + 76 },
-                    { x: cx + 112, y: cy + 26 }
-                ], true);
-
-                // Front-most sloping cardboard wall (overlaps the bottom edge of rice/mains)
-                this.frontWallGraphics.fillStyle(0xe7e4de, 1);
-                this.frontWallGraphics.lineStyle(1.2, 0xcbc7bf, 1);
-                const frontLip = [
-                    { x: cx - 138, y: cy + 46 }, // Front-left top rim
-                    { x: cx + 130, y: cy + 59 }, // Front-right top rim
-                    { x: cx + 120, y: cy + 78 }, // Front-right bottom corner
-                    { x: cx - 128, y: cy + 65 }  // Front-left bottom corner
-                ];
-                this.frontWallGraphics.fillPoints(frontLip, true);
-                this.frontWallGraphics.strokePoints(frontLip, true);
-
-                // Crisp white top edge rim of the front wall
-                this.frontWallGraphics.lineStyle(2.5, 0xffffff, 0.95);
-                this.frontWallGraphics.lineBetween(cx - 138, cy + 46, cx + 130, cy + 59);
-            }
-
-            /**
-             * Draws the Rice Base inside the large front compartment (Depth 20)
-             */
-            drawRiceLayer() {
-                this.riceGraphics.clear();
-                const cx = this.centerX;
-                const cy = this.centerY;
-                const riceType = bentoState.rice;
-
-                const isPurple = riceType === 'purple';
-                const baseCol = isPurple ? 0x4c1d4b : 0xfdfcf7;
-                const grainCol = isPurple ? 0x702963 : 0xffffff;
-                const shadowCol = isPurple ? 0x31102f : 0xe5e0d5;
-
-                // Fluffy rice bed filling the front compartment
-                this.riceGraphics.fillStyle(shadowCol, 1);
-                this.riceGraphics.fillRoundedRect(cx - 114, cy + 18, 224, 42, 14);
-
-                this.riceGraphics.fillStyle(baseCol, 1);
-                this.riceGraphics.fillRoundedRect(cx - 112, cy + 15, 220, 40, 14);
-
-                // Individual rice grain texture
-                this.riceGraphics.fillStyle(grainCol, 0.95);
-                for (let gx = -98; gx <= 96; gx += 13) {
-                    for (let gy = 21; gy <= 48; gy += 8) {
-                        const offsetX = ((gy * 7) % 5) - 2;
-                        this.riceGraphics.fillEllipse(cx + gx + offsetX, cy + gy, 7, 3.8);
-                    }
-                }
-
-                // If Braised Pork Rice (滷肉飯), draw glossy minced pork & soy sauce drizzle!
-                if (riceType === 'braised') {
-                    this.riceGraphics.fillStyle(0x78350f, 0.88);
-                    const sauceBlobs = [
-                        [-55, 32, 26, 12], [-15, 28, 32, 14], [30, 33, 28, 12],
-                        [-35, 42, 24, 10], [10, 41, 30, 11], [62, 36, 22, 10]
-                    ];
-                    sauceBlobs.forEach(([bx, by, bw, bh]) => {
-                        this.riceGraphics.fillEllipse(cx + bx, cy + by, bw, bh);
-                    });
-
-                    // Diced braised pork bits & crispy shallots
-                    const morsels = [
-                        [-60, 30], [-42, 36], [-22, 27], [-8, 35], [8, 29],
-                        [24, 37], [42, 31], [58, 35], [-28, 41], [15, 42]
-                    ];
-                    morsels.forEach(([mx, my], idx) => {
-                        this.riceGraphics.fillStyle(idx % 2 === 0 ? 0x451a03 : 0x9a3412, 1);
-                        this.riceGraphics.fillRoundedRect(cx + mx - 4, cy + my - 3, 8, 6, 2);
-                    });
-                } else {
-                    // Classic black sesame seeds sprinkled on white/purple rice
-                    this.riceGraphics.fillStyle(isPurple ? 0xfef08a : 0x1e293b, 0.85);
-                    [[-65, 32], [-58, 36], [-52, 31], [55, 35], [62, 39], [48, 37]].forEach(([sx, sy]) => {
-                        this.riceGraphics.fillCircle(cx + sx, cy + sy, 1.4);
-                    });
-                }
-            }
-
-            /**
-             * Synchronize or rebuild all food sprites with bentoState
-             */
-            syncAllFoodSprites(animateNew = false) {
-                // Clear existing sprites
-                this.sideSprites.forEach(s => { if (s) s.destroy(); });
-                this.sideSprites = [null, null, null];
-                this.mainSprites.forEach(m => { if (m.sprite) m.sprite.destroy(); });
-                this.mainSprites = [];
-
-                // Spawn side dishes in the 3 back slots
-                bentoState.sideSlots.forEach((id, slotIdx) => {
-                    if (id) {
-                        this.spawnSideDishSprite(id, slotIdx, animateNew);
-                    }
-                });
-
-                // Spawn main dishes & toppings in the front compartment
-                bentoState.mainItems.forEach((itemObj, idx) => {
-                    this.spawnMainDishSprite(itemObj, idx, animateNew);
-                });
-            }
-
-            repositionExistingSprites() {
-                this.sideSprites.forEach((sp, idx) => {
-                    if (sp && this.backSlotCoords[idx]) {
-                        sp.x = this.backSlotCoords[idx].x;
-                        sp.y = this.backSlotCoords[idx].y;
-                    }
-                });
-                this.mainSprites.forEach((mObj, idx) => {
-                    if (mObj.sprite) {
-                        const pos = this.getMainDishPosition(mObj.id, idx);
-                        mObj.sprite.x = pos.x;
-                        mObj.sprite.y = pos.y;
-                    }
-                });
-            }
-
-            getMainDishPosition(id, stackIndex) {
-                const fc = this.frontCenter;
-                // Smart layout inside the wide front rice compartment so multiple items look like a real Taiwanese bento!
-                if (id === 'pork_chop' || id === 'chicken_leg') {
-                    return {
-                        x: fc.x - 16 + (stackIndex % 2) * 26,
-                        y: fc.y - 12 - Math.floor(stackIndex / 2) * 8,
-                        depth: 38 + stackIndex
-                    };
-                }
-                if (id === 'braised_pork') {
-                    return {
-                        x: fc.x + 28 - (stackIndex % 2) * 35,
-                        y: fc.y - 10 - stackIndex * 4,
-                        depth: 37 + stackIndex
-                    };
-                }
-                if (id === 'braised_egg') {
-                    return {
-                        x: fc.x + 74 - (stackIndex * 24) % 60,
-                        y: fc.y - 8,
-                        depth: 41 + stackIndex
-                    };
-                }
-                if (id === 'sausage') {
-                    return {
-                        x: fc.x - 68 + (stackIndex * 28) % 60,
-                        y: fc.y - 6,
-                        depth: 40 + stackIndex
-                    };
-                }
-                if (id === 'pickles') {
-                    return {
-                        x: fc.x - 86 + stackIndex * 18,
-                        y: fc.y - 11,
-                        depth: 36 + stackIndex
-                    };
-                }
-                return { x: fc.x, y: fc.y - 10, depth: 38 + stackIndex };
-            }
-
-            spawnSideDishSprite(id, slotIdx, animateDrop = true) {
-                if (this.sideSprites[slotIdx]) {
-                    this.sideSprites[slotIdx].destroy();
-                }
-                const target = this.backSlotCoords[slotIdx];
-                const startY = animateDrop ? target.y - 140 : target.y;
-
-                const sp = this.add.image(target.x, startY, 'dish_' + id)
-                    .setDepth(25)
-                    .setInteractive({ useHandCursor: true });
-
-                // Click on side dish in the bento box: bounce or remove
-                sp.on('pointerdown', () => {
-                    this.tweens.add({
-                        targets: sp,
-                        scaleX: 1.18,
-                        scaleY: 0.85,
-                        duration: 90,
-                        yoyo: true,
-                        onComplete: () => {
-                            removeSideSlot(slotIdx);
-                        }
-                    });
-                });
-
-                this.sideSprites[slotIdx] = sp;
-
-                if (animateDrop) {
-                    sp.setScale(0.7, 1.25);
-                    this.tweens.add({
-                        targets: sp,
-                        y: target.y,
-                        scaleX: 1,
-                        scaleY: 1,
-                        duration: 360,
-                        ease: 'Bounce.easeOut',
-                        onComplete: () => {
-                            const info = INGREDIENTS.find(i => i.id === id);
-                            this.emitFoodParticles(target.x, target.y, 0xfef08a);
-                            if (info) this.showFloatingPrice(target.x, target.y - 18, `+$${info.price}`, '#fbbf24');
-                        }
-                    });
-                }
-            }
-
-            spawnMainDishSprite(itemObj, stackIdx, animateDrop = true) {
-                const pos = this.getMainDishPosition(itemObj.id, stackIdx);
-                const startY = animateDrop ? pos.y - 165 : pos.y;
-
-                const sp = this.add.image(pos.x, startY, 'dish_' + itemObj.id)
-                    .setDepth(pos.depth)
-                    .setInteractive({ useHandCursor: true });
-
-                // Interactive click on main dish inside box
-                sp.on('pointerdown', () => {
-                    this.tweens.add({
-                        targets: sp,
-                        scaleX: 1.15,
-                        scaleY: 0.85,
-                        duration: 90,
-                        yoyo: true,
-                        onComplete: () => {
-                            removeMainByUid(itemObj.uid);
-                        }
-                    });
-                });
-
-                this.mainSprites.push({ uid: itemObj.uid, id: itemObj.id, sprite: sp });
-
-                if (animateDrop) {
-                    const info = INGREDIENTS.find(i => i.id === itemObj.id);
-                    const isHeavy = info && info.isMainMeat;
-                    sp.setScale(0.75, 1.25);
-                    this.tweens.add({
-                        targets: sp,
-                        y: pos.y,
-                        scaleX: 1,
-                        scaleY: 1,
-                        duration: isHeavy ? 420 : 340,
-                        ease: 'Bounce.easeOut',
-                        onComplete: () => {
-                            this.emitFoodParticles(pos.x, pos.y, isHeavy ? 0xf59e0b : 0xffffff);
-                            if (isHeavy) {
-                                this.cameras.main.shake(110, 0.004);
-                            }
-                            if (info) {
-                                this.showFloatingPrice(pos.x, pos.y - 22, `+$${info.price}`, '#fb923c');
-                            }
-                        }
-                    });
-                }
-            }
-
-            emitFoodParticles(x, y, colorHex) {
-                for (let i = 0; i < 7; i++) {
-                    const p = this.add.image(x, y, 'crumb_particle')
-                        .setDepth(65)
-                        .setTint(colorHex)
-                        .setScale(Phaser.Math.FloatBetween(0.3, 0.65));
-                    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-                    const dist = Phaser.Math.Between(18, 42);
-                    this.tweens.add({
-                        targets: p,
-                        x: x + Math.cos(angle) * dist,
-                        y: y + Math.sin(angle) * dist - 10,
-                        alpha: 0,
-                        scale: 0.1,
-                        duration: 380,
-                        ease: 'Quad.easeOut',
-                        onComplete: () => p.destroy()
-                    });
-                }
-            }
-
-            showFloatingPrice(x, y, textStr, colorStr = '#fbbf24') {
-                const txt = this.add.text(x, y, textStr, {
-                    fontFamily: 'Noto Sans TC, sans-serif',
-                    fontSize: '15px',
-                    fontStyle: '900',
-                    color: colorStr,
-                    stroke: '#090e1f',
-                    strokeThickness: 4
-                }).setOrigin(0.5).setDepth(80);
-
-                this.tweens.add({
-                    targets: txt,
-                    y: y - 34,
-                    alpha: 0,
-                    duration: 750,
-                    ease: 'Cubic.easeOut',
-                    onComplete: () => txt.destroy()
-                });
-            }
-
-            createCheckoutStamp() {
-                const g = this.add.graphics();
-                g.fillStyle(0xdc2626, 0.92);
-                g.lineStyle(3, 0xfef08a, 1);
-                g.fillRoundedRect(-68, -28, 136, 56, 12);
-                g.strokeRoundedRect(-68, -28, 136, 56, 12);
-
-                const stampTxt = this.add.text(0, 0, '🍱 美味封盒・結帳', {
-                    fontFamily: 'Noto Sans TC, sans-serif',
-                    fontSize: '15px',
-                    fontStyle: 'bold',
-                    color: '#ffffff'
-                }).setOrigin(0.5);
-
-                this.stampContainer.add([g, stampTxt]);
-                this.stampContainer.setRotation(-0.12);
-            }
-
-            playStampAnimation(callback) {
-                this.stampContainer.setPosition(this.centerX, this.centerY + 8);
-                this.stampContainer.setScale(2.2);
-                this.stampContainer.setAlpha(0);
-
-                this.tweens.add({
-                    targets: this.stampContainer,
-                    scale: 1,
-                    alpha: 1,
-                    duration: 220,
-                    ease: 'Back.easeIn',
-                    onComplete: () => {
-                        this.cameras.main.shake(120, 0.006);
-                        setTimeout(() => {
-                            this.tweens.add({
-                                targets: this.stampContainer,
-                                alpha: 0,
-                                duration: 300
-                            });
-                            if (callback) callback();
-                        }, 320);
-                    }
-                });
-            }
+        ctx.restore();
+      });
+      // 辣椒圈與九層塔葉
+      ctx.fillStyle = '#ef4444';
+      [[-8,-3],[8,1],[1,6]].forEach(([cx,cy]) => {
+        ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 5. 麻婆豆腐
+    case 'mapo_tofu': {
+      // 紅油豆瓣醬底
+      ctx.fillStyle = '#991b1b';
+      ctx.beginPath(); ctx.ellipse(0, 2, 35, 20, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.ellipse(-2, 1, 28, 16, 0, 0, Math.PI * 2); ctx.fill();
+
+      // 立體白嫩豆腐丁
+      const cubes = [[-15,-3],[-2,-7],[11,-3],[-11,5],[2,4],[14,5],[-4,0]];
+      cubes.forEach(([tx, ty]) => {
+        ctx.fillStyle = '#fef3c7';
+        ctx.strokeStyle = '#b91c1c';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(tx - 6, ty - 5, 12, 10, 2.5); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(tx - 4, ty - 3.5, 5, 3);
+      });
+      // 肉末與蔥花
+      ctx.fillStyle = '#22c55e';
+      [[-6,-2],[6,0],[0,5],[9,-2]].forEach(([gx,gy]) => {
+        ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 6. 塔香茄子
+    case 'eggplant': {
+      const pieces = [
+        { x: -13, y: -2, rot: -0.35 },
+        { x: 10,  y: -3, rot: 0.25 },
+        { x: -4,  y: 6,  rot: -0.1 },
+        { x: 11,  y: 6,  rot: 0.4 },
+        { x: -1,  y: -4, rot: 0.12 }
+      ];
+      pieces.forEach(p => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        // 亮紫茄子外皮
+        ctx.fillStyle = '#6b21a8';
+        ctx.beginPath(); ctx.roundRect(-11, -6, 22, 12, 5); ctx.fill();
+        ctx.fillStyle = '#9333ea';
+        ctx.beginPath(); ctx.roundRect(-10, -5, 20, 7, 4); ctx.fill();
+        // 茄子米白內肉切面
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath(); ctx.ellipse(4, 1, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+        // 油亮高光
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(-7, -3); ctx.lineTo(2, -3); ctx.stroke();
+        ctx.restore();
+      });
+      // 九層塔葉與紅辣椒
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath(); ctx.ellipse(0, 1, 7, 4, -0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(-6, 2, 2.5, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+
+    // 7. 萬惡三色豆
+    case 'three_color': {
+      const cols = ['#facc15', '#22c55e', '#f97316'];
+      const pts = [
+        [-18,2,0],[-11,-5,1],[-3,-7,2],[6,-6,0],[15,-2,1],
+        [-14,7,2],[-6,2,0],[1,0,1],[9,2,2],[16,5,0],
+        [-8,8,1],[0,7,2],[8,8,0],[-2,-3,0],[5,4,1],
+        [-12,0,2],[11,-4,0],[-4,5,0],[3,-4,1],[-16,-3,2]
+      ];
+      pts.forEach(([bx, by, cIdx]) => {
+        ctx.fillStyle = cols[cIdx];
+        if (cIdx === 2) {
+          ctx.beginPath(); ctx.roundRect(bx - 4.2, by - 4.2, 8.4, 8.4, 2); ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.arc(bx, by, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.45)';
+          ctx.beginPath(); ctx.arc(bx - 1.2, by - 1.2, 1.4, 0, Math.PI * 2); ctx.fill();
         }
-
-        /******************************************************************
-         * 5. UI CONTROLS, INGREDIENT SELECTOR & PRICE MATH ("算錢邏輯")
-         ******************************************************************/
-        function getIngredientCount(id) {
-            const info = INGREDIENTS.find(i => i.id === id);
-            if (!info) return 0;
-            if (info.category === 'sides') {
-                return bentoState.sideSlots.filter(s => s === id).length;
-            } else {
-                return bentoState.mainItems.filter(m => m.id === id).length;
-            }
-        }
-
-        /**
-         * Core Price Calculation Engine
-         * Returns { riceCost, sidesCost, mainsCost, subtotal, hasComboDiscount, discount, finalTotal, totalItems, totalCalories }
-         */
-        function calculateBentoPricing() {
-            const riceObj = RICE_BASES[bentoState.rice];
-            const riceCost = riceObj ? riceObj.price : 15;
-
-            let sidesCost = 0;
-            let filledSideSlots = 0;
-            let totalCalories = 240; // base rice calories
-
-            bentoState.sideSlots.forEach(id => {
-                if (id) {
-                    const item = INGREDIENTS.find(i => i.id === id);
-                    if (item) {
-                        sidesCost += item.price;
-                        totalCalories += item.calories;
-                        filledSideSlots++;
-                    }
-                }
-            });
-
-            let mainsCost = 0;
-            let hasMainMeat = false;
-            bentoState.mainItems.forEach(m => {
-                const item = INGREDIENTS.find(i => i.id === m.id);
-                if (item) {
-                    mainsCost += item.price;
-                    totalCalories += item.calories;
-                    if (item.isMainMeat) hasMainMeat = true;
-                }
-            });
-
-            const subtotal = riceCost + sidesCost + mainsCost;
-            // Combo Discount Rule: 1 Rice + all 3 side compartments filled + at least 1 Main Meat = -$15 discount!
-            const hasComboDiscount = (filledSideSlots === 3 && hasMainMeat);
-            const discount = hasComboDiscount ? 15 : 0;
-            const finalTotal = Math.max(0, subtotal - discount);
-            const totalItems = 1 + filledSideSlots + bentoState.mainItems.length;
-
-            return {
-                riceObj,
-                riceCost,
-                sidesCost,
-                mainsCost,
-                filledSideSlots,
-                hasMainMeat,
-                subtotal,
-                hasComboDiscount,
-                discount,
-                finalTotal,
-                totalItems,
-                totalCalories
-            };
-        }
-
-        /**
-         * Renders the circular ingredient selector buttons (matching Burger App UI)
-         */
-        function renderIngredientGrid() {
-            const grid = document.getElementById('ingredient-grid');
-            grid.innerHTML = '';
-
-            let listIds = DEFAULT_GRID_ORDER;
-            if (bentoState.currentCategory === 'sides') {
-                listIds = INGREDIENTS.filter(i => i.category === 'sides').map(i => i.id);
-            } else if (bentoState.currentCategory === 'mains') {
-                listIds = INGREDIENTS.filter(i => i.category === 'mains').map(i => i.id);
-            }
-
-            listIds.forEach(id => {
-                const item = INGREDIENTS.find(i => i.id === id);
-                if (!item) return;
-
-                const qty = getIngredientCount(id);
-                const isSelected = qty > 0;
-
-                const cell = document.createElement('div');
-                cell.className = 'flex flex-col items-center relative';
-
-                // Circle Wrapper
-                const btnWrap = document.createElement('div');
-                btnWrap.className = 'relative flex items-center justify-center';
-
-                // Main Circular Button
-                const circleBtn = document.createElement('button');
-                circleBtn.className = `ingredient-btn w-[62px] h-[62px] sm:w-[66px] sm:h-[66px] rounded-full bg-[#131c33] border-2 ${isSelected ? 'ingredient-selected' : 'border-slate-700/80 hover:border-slate-500'} flex items-center justify-center relative overflow-hidden shadow-inner`;
-                circleBtn.onclick = () => addIngredient(item.id);
-
-                // Mini Canvas Icon inside the circle
-                const iconCanvas = document.createElement('canvas');
-                iconCanvas.width = 64;
-                iconCanvas.height = 50;
-                iconCanvas.className = 'w-[54px] h-[42px] pointer-events-none';
-                drawDishArtwork(iconCanvas.getContext('2d'), item.id, 64, 50);
-                circleBtn.appendChild(iconCanvas);
-
-                btnWrap.appendChild(circleBtn);
-
-                // If Selected: Add Left Blue Minus Badge (-) & Right Orange Checkmark/Qty Badge (✓)
-                // Directly inspired by the Burger App screenshot!
-                if (isSelected) {
-                    const minusBtn = document.createElement('button');
-                    minusBtn.className = 'badge-pop absolute -top-1 -left-1.5 w-6 h-6 rounded-full bg-[#1d4ed8] hover:bg-blue-500 border border-blue-300/60 text-white font-black text-sm flex items-center justify-center shadow-md z-10';
-                    minusBtn.innerHTML = '−';
-                    minusBtn.title = `減少 ${item.name}`;
-                    minusBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        removeIngredientById(item.id);
-                    };
-                    btnWrap.appendChild(minusBtn);
-
-                    const checkBadge = document.createElement('div');
-                    checkBadge.className = 'badge-pop absolute -top-1 -right-1.5 min-w-[22px] h-[22px] px-1 rounded-full bg-[#f97316] border border-orange-200/50 text-white text-[11px] font-black flex items-center justify-center shadow-md z-10 pointer-events-none';
-                    checkBadge.innerHTML = qty > 1 ? `×${qty}` : '✓';
-                    btnWrap.appendChild(checkBadge);
-                }
-
-                cell.appendChild(btnWrap);
-
-                // Label & Price tag underneath
-                const nameLabel = document.createElement('div');
-                nameLabel.className = `mt-1 text-[11px] font-bold leading-tight text-center truncate w-full px-0.5 ${isSelected ? 'text-amber-300' : 'text-slate-200'}`;
-                nameLabel.textContent = item.name;
-                cell.appendChild(nameLabel);
-
-                const priceLabel = document.createElement('div');
-                priceLabel.className = 'text-[10px] font-semibold text-slate-400 leading-none mt-0.5';
-                priceLabel.textContent = `$${item.price}`;
-                cell.appendChild(priceLabel);
-
-                grid.appendChild(cell);
-            });
-        }
-
-        /**
-         * Updates top rice pills, compartment counters, and the bottom orange price bar
-         */
-        function updateUISummary() {
-            // Update Rice Pill buttons
-            ['white', 'braised', 'purple'].forEach(rKey => {
-                const btn = document.getElementById('rice-btn-' + rKey);
-                if (!btn) return;
-                if (bentoState.rice === rKey) {
-                    btn.className = 'rice-pill px-3.5 py-1 rounded-full text-xs font-bold transition-all bg-sky-100 text-slate-900 shadow';
-                } else {
-                    btn.className = 'rice-pill px-3.5 py-1 rounded-full text-xs font-bold transition-all text-slate-400 hover:text-slate-200';
-                }
-            });
-
-            // Calculate live pricing
-            const pricing = calculateBentoPricing();
-
-            // Update side slot counter
-            const slotCounter = document.getElementById('side-slot-counter');
-            slotCounter.textContent = `${pricing.filledSideSlots}/3`;
-
-            // Combo status pill on canvas
-            const comboPill = document.getElementById('combo-status-pill');
-            if (pricing.hasComboDiscount) {
-                comboPill.classList.remove('hidden');
-            } else {
-                comboPill.classList.add('hidden');
-            }
-
-            // Bottom Checkout Bar price & discount display
-            const discountEl = document.getElementById('discount-display');
-            const totalEl = document.getElementById('total-price-display');
-            const countPill = document.getElementById('item-count-pill');
-
-            countPill.textContent = `${pricing.totalItems} 項`;
-
-            if (pricing.hasComboDiscount) {
-                discountEl.classList.remove('hidden');
-                discountEl.textContent = `-$${pricing.discount}`;
-            } else {
-                discountEl.classList.add('hidden');
-            }
-
-            totalEl.textContent = `NT$ ${pricing.finalTotal}`;
-            totalEl.classList.remove('price-bump');
-            void totalEl.offsetWidth; // trigger reflow for animation
-            totalEl.classList.add('price-bump');
-
-            // Update order bag badge
-            document.getElementById('bag-count-badge').textContent = bentoState.completedOrders.length;
-        }
-
-        /******************************************************************
-         * 6. USER INTERACTION ACTIONS (ADD / REMOVE / RICE / FILTER)
-         ******************************************************************/
-        function selectRice(riceType) {
-            if (bentoState.rice === riceType) return;
-            bentoState.rice = riceType;
-            sfx.playPop(440);
-            if (phaserScene) {
-                phaserScene.drawRiceLayer();
-                const rObj = RICE_BASES[riceType];
-                phaserScene.showFloatingPrice(phaserScene.centerX, phaserScene.centerY + 25, `${rObj.name} $${rObj.price}`, '#38bdf8');
-            }
-            updateUISummary();
-        }
-
-        function addIngredient(id) {
-            const item = INGREDIENTS.find(i => i.id === id);
-            if (!item) return;
-
-            if (item.category === 'sides') {
-                // Find first empty slot in the 3 back compartments
-                let emptySlot = bentoState.sideSlots.findIndex(s => s === null);
-                if (emptySlot === -1) {
-                    // All 3 slots full: cycle-replace the oldest/first slot so user never gets stuck
-                    emptySlot = 0;
-                    bentoState.sideSlots.shift();
-                    bentoState.sideSlots.push(id);
-                    sfx.playDrop(false);
-                    if (phaserScene) phaserScene.syncAllFoodSprites(false);
-                    if (phaserScene) phaserScene.spawnSideDishSprite(id, 2, true);
-                } else {
-                    bentoState.sideSlots[emptySlot] = id;
-                    sfx.playDrop(false);
-                    if (phaserScene) phaserScene.spawnSideDishSprite(id, emptySlot, true);
-                }
-            } else {
-                // Main dish or topping in the front large compartment
-                const currentCount = getIngredientCount(id);
-                if (currentCount >= item.maxQty) {
-                    // Max stack reached for this item: give a playful bounce
-                    sfx.playPop(300);
-                    if (phaserScene) {
-                        phaserScene.showFloatingPrice(phaserScene.centerX, phaserScene.centerY, `最多加 ${item.maxQty} 份喔！`, '#f87171');
-                    }
-                    return;
-                }
-                const newItemObj = { uid: nextUid++, id: item.id };
-                bentoState.mainItems.push(newItemObj);
-                sfx.playDrop(item.isMainMeat);
-                if (phaserScene) {
-                    phaserScene.spawnMainDishSprite(newItemObj, bentoState.mainItems.length - 1, true);
-                }
-            }
-
-            renderIngredientGrid();
-            updateUISummary();
-        }
-
-        function removeIngredientById(id) {
-            const item = INGREDIENTS.find(i => i.id === id);
-            if (!item) return;
-
-            if (item.category === 'sides') {
-                // Remove from last matching side slot
-                for (let i = 2; i >= 0; i--) {
-                    if (bentoState.sideSlots[i] === id) {
-                        removeSideSlot(i);
-                        break;
-                    }
-                }
-            } else {
-                // Remove last matching main item
-                for (let i = bentoState.mainItems.length - 1; i >= 0; i--) {
-                    if (bentoState.mainItems[i].id === id) {
-                        removeMainByUid(bentoState.mainItems[i].uid);
-                        break;
-                    }
-                }
-            }
-        }
-
-        function removeSideSlot(slotIdx) {
-            if (bentoState.sideSlots[slotIdx] === null) return;
-            bentoState.sideSlots[slotIdx] = null;
-            sfx.playRemove();
-            if (phaserScene && phaserScene.sideSprites[slotIdx]) {
-                phaserScene.sideSprites[slotIdx].destroy();
-                phaserScene.sideSprites[slotIdx] = null;
-            }
-            renderIngredientGrid();
-            updateUISummary();
-        }
-
-        function removeMainByUid(uid) {
-            const idx = bentoState.mainItems.findIndex(m => m.uid === uid);
-            if (idx === -1) return;
-            bentoState.mainItems.splice(idx, 1);
-            sfx.playRemove();
-            if (phaserScene) {
-                phaserScene.syncAllFoodSprites(false);
-            }
-            renderIngredientGrid();
-            updateUISummary();
-        }
-
-        function resetBento() {
-            sfx.playRemove();
-            bentoState.rice = 'white';
-            bentoState.sideSlots = [null, null, null];
-            bentoState.mainItems = [];
-            if (phaserScene) {
-                phaserScene.drawRiceLayer();
-                phaserScene.syncAllFoodSprites(false);
-                phaserScene.showFloatingPrice(phaserScene.centerX, phaserScene.centerY, '已換新便當盒！', '#38bdf8');
-            }
-            renderIngredientGrid();
-            updateUISummary();
-        }
-
-        function filterCategory(cat) {
-            bentoState.currentCategory = cat;
-            sfx.playPop(580);
-            ['all', 'sides', 'mains'].forEach(c => {
-                const btn = document.getElementById('tab-' + c);
-                if (c === cat) {
-                    btn.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40 transition';
-                } else {
-                    btn.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-medium text-slate-400 hover:text-slate-200 border border-transparent transition';
-                }
-            });
-            renderIngredientGrid();
-        }
-
-        /******************************************************************
-         * 7. AUNTIE CHALLENGE MODE ("阿姨出題挑戰")
-         ******************************************************************/
-        const CHALLENGES = [
-            {
-                title: '月底省錢學生餐：總價 $85 以下，且要有 3 樣配菜！',
-                check: (p) => p.finalTotal <= 85 && p.filledSideSlots === 3
-            },
-            {
-                title: '健身大肌肌特餐：紫米飯 + 酥炸大雞腿 + 滷蛋！',
-                check: () => bentoState.rice === 'purple' && getIngredientCount('chicken_leg') >= 1 && getIngredientCount('braised_egg') >= 1
-            },
-            {
-                title: '拒絕三色豆聯盟：選滿 3 格配菜（不能有三色豆）+ 炸排骨！',
-                check: (p) => p.filledSideSlots === 3 && getIngredientCount('three_color') === 0 && getIngredientCount('pork_chop') >= 1
-            },
-            {
-                title: '豪華雙主菜大爺餐：滷肉飯 + 任選 2 樣大肉主菜，預算 $160 內！',
-                check: (p) => {
-                    const meatCount = getIngredientCount('pork_chop') + getIngredientCount('chicken_leg') + getIngredientCount('braised_pork');
-                    return bentoState.rice === 'braised' && meatCount >= 2 && p.finalTotal <= 160;
-                }
-            }
-        ];
-
-        function toggleChallengeMode() {
-            bentoState.challengeMode = !bentoState.challengeMode;
-            const banner = document.getElementById('challenge-banner');
-            const btnText = document.getElementById('challenge-btn-text');
-            sfx.playPop(640);
-
-            if (bentoState.challengeMode) {
-                banner.classList.remove('hidden');
-                btnText.textContent = '自由模式';
-                generateNewChallenge();
-            } else {
-                banner.classList.add('hidden');
-                btnText.textContent = '阿姨出題';
-                bentoState.currentChallenge = null;
-            }
-        }
-
-        function generateNewChallenge() {
-            const randomCh = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
-            bentoState.currentChallenge = randomCh;
-            document.getElementById('challenge-desc').textContent = randomCh.title;
-            sfx.playPop(700);
-        }
-
-        /******************************************************************
-         * 8. CHECKOUT, RECEIPT BREAKDOWN & CHANGE CALCULATOR ("算錢結帳")
-         ******************************************************************/
-        function openReceiptPreview() {
-            sfx.playPop(500);
-            populateReceiptModal(false);
-            const modal = document.getElementById('receipt-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function submitBentoOrder() {
-            sfx.playCashRegister();
-            if (phaserScene) {
-                phaserScene.playStampAnimation(() => {
-                    populateReceiptModal(true);
-                    const modal = document.getElementById('receipt-modal');
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                });
-            } else {
-                populateReceiptModal(true);
-                const modal = document.getElementById('receipt-modal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
-        }
-
-        function populateReceiptModal(isCheckout) {
-            const pricing = calculateBentoPricing();
-            const listEl = document.getElementById('receipt-items-list');
-            listEl.innerHTML = '';
-
-            // 1. Rice Base Line
-            const riceRow = document.createElement('div');
-            riceRow.className = 'py-1.5 flex justify-between items-center';
-            riceRow.innerHTML = `
-                <div>
-                    <span class="font-bold text-slate-800">🍚 ${pricing.riceObj.name}</span>
-                    <span class="text-[11px] text-slate-400 ml-1">(前大格基底)</span>
-                </div>
-                <span class="font-bold text-slate-800">NT$ ${pricing.riceCost}</span>
-            `;
-            listEl.appendChild(riceRow);
-
-            // 2. Side Dishes Lines (Back 3 compartments)
-            const slotNames = ['左後格', '中後格', '右後格'];
-            bentoState.sideSlots.forEach((id, idx) => {
-                const row = document.createElement('div');
-                row.className = 'py-1.5 flex justify-between items-center';
-                if (id) {
-                    const item = INGREDIENTS.find(i => i.id === id);
-                    row.innerHTML = `
-                        <div>
-                            <span class="font-medium text-slate-700">🥬 ${item.name}</span>
-                            <span class="text-[11px] text-slate-400 ml-1">(${slotNames[idx]})</span>
-                        </div>
-                        <span class="font-semibold text-slate-700">NT$ ${item.price}</span>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <div>
-                            <span class="text-slate-400">▫️ 空配菜格</span>
-                            <span class="text-[11px] text-slate-400 ml-1">(${slotNames[idx]})</span>
-                        </div>
-                        <span class="text-slate-400">NT$ 0</span>
-                    `;
-                }
-                listEl.appendChild(row);
-            });
-
-            // 3. Main Dishes & Add-ons grouped by item
-            const mainCounts = {};
-            bentoState.mainItems.forEach(m => {
-                mainCounts[m.id] = (mainCounts[m.id] || 0) + 1;
-            });
-            Object.keys(mainCounts).forEach(id => {
-                const item = INGREDIENTS.find(i => i.id === id);
-                const count = mainCounts[id];
-                const lineTotal = item.price * count;
-                const row = document.createElement('div');
-                row.className = 'py-1.5 flex justify-between items-center';
-                row.innerHTML = `
-                    <div>
-                        <span class="font-bold text-orange-700">🍖 ${item.name}</span>
-                        <span class="text-xs font-bold text-slate-500 ml-1">${count > 1 ? `×${count}` : ''}</span>
-                    </div>
-                    <span class="font-bold text-slate-800">NT$ ${lineTotal}</span>
-                `;
-                listEl.appendChild(row);
-            });
-
-            // Subtotal, Discount, Final Total
-            document.getElementById('receipt-subtotal').textContent = `NT$ ${pricing.subtotal}`;
-            const discRow = document.getElementById('receipt-discount-row');
-            if (pricing.hasComboDiscount) {
-                discRow.classList.remove('hidden');
-                discRow.classList.add('flex');
-            } else {
-                discRow.classList.add('hidden');
-                discRow.classList.remove('flex');
-            }
-            document.getElementById('receipt-final-total').textContent = `NT$ ${pricing.finalTotal}`;
-
-            // Challenge Verification
-            const chBox = document.getElementById('receipt-challenge-box');
-            if (bentoState.challengeMode && bentoState.currentChallenge) {
-                chBox.classList.remove('hidden');
-                const passed = bentoState.currentChallenge.check(pricing);
-                if (passed) {
-                    chBox.className = 'mb-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-400 text-xs text-emerald-900 font-bold';
-                    chBox.innerHTML = `🎉 挑戰成功！完全符合「${bentoState.currentChallenge.title}」要求！`;
-                } else {
-                    chBox.className = 'mb-3 p-2.5 rounded-xl bg-red-50 border border-red-300 text-xs text-red-800 font-bold';
-                    chBox.innerHTML = `⚠️ 尚未達成任務：「${bentoState.currentChallenge.title}」，可以點繼續加菜調整喔！`;
-                }
-            } else {
-                chBox.classList.add('hidden');
-            }
-
-            // Auntie's Funny Comment based on contents
-            const commentEl = document.getElementById('auntie-comment-text');
-            if (getIngredientCount('three_color') >= 2) {
-                commentEl.textContent = `阿姨驚呼：「同學你竟然點了 ${getIngredientCount('three_color')} 格三色豆，太勇敢了吧！」（熱量約 ${pricing.totalCalories} 大卡）`;
-            } else if (pricing.hasComboDiscount && pricing.finalTotal >= 120) {
-                commentEl.textContent = `阿姨笑咪咪：「今天吃很澎湃喔！幫你算套餐價折 15 元！」（熱量約 ${pricing.totalCalories} 大卡）`;
-            } else if (!pricing.hasMainMeat) {
-                commentEl.textContent = `阿姨關心你：「怎麼沒點排骨或雞腿？多吃點肉才有力氣啦！」（熱量約 ${pricing.totalCalories} 大卡）`;
-            } else {
-                commentEl.textContent = `阿姨說：「帥哥美女，便當幫你裝得滿滿的，趁熱吃喔！」（熱量約 ${pricing.totalCalories} 大卡）`;
-            }
-
-            // Reset change calculator to exact
-            calculateChange('exact');
-        }
-
-        function calculateChange(paidAmount) {
-            const pricing = calculateBentoPricing();
-            const resEl = document.getElementById('change-result');
-            sfx.playPop(620);
-
-            if (paidAmount === 'exact') {
-                resEl.className = 'text-emerald-700 font-black';
-                resEl.textContent = `付 NT$${pricing.finalTotal} 剛剛好免找錢！`;
-                return;
-            }
-
-            if (paidAmount < pricing.finalTotal) {
-                const short = pricing.finalTotal - paidAmount;
-                resEl.className = 'text-red-600 font-black';
-                resEl.textContent = `不夠付喔！還差 NT$ ${short}`;
-            } else {
-                const change = paidAmount - pricing.finalTotal;
-                resEl.className = 'text-emerald-700 font-black';
-                resEl.textContent = `收您 $${paidAmount}，應找零 NT$ ${change}`;
-            }
-        }
-
-        function closeReceiptModal() {
-            const modal = document.getElementById('receipt-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        function finalizeOrderAndNew() {
-            const pricing = calculateBentoPricing();
-            // Save summary to completed orders bag
-            const mainNames = bentoState.mainItems.map(m => {
-                const item = INGREDIENTS.find(i => i.id === m.id);
-                return item ? item.name : '';
-            }).filter(Boolean);
-
-            const sideNames = bentoState.sideSlots.map(id => {
-                const item = INGREDIENTS.find(i => i.id === id);
-                return item ? item.name : '空';
-            });
-
-            bentoState.completedOrders.push({
-                orderNo: bentoState.completedOrders.length + 1,
-                riceName: pricing.riceObj.name,
-                mains: mainNames.length ? mainNames.join(' + ') : '無主菜(菜飯)',
-                sides: sideNames.join(' / '),
-                total: pricing.finalTotal
-            });
-
-            closeReceiptModal();
-            resetBento();
-        }
-
-        function openHistoryModal() {
-            sfx.playPop(540);
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            let grandTotal = 0;
-
-            if (bentoState.completedOrders.length === 0) {
-                list.innerHTML = `<div class="text-center py-8 text-slate-400">目前還沒有已打包的便當喔！<br>快選好菜色點「加入訂單結帳」吧！</div>`;
-            } else {
-                bentoState.completedOrders.forEach(ord => {
-                    grandTotal += ord.total;
-                    const card = document.createElement('div');
-                    card.className = 'p-3 rounded-2xl bg-slate-800/90 border border-slate-700 flex justify-between items-center';
-                    card.innerHTML = `
-                        <div>
-                            <div class="font-bold text-amber-300">#${ord.orderNo} ${ord.riceName}・${ord.mains}</div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">配菜：${ord.sides}</div>
-                        </div>
-                        <div class="text-sm font-black text-white shrink-0 ml-2">NT$ ${ord.total}</div>
-                    `;
-                    list.appendChild(card);
-                });
-            }
-
-            document.getElementById('history-grand-total').textContent = `NT$ ${grandTotal}`;
-            const modal = document.getElementById('history-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeHistoryModal() {
-            const modal = document.getElementById('history-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        /******************************************************************
-         * 9. INITIALIZE PHASER 3 GAME ON WINDOW LOAD
-         ******************************************************************/
-        window.onload = function () {
-            renderIngredientGrid();
-            updateUISummary();
-
-            const stageContainer = document.getElementById('phaser-bento-stage');
-            const config = {
-                type: Phaser.AUTO,
-                parent: 'phaser-bento-stage',
-                width: stageContainer.clientWidth || 400,
-                height: stageContainer.clientHeight || 300,
-                transparent: true,
-                scale: {
-                    mode: Phaser.Scale.RESIZE,
-                    autoCenter: Phaser.Scale.CENTER_BOTH
-                },
-                scene: [BentoStageScene]
-            };
-
-            new Phaser.Game(config);
-        };
-    </script>
+      });
+      break;
+    }
+
+    // 8. 螢光咖哩洋芋
+    case 'curry_potato': {
+      ctx.fillStyle = '#ca8a04';
+      ctx.beginPath(); ctx.ellipse(0, 2, 36, 21, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath(); ctx.ellipse(-1, 0, 31, 17, 0, 0, Math.PI * 2); ctx.fill();
+
+      const chunks = [
+        { x: -12, y: -2, col: '#fef08a', r: 7 },
+        { x: 6,   y: -4, col: '#ea580c', r: 6 },
+        { x: 1,   y: 5,  col: '#fef08a', r: 7 },
+        { x: -8,  y: 5,  col: '#ea580c', r: 5.5 },
+        { x: 13,  y: 3,  col: '#fef08a', r: 6 },
+        { x: -2,  y: -5, col: '#78350f', r: 5 }
+      ];
+      chunks.forEach(c => {
+        ctx.fillStyle = c.col;
+        ctx.beginPath(); ctx.roundRect(c.x - c.r, c.y - c.r * 0.8, c.r * 2, c.r * 1.6, 3); ctx.fill();
+      });
+      break;
+    }
+
+    // 9. 紅豆枝麵筋
+    case 'sweet_bean': {
+      // 圓滾滾金黃麵筋球
+      const balls = [[-11, -3], [5, -5], [-2, 5], [12, 3]];
+      balls.forEach(([bx, by]) => {
+        const g = ctx.createRadialGradient(bx-2, by-2, 1, bx, by, 9);
+        g.addColorStop(0, '#fde047');
+        g.addColorStop(1, '#b45309');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2); ctx.fill();
+      });
+      // 蜜汁紅豆棗條與白芝麻
+      const strips = [[-16, 4, -0.3], [-4, -2, 0.2], [7, 2, -0.25], [-8, -6, 0.4]];
+      strips.forEach(([sx, sy, rot]) => {
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(rot);
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath(); ctx.roundRect(-9, -3, 18, 6, 3); ctx.fill();
+        ctx.fillStyle = '#fef9c3';
+        ctx.fillRect(-3, -1, 2, 1.5);
+        ctx.fillRect(2, 0, 2, 1.5);
+        ctx.restore();
+      });
+      break;
+    }
+
+    // 10. 滷海帶豆干
+    case 'kelp_tofu': {
+      // 切片滷豆干
+      const tofus = [[-12, -4, -0.25], [8, -5, 0.2], [-8, 5, 0.15], [10, 5, -0.2]];
+      tofus.forEach(([tx, ty, rot]) => {
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.rotate(rot);
+        ctx.fillStyle = '#78350f';
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(-11, -4, 22, 8, 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(-9, -2, 18, 4);
+        ctx.restore();
+      });
+      // 深墨綠海帶結
+      const kelps = [[-1, -1], [-14, 2], [12, 0]];
+      kelps.forEach(([kx, ky]) => {
+        ctx.fillStyle = '#1c1917';
+        ctx.beginPath(); ctx.ellipse(kx, ky, 9, 5, 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#3f3f46';
+        ctx.beginPath(); ctx.arc(kx, ky, 3.5, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 11. 苦瓜鹹蛋
+    case 'bitter_melon': {
+      // 翠玉白苦瓜彎月片
+      const slices = [[-12,-2,-0.4],[8,-3,0.3],[-4,5,0.1],[11,5,-0.25],[-1,-5,0.2]];
+      slices.forEach(([mx, my, rot]) => {
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.rotate(rot);
+        ctx.fillStyle = '#bbf7d0';
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, 10, 0.2, Math.PI - 0.2); ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#dcfce7';
+        ctx.beginPath(); ctx.arc(0, 0, 8, 0.2, Math.PI - 0.2); ctx.stroke();
+        ctx.restore();
+      });
+      // 金沙鹹蛋黃碎粒
+      ctx.fillStyle = '#f59e0b';
+      [[-8,-1],[3,-2],[-2,4],[7,3],[-11,4],[0,-4],[10,-1]].forEach(([ex,ey]) => {
+        ctx.beginPath(); ctx.arc(ex, ey, 3.2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 12. 玉米炒蛋
+    case 'corn_egg': {
+      // 蓬鬆金黃炒蛋底
+      const curds = [[-13,-2,12],[2,-5,13],[13,1,11],[-8,5,11],[4,5,12]];
+      curds.forEach(([cx, cy, r]) => {
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath(); ctx.arc(cx - 2, cy - 2, r * 0.65, 0, Math.PI * 2); ctx.fill();
+      });
+      // 飽滿甜玉米粒與蔥花
+      ctx.fillStyle = '#eab308';
+      [[-14,-1],[-6,-5],[3,-3],[11,-1],[-9,4],[0,3],[8,5],[-2,-1]].forEach(([kx,ky]) => {
+        ctx.beginPath(); ctx.arc(kx, ky, 3.5, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.fillStyle = '#16a34a';
+      [[-4,-2],[5,1],[-1,5]].forEach(([sx,sy]) => {
+        ctx.beginPath(); ctx.arc(sx, sy, 1.8, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 13. 螞蟻上樹 (肉末炒冬粉)
+    case 'glass_noodle': {
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath(); ctx.ellipse(0, 2, 33, 18, 0, 0, Math.PI * 2); ctx.fill();
+      // 晶瑩醬色冬粉線條
+      ctx.strokeStyle = 'rgba(253, 230, 138, 0.78)';
+      ctx.lineWidth = 2.2;
+      for (let i = 0; i < 12; i++) {
+        ctx.beginPath();
+        ctx.moveTo(-24 + (i * 3), -8 + (i % 4) * 4);
+        ctx.bezierCurveTo(-8, -14 + i * 2, 8, 14 - i * 2, 24 - (i * 2), 6 - (i % 3) * 4);
+        ctx.stroke();
+      }
+      // 醬香肉末(螞蟻)與蔥花辣椒
+      ctx.fillStyle = '#451a03';
+      [[-12,-2],[-4,3],[5,-4],[11,2],[0,0],[-8,5],[7,5]].forEach(([mx,my]) => {
+        ctx.beginPath(); ctx.arc(mx, my, 2.4, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.fillStyle = '#22c55e';
+      [[-5,-2],[4,2],[0,-5]].forEach(([gx,gy]) => {
+        ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 14. 涼拌小黃瓜
+    case 'cucumber': {
+      const segs = [
+        { x: -13, y: -2, rot: -0.3 },
+        { x: 9,   y: -3, rot: 0.25 },
+        { x: -4,  y: 5,  rot: 0.1 },
+        { x: 11,  y: 5,  rot: -0.2 },
+        { x: -1,  y: -4, rot: 0.05 }
+      ];
+      segs.forEach(s => {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rot);
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath(); ctx.roundRect(-10, -5, 20, 10, 3); ctx.fill();
+        ctx.fillStyle = '#86efac';
+        ctx.beginPath(); ctx.roundRect(-8, -3, 16, 5, 2); ctx.fill();
+        ctx.restore();
+      });
+      // 蒜碎與辣椒末
+      ctx.fillStyle = '#ef4444';
+      [[-6,0],[6,-1],[1,5]].forEach(([cx,cy]) => {
+        ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.fillStyle = '#fef9c3';
+      [[-2,-2],[4,3],[-9,3]].forEach(([gx,gy]) => {
+        ctx.beginPath(); ctx.arc(gx, gy, 2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 15. 韭菜豆芽菜
+    case 'bean_sprout': {
+      // 翠綠韭菜段
+      ctx.strokeStyle = '#16a34a';
+      ctx.lineWidth = 3;
+      [[-18,-4,-4,4],[2,-6,16,2],[-10,6,6,8],[-6,-7,8,-1]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      // 銀白豆芽菜與黃豆芽頭
+      const sprouts = [[-15,2,-2,-5],[-8,-2,6,5],[0,-6,14,3],[-12,6,4,2],[4,6,17,-2],[-4,1,9,-4]];
+      sprouts.forEach(([x1, y1, x2, y2]) => {
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 2.6;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo((x1+x2)/2, y1 - 5, x2, y2); ctx.stroke();
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.ellipse(x2, y2, 3.2, 2.2, 0.3, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 16. 木耳炒紅蘿蔔
+    case 'stir_carrot': {
+      // 黑木耳捲片
+      const ears = [[-12,-2],[8,-3],[-4,5],[11,4],[0,-4]];
+      ears.forEach(([ex, ey]) => {
+        ctx.fillStyle = '#1c1917';
+        ctx.beginPath(); ctx.ellipse(ex, ey, 9, 6, 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#44403c';
+        ctx.beginPath(); ctx.arc(ex - 2, ey - 1, 3, 0, Math.PI * 2); ctx.fill();
+      });
+      // 鮮橘紅蘿蔔絲
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.8;
+      ctx.lineCap = 'round';
+      [[-16,3,-4,-5],[-6,6,8,-2],[2,-6,15,3],[-12,-5,2,4],[4,6,16,0]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      break;
+    }
+
+    // ================== 14 道霸氣主菜與加點 ==================
+
+    // 17. 古早味炸排骨
+    case 'pork_chop': {
+      ctx.save();
+      ctx.rotate(-0.06);
+      // 左側排骨白色骨頭柄
+      ctx.fillStyle = '#fef3c7';
+      ctx.strokeStyle = '#d6d3d1';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.roundRect(-38, -6, 14, 9, 3); ctx.fill(); ctx.stroke();
+
+      // 5 片切塊金黃酥炸排骨條
+      const slices = [-22, -11, 0, 11, 22];
+      slices.forEach((sx, idx) => {
+        const sh = (idx === 0 || idx === 4) ? 30 : 36;
+        const grad = ctx.createLinearGradient(sx - 6, -sh / 2, sx + 6, sh / 2);
+        grad.addColorStop(0, '#f59e0b');
+        grad.addColorStop(0.5, '#d97706');
+        grad.addColorStop(1, '#78350f');
+        ctx.fillStyle = grad;
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(sx - 5.2, -sh / 2, 10.4, sh, 4); ctx.fill(); ctx.stroke();
+        // 胡椒鹽顆粒與酥皮高光
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath(); ctx.arc(sx - 1, -sh * 0.2, 1.4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1c1917';
+        ctx.beginPath(); ctx.arc(sx + 1.5, sh * 0.15, 1.1, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.restore();
+      break;
+    }
+
+    // 18. 酥炸大雞腿
+    case 'chicken_leg': {
+      ctx.save();
+      ctx.rotate(-0.15);
+      // 右側雞腿骨頭握柄與錫箔紙頭
+      ctx.fillStyle = '#fef3c7';
+      ctx.strokeStyle = '#d6d3d1';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.roundRect(12, -4, 24, 8, 3); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(35, -3.5, 4.5, 0, Math.PI * 2); ctx.arc(35, 3.5, 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // 飽滿酥脆雞腿肉身
+      const legGrad = ctx.createRadialGradient(-10, -6, 3, -8, 0, 28);
+      legGrad.addColorStop(0, '#fbbf24');
+      legGrad.addColorStop(0.55, '#d97706');
+      legGrad.addColorStop(1, '#7c2d12');
+      ctx.fillStyle = legGrad;
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(-8, 0, 26, 17, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // 酥炸裂紋切口 (露出嫩肉高光)
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 2;
+      [[-18,-7,-11,7],[-8,-9,-1,8],[2,-7,7,5]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      ctx.restore();
+      break;
+    }
+
+    // 19. 蜜汁烤雞腿
+    case 'roast_leg': {
+      ctx.save();
+      ctx.rotate(-0.12);
+      ctx.fillStyle = '#fef3c7';
+      ctx.beginPath(); ctx.roundRect(12, -4, 22, 8, 3); ctx.fill();
+      ctx.beginPath(); ctx.arc(34, -3, 4, 0, Math.PI * 2); ctx.arc(34, 3, 4, 0, Math.PI * 2); ctx.fill();
+
+      // 焦糖蜜汁紅褐色烤雞腿
+      const roastGrad = ctx.createRadialGradient(-10, -5, 3, -8, 0, 28);
+      roastGrad.addColorStop(0, '#ea580c');
+      roastGrad.addColorStop(0.55, '#9a3412');
+      roastGrad.addColorStop(1, '#431407');
+      ctx.fillStyle = roastGrad;
+      ctx.beginPath(); ctx.ellipse(-8, 0, 26, 16.5, 0, 0, Math.PI * 2); ctx.fill();
+
+      // 炙烤網紋與白芝麻
+      ctx.strokeStyle = '#27272a';
+      ctx.lineWidth = 2.2;
+      [[-17,-8,-9,8],[-7,-9,1,8],[3,-7,9,5]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      ctx.fillStyle = '#fef9c3';
+      [[-12,-2],[-5,3],[0,-3],[-8,4],[4,1]].forEach(([sx,sy]) => {
+        ctx.beginPath(); ctx.ellipse(sx, sy, 2, 1, 0.3, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.restore();
+      break;
+    }
+
+    // 20. 秘製滷控肉 (三層五花肉)
+    case 'braised_pork': {
+      ctx.save();
+      ctx.rotate(0.05);
+      // 上層焦糖琥珀色豬皮
+      ctx.fillStyle = '#7c2d12';
+      ctx.beginPath(); ctx.roundRect(-24, -15, 48, 10, [8, 8, 0, 0]); ctx.fill();
+      // 中層晶瑩油脂層
+      ctx.fillStyle = '#fde68a';
+      ctx.fillRect(-24, -5, 48, 7);
+      // 下層入味瘦肉層
+      ctx.fillStyle = '#9a3412';
+      ctx.beginPath(); ctx.roundRect(-24, 2, 48, 12, [0, 0, 8, 8]); ctx.fill();
+      // 油亮膠質高光與香菜點綴
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-16, -11); ctx.lineTo(10, -11); ctx.stroke();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath(); ctx.arc(-2, -1, 3.5, 0, Math.PI * 2); ctx.arc(4, 1, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      break;
+    }
+
+    // 21. 黃金炸雞排
+    case 'chicken_cutlet': {
+      const strips = [-24, -12, 0, 12, 24];
+      strips.forEach((sx, idx) => {
+        const sh = (idx === 0 || idx === 4) ? 28 : 34;
+        ctx.fillStyle = '#eab308';
+        ctx.strokeStyle = '#a16207';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(sx - 5.5, -sh / 2, 11, sh, 4); ctx.fill(); ctx.stroke();
+        // 地瓜粉酥脆顆粒與辣椒粉點綴
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath(); ctx.arc(sx - 1.5, -5, 2, 0, Math.PI * 2); ctx.arc(sx + 1.5, 6, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(sx - 1, 0, 2, 2);
+      });
+      break;
+    }
+
+    // 22. 塔塔炸鱈魚排
+    case 'cod_fish': {
+      ctx.fillStyle = '#f59e0b';
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(-28, -14, 56, 28, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath(); ctx.roundRect(-24, -11, 48, 22, 10); ctx.fill();
+
+      // 白色塔塔美乃滋波浪淋醬
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-18, -5);
+      ctx.lineTo(-10, 6);
+      ctx.lineTo(-2, -6);
+      ctx.lineTo(6, 6);
+      ctx.lineTo(14, -5);
+      ctx.lineTo(20, 4);
+      ctx.stroke();
+      // 巴西里綠碎葉
+      ctx.fillStyle = '#16a34a';
+      [[-8,0],[2,-1],[10,1]].forEach(([px,py]) => {
+        ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 23. 挪威鹽烤鯖魚
+    case 'mackerel': {
+      ctx.save();
+      ctx.rotate(-0.08);
+      const fishGrad = ctx.createLinearGradient(0, -14, 0, 14);
+      fishGrad.addColorStop(0, '#334155');
+      fishGrad.addColorStop(0.5, '#94a3b8');
+      fishGrad.addColorStop(1, '#cbd5e1');
+      ctx.fillStyle = fishGrad;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.ellipse(0, 0, 30, 13, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // 鯖魚虎斑紋與金黃焦香烤痕
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      for (let x = -18; x <= 18; x += 7) {
+        ctx.beginPath(); ctx.moveTo(x, -11); ctx.lineTo(x - 4, 8); ctx.stroke();
+      }
+      // 鮮黃檸檬角
+      ctx.fillStyle = '#facc15';
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(16, 8, 8, 0, Math.PI); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      break;
+    }
+
+    // 24. 蔥爆牛肉
+    case 'scallion_beef': {
+      // 醬香嫩牛肉片
+      const beefs = [[-12,-2],[6,-4],[-4,5],[10,4],[0,-1],[-14,4]];
+      beefs.forEach(([bx, by]) => {
+        ctx.fillStyle = '#5c240e';
+        ctx.strokeStyle = '#3b1506';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(bx, by, 10, 6, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      });
+      // 翠綠蔥段與紅辣椒斜片
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      [[-15,-4,-5,2],[2,-6,12,0],[-6,6,5,3]].forEach(([x1,y1,x2,y2]) => {
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      ctx.fillStyle = '#ef4444';
+      [[-2,-4],[8,2],[-9,2]].forEach(([cx,cy]) => {
+        ctx.beginPath(); ctx.ellipse(cx, cy, 4, 2, -0.4, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 25. 糖醋排骨
+    case 'sweet_sour_pork': {
+      const ribs = [[-12,-3],[4,-5],[-6,5],[9,4],[0,0]];
+      ribs.forEach(([rx, ry]) => {
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath(); ctx.roundRect(rx - 8, ry - 6, 16, 12, 4); ctx.fill();
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.roundRect(rx - 6, ry - 4, 12, 6, 3); ctx.fill();
+      });
+      // 青椒、黃鳳梨塊與白芝麻
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(-4, -6, 6, 5);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(5, -1, 6, 5);
+      ctx.fillStyle = '#fef9c3';
+      [[-10,-2],[3,-4],[-4,4],[9,3]].forEach(([sx,sy]) => {
+        ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2); ctx.fill();
+      });
+      break;
+    }
+
+    // 26. 入味滷蛋
+    case 'braised_egg': {
+      ctx.save();
+      ctx.rotate(-0.1);
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath(); ctx.ellipse(0, 1, 18, 14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fef3c7';
+      ctx.beginPath(); ctx.ellipse(0, 0, 15, 11.5, 0, 0, Math.PI * 2); ctx.fill();
+      const yolkGrad = ctx.createRadialGradient(-2, -1, 1, 0, 0, 8);
+      yolkGrad.addColorStop(0, '#f59e0b');
+      yolkGrad.addColorStop(1, '#ea580c');
+      ctx.fillStyle = yolkGrad;
+      ctx.beginPath(); ctx.ellipse(0, 0, 8, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      break;
+    }
+
+    // 27. 半熟荷包蛋
+    case 'fried_egg': {
+      // 焦脆金黃荷包蛋白邊
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath(); ctx.ellipse(0, 1, 24, 17, 0.08, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.ellipse(0, 0, 22, 15, 0.08, 0, Math.PI * 2); ctx.fill();
+      // 太陽蛋黃與醬油膏淋醬
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath(); ctx.arc(2, -1, 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath(); ctx.arc(0, -3, 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-10, 3); ctx.quadraticCurveTo(0, 7, 11, 2); ctx.stroke();
+      break;
+    }
+
+    // 28. 蒜片烤香腸
+    case 'sausage': {
+      const slices = [
+        { x: -13, y: 2, rot: -0.25 },
+        { x: 0,   y: -2, rot: -0.1 },
+        { x: 13,  y: 2, rot: 0.15 }
+      ];
+      slices.forEach(s => {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rot);
+        ctx.fillStyle = '#991b1b';
+        ctx.strokeStyle = '#450a0a';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.ellipse(0, 0, 11, 7.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fecaca';
+        [[-3,-1],[3,1],[0,-2]].forEach(([fx,fy]) => {
+          ctx.beginPath(); ctx.arc(fx, fy, 1.7, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.restore();
+      });
+      // 雪白生蒜片
+      ctx.fillStyle = '#fefce8';
+      ctx.beginPath(); ctx.ellipse(-6, 5, 4.5, 3, 0.2, 0, Math.PI * 2); ctx.ellipse(7, 5, 4.5, 3, -0.2, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+
+    // 29. 椒鹽炸甜不辣
+    case 'tempura': {
+      const bars = [
+        [-14, -4, -0.2], [-2, -6, 0.15], [10, -2, -0.1],
+        [-10, 4, 0.1],   [4, 5, -0.2]
+      ];
+      bars.forEach(([bx, by, rot]) => {
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.rotate(rot);
+        ctx.fillStyle = '#d97706';
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(-12, -4, 24, 8, 4); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath(); ctx.roundRect(-9, -2, 18, 3, 2); ctx.fill();
+        ctx.restore();
+      });
+      // 酥炸九層塔葉
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath(); ctx.ellipse(0, 0, 6, 3.5, 0.4, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+
+    // 30. 酸菜辣菜脯
+    case 'pickled_radish': {
+      const bits = [
+        { x: -10, y: 2, col: '#65a30d', r: 5.5 },
+        { x: 4,   y: -3, col: '#ca8a04', r: 6 },
+        { x: 10,  y: 3, col: '#4d7c0f', r: 5 },
+        { x: -2,  y: 5, col: '#a16207', r: 5.5 },
+        { x: -4,  y: -3, col: '#84cc16', r: 5 },
+        { x: 2,   y: 1, col: '#dc2626', r: 3.5 },
+        { x: -7,  y: -2, col: '#dc2626', r: 3 }
+      ];
+      bits.forEach(b => {
+        ctx.fillStyle = b.col;
+        ctx.beginPath(); ctx.roundRect(b.x - b.r, b.y - b.r * 0.7, b.r * 2, b.r * 1.4, 2); ctx.fill();
+      });
+      break;
+    }
+  }
+
+  ctx.restore();
+}
+
+/**
+ * ============================================================================
+ * 4. 零破圖！高解析度 Canvas 2D 台式四格白色紙便當盒立體繪製引擎
+ *    分為 3 個前後景深圖層：
+ *    - Layer A (box_back): 石板托盤 + 掀開白色紙上蓋(含左右側折耳) + 盒底 + 後三格立體隔板
+ *    - Layer B (box_mid_divider): 前大格與後三小格之間的立體橫向紙隔板
+ *    - Layer C (box_front_wall): 前方傾斜盒壁與右側卡榫折口 (遮擋大格白飯與主菜下緣)
+ * ============================================================================
+ */
+function generateBentoBoxTextures(scene) {
+  const W = 460;
+  const H = 276;
+
+  // 輔助多邊形繪製函式
+  function drawPoly(ctx, pts, fillStyle, strokeStyle = null, lineWidth = 1) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) {
+      ctx.lineTo(pts[i][0], pts[i][1]);
+    }
+    ctx.closePath();
+    if (fillStyle) {
+      ctx.fillStyle = fillStyle;
+      ctx.fill();
+    }
+    if (strokeStyle) {
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    }
+  }
+
+  // ---------------- LAYER A: 便當盒背景、上蓋、底座與後三格垂直隔板 ----------------
+  const backTex = scene.textures.createCanvas('bento_box_back', W, H);
+  const bCtx = backTex.getContext();
+
+  // 1. 底部深色石板圓盤與柔和陰影
+  bCtx.fillStyle = 'rgba(2, 6, 23, 0.75)';
+  bCtx.beginPath(); bCtx.ellipse(230, 206, 204, 62, 0, 0, Math.PI * 2); bCtx.fill();
+
+  const slateGrad = bCtx.createRadialGradient(230, 190, 20, 230, 200, 198);
+  slateGrad.addColorStop(0, '#334155');
+  slateGrad.addColorStop(0.75, '#1e293b');
+  slateGrad.addColorStop(1, '#0f172a');
+  bCtx.fillStyle = slateGrad;
+  bCtx.beginPath(); bCtx.ellipse(230, 198, 196, 58, 0, 0, Math.PI * 2); bCtx.fill();
+  bCtx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+  bCtx.lineWidth = 1.5;
+  bCtx.stroke();
+
+  // 便當盒底座投影在石板上的陰影
+  drawPoly(bCtx, [[88, 224], [116, 108], [352, 114], [348, 236]], 'rgba(9, 13, 28, 0.75)');
+
+  // 2. 掀開的白色紙盒上蓋 (還原照片微傾透視與左右折耳)
+  // 左側折耳 (Left Flap)
+  drawPoly(bCtx, [[122, 106], [109, 101], [113, 18], [127, 11]], '#dcd9d2', '#c7c3ba', 1);
+  // 右側折耳 (Right Flap)
+  drawPoly(bCtx, [[346, 112], [359, 107], [366, 26], [353, 17]], '#e5e2dc', '#c7c3ba', 1);
+
+  // 上蓋主平面 (含紙張自然漸層光影)
+  const lidGrad = bCtx.createLinearGradient(120, 12, 350, 112);
+  lidGrad.addColorStop(0, '#ffffff');
+  lidGrad.addColorStop(0.6, '#f6f5f2');
+  lidGrad.addColorStop(1, '#eae7e1');
+  drawPoly(bCtx, [[122, 106], [346, 112], [353, 17], [127, 11]], lidGrad, '#d5d1c8', 1.5);
+
+  // 上蓋頂部前折唇邊 (Top Folded Lip)
+  drawPoly(bCtx, [[127, 11], [353, 17], [346, 8], [134, 3]], '#ffffff', '#dcd9d2', 1);
+
+  // 3. 便當盒內部底面與後/左/右內壁
+  // 盒底總平面
+  drawPoly(bCtx, [[122, 106], [346, 112], [326, 224], [96, 214]], '#ebe8e2');
+
+  // 後方內壁 (連接上蓋折線下方)
+  const backWallGrad = bCtx.createLinearGradient(0, 106, 0, 124);
+  backWallGrad.addColorStop(0, '#d5d1c8');
+  backWallGrad.addColorStop(1, '#e6e3dc');
+  drawPoly(bCtx, [[122, 106], [346, 112], [340, 126], [127, 120]], backWallGrad, '#c8c4bc', 1);
+
+  // 左側後半內壁 (左小格左壁)
+  drawPoly(bCtx, [[122, 106], [127, 120], [115, 162], [107, 152]], '#dfdCD5', '#ccc8c0', 1);
+  // 右側後半內壁 (右小格右壁)
+  drawPoly(bCtx, [[346, 112], [340, 126], [332, 168], [342, 158]], '#d4d0c8', '#c4c0b8', 1);
+
+  // 後三格底部淺陰影與角落折線 (仿真紙盒折角)
+  bCtx.strokeStyle = '#ccc8bf';
+  bCtx.lineWidth = 1.2;
+  bCtx.beginPath();
+  bCtx.moveTo(122, 106); bCtx.lineTo(133, 122);
+  bCtx.moveTo(346, 112); bCtx.lineTo(334, 128);
+  bCtx.stroke();
+
+  // 4. 後方三小格的兩道立體垂直隔板 (分隔 左小格 / 中小格 / 右小格)
+  // 左垂直隔板 (格1 與 格2 之間)
+  drawPoly(bCtx, [[194, 118], [202, 118], [196, 160], [188, 160]], '#d6d2c9');
+  drawPoly(bCtx, [[194, 109], [201, 109], [195, 151], [188, 151]], '#ffffff', '#d0ccc3', 1);
+
+  // 右垂直隔板 (格2 與 格3 之間)
+  drawPoly(bCtx, [[268, 120], [276, 120], [272, 162], [264, 162]], '#d6d2c9');
+  drawPoly(bCtx, [[268, 111], [275, 111], [271, 153], [264, 153]], '#ffffff', '#d0ccc3', 1);
+
+  backTex.refresh();
+
+  // ---------------- LAYER B: 中央橫向立體隔板 (遮擋後三格配菜下緣，分隔前方大格) ----------------
+  const midTex = scene.textures.createCanvas('bento_box_mid', W, H);
+  const mCtx = midTex.getContext();
+
+  // 橫向隔板前立面 (面向前方大格)
+  const midWallGrad = mCtx.createLinearGradient(0, 148, 0, 168);
+  midWallGrad.addColorStop(0, '#e5e2dc');
+  midWallGrad.addColorStop(1, '#d0ccc2');
+  drawPoly(mCtx, [[107, 150], [341, 157], [337, 171], [111, 164]], midWallGrad, '#c7c3ba', 1);
+
+  // 橫向隔板頂部純白折邊棱線
+  drawPoly(mCtx, [[106, 147], [342, 154], [341, 158], [107, 151]], '#ffffff', '#d5d1c8', 0.8);
+
+  midTex.refresh();
+
+  // ---------------- LAYER C: 前方大格前盒壁與左右前側壁 (遮擋大格白飯與主菜下緣) ----------------
+  const frontTex = scene.textures.createCanvas('bento_box_front', W, H);
+  const fCtx = frontTex.getContext();
+
+  // 左前側外牆
+  drawPoly(fCtx, [[107, 149], [112, 163], [100, 214], [91, 198]], '#efede8', '#d0ccc3', 1);
+
+  // 右前側外牆 (含照片中經典的紙盒側邊卡榫凹槽折線)
+  drawPoly(fCtx, [[342, 155], [352, 202], [336, 226], [326, 170]], '#dad6ce', '#c4c0b7', 1);
+  // 右側卡榫折線細節
+  fCtx.strokeStyle = '#b8b3a8';
+  fCtx.lineWidth = 1.5;
+  fCtx.beginPath();
+  fCtx.moveTo(339, 188); fCtx.lineTo(344, 212);
+  fCtx.stroke();
+
+  // 最前方傾斜盒壁主立面
+  const frontLipGrad = fCtx.createLinearGradient(0, 198, 0, 228);
+  frontLipGrad.addColorStop(0, '#f5f3ef');
+  frontLipGrad.addColorStop(1, '#dedad2');
+  drawPoly(fCtx, [[91, 198], [346, 208], [336, 227], [98, 217]], frontLipGrad, '#c7c3ba', 1.2);
+
+  // 前盒壁頂部純白高光邊緣
+  fCtx.strokeStyle = '#ffffff';
+  fCtx.lineWidth = 2.5;
+  fCtx.beginPath();
+  fCtx.moveTo(91, 198);
+  fCtx.lineTo(346, 208);
+  fCtx.stroke();
+
+  frontTex.refresh();
+}
+
+/**
+ * ============================================================================
+ * 5. Phaser 3 互動便當場景 (BentoScene)
+ * ============================================================================
+ */
+let phaserScene = null;
+
+// 定義四格座標中心與點擊區域
+const SLOT_COORDS = {
+  0:    { x: 156, y: 134, w: 66, h: 42, label: '左小格 (格1)' },
+  1:    { x: 231, y: 136, w: 66, h: 42, label: '中小格 (格2)' },
+  2:    { x: 305, y: 138, w: 66, h: 42, label: '右小格 (格3)' },
+  main: { x: 222, y: 186, w: 226, h: 54, label: '前方大格 (白飯+主菜)' }
+};
+
+class BentoScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'BentoScene' });
+  }
+
+  preload() {
+    // 1. 生成零破圖 3D 白色紙便當盒三層結構材質
+    generateBentoBoxTextures(this);
+
+    // 2. 將全部 30 道菜色生成高解析度 Phaser 材質
+    ALL_DISHES.forEach(dish => {
+      const texW = dish.isBigMain !== undefined ? 116 : 92;
+      const texH = dish.isBigMain !== undefined ? 82 : 66;
+      const canvasTex = this.textures.createCanvas('dish_' + dish.id, texW, texH);
+      const ctx = canvasTex.getContext();
+      drawCulinaryDish(ctx, dish.id, texW, texH);
+      canvasTex.refresh();
+    });
+  }
+
+  create() {
+    phaserScene = this;
+
+    // 圖層 10：便當盒後蓋、底座與後三格垂直隔板
+    this.add.image(230, 138, 'bento_box_back').setDepth(10);
+
+    // 圖層 18：後三格配菜精靈容器
+    this.sideContainers = [
+      this.add.container(SLOT_COORDS[0].x, SLOT_COORDS[0].y).setDepth(18),
+      this.add.container(SLOT_COORDS[1].x, SLOT_COORDS[1].y).setDepth(18),
+      this.add.container(SLOT_COORDS[2].x, SLOT_COORDS[2].y).setDepth(18)
+    ];
+
+    // 圖層 25：中央橫向立體隔板 (遮擋後三格配菜底部，讓配菜完美嵌在格子裡)
+    this.add.image(230, 138, 'bento_box_mid').setDepth(25);
+
+    // 圖層 30：前方大格白飯繪圖層 (支援 1/5 ~ 全飯動態變化)
+    this.riceGraphics = this.add.graphics().setDepth(30);
+
+    // 圖層 38：前方大格主菜與加點精靈容器
+    this.mainFoodContainer = this.add.container(0, 0).setDepth(38);
+
+    // 圖層 50：便當盒最前方盒壁與側牆 (遮擋大格白飯與主菜下緣，營造真實立體感)
+    this.add.image(230, 138, 'bento_box_front').setDepth(50);
+
+    // 圖層 60：選格呼吸燈高亮外框與每格克數/熱量標籤
+    this.highlightLayer = this.add.graphics().setDepth(60);
+    this.labelsContainer = this.add.container(0, 0).setDepth(65);
+
+    this.setupInteractiveZones();
+    this.refreshVisuals();
+
+    // 選格呼吸燈動畫
+    this.tweens.add({
+      targets: this.highlightLayer,
+      alpha: { from: 1, to: 0.35 },
+      duration: 650,
+      yoyo: true,
+      repeat: -1
+    });
+  }
+
+  // 點擊畫布上的任一格即可切換選格
+  setupInteractiveZones() {
+    [0, 1, 2, 'main'].forEach(slotKey => {
+      const c = SLOT_COORDS[slotKey];
+      const zone = this.add.zone(c.x, c.y, c.w, c.h).setInteractive({ useHandCursor: true }).setDepth(70);
+      zone.on('pointerdown', () => {
+        selectSlot(slotKey);
+      });
+    });
+  }
+
+  refreshVisuals(animatedSlot = null) {
+    this.drawRiceInMainSlot();
+    this.drawSideDishes(animatedSlot);
+    this.drawMainAddons(animatedSlot === 'main');
+    this.drawSelectedHighlight();
+    this.drawCompartmentBadges();
+  }
+
+  // 在前方大格繪製白飯（支援 1/5 到 全飯 面積、厚度與米粒數量動態變化）
+  drawRiceInMainSlot() {
+    const g = this.riceGraphics;
+    g.clear();
+    const ratio = state.ricePortion; // 0.2, 0.4, 0.6, 0.8, 1.0
+
+    const startX = 113;
+    const maxW = 216;
+    const currentW = maxW * (0.26 + ratio * 0.74); // 1/5 飯佔左區，全飯鋪滿整個大格
+    const centerY = 188;
+    const currentH = 30 + ratio * 15;
+
+    // 白飯底層立體陰影與團塊
+    g.fillStyle(0xe2ddd3, 1);
+    g.fillRoundedRect(startX, centerY - currentH / 2 + 3, currentW, currentH, 14);
+
+    g.fillStyle(0xfdfcf9, 1);
+    g.fillRoundedRect(startX, centerY - currentH / 2, currentW, currentH, 14);
+
+    // 飽滿立體白米粒紋理
+    const cols = Math.floor(6 + ratio * 12);
+    const rows = 4;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const gx = startX + 12 + (c / Math.max(1, cols - 1)) * (currentW - 24) + ((r % 2) * 3 - 1.5);
+        const gy = (centerY - currentH / 2 + 7) + (r / (rows - 1)) * (currentH - 14);
+        g.fillStyle((r + c) % 2 === 0 ? 0xffffff : 0xf1f5f9, 1);
+        g.fillEllipse(gx, gy, 8.5, 4.4);
+      }
+    }
+
+    // 若有開啟「+淋滷汁」：繪製油亮古早味滷肉燥與醬汁
+    if (state.hasBraisedSauce) {
+      const blobs = Math.max(2, Math.floor(7 * ratio));
+      for (let i = 0; i < blobs; i++) {
+        const bx = startX + 18 + (i / Math.max(1, blobs - 1)) * Math.max(18, currentW - 36);
+        const by = centerY - 3 + ((i % 2) * 6 - 3);
+        g.fillStyle(0x78350f, 0.85);
+        g.fillEllipse(bx, by, 22, 10);
+        g.fillStyle(0x451a03, 0.95);
+        g.fillRoundedRect(bx - 4, by - 3, 7, 5, 2);
+      }
+    } else {
+      // 經典黑芝麻點綴於白飯上
+      g.fillStyle(0x1e293b, 0.85);
+      const sesames = [[startX + 18, centerY - 2], [startX + 24, centerY + 2], [startX + 29, centerY - 3]];
+      sesames.forEach(([sx, sy]) => g.fillCircle(sx, sy, 1.5));
+    }
+  }
+
+  // 繪製後方三小格的配菜精靈
+  drawSideDishes(animatedSlot = null) {
+    for (let i = 0; i < 3; i++) {
+      const container = this.sideContainers[i];
+      container.removeAll(true);
+      const dish = state.sideSlots[i];
+      if (!dish) continue;
+
+      const sp = this.add.image(0, 2, 'dish_' + dish.id).setScale(0.76);
+      container.add(sp);
+
+      if (animatedSlot === i) {
+        sp.y = -35;
+        sp.setScale(0.5, 0.95);
+        this.tweens.add({
+          targets: sp,
+          y: 2,
+          scaleX: 0.76,
+          scaleY: 0.76,
+          duration: 280,
+          ease: 'Bounce.easeOut'
+        });
+      }
+    }
+  }
+
+  // 繪製前方大格白飯上的主菜與加點精靈
+  drawMainAddons(animateLast = false) {
+    this.mainFoodContainer.removeAll(true);
+    const total = state.mainAddons.length;
+
+    state.mainAddons.forEach((dish, idx) => {
+      // 智慧排列在大格白飯上方
+      const spreadX = total === 1 ? 222 : 155 + (idx / Math.max(1, total - 1)) * 136;
+      const posY = dish.isBigMain ? 182 - (idx % 2) * 5 : 186 - (idx % 2) * 4;
+      const targetScale = dish.isBigMain ? 0.98 : 0.82;
+
+      const sp = this.add.image(spreadX, posY, 'dish_' + dish.id).setScale(targetScale);
+      this.mainFoodContainer.add(sp);
+
+      if (animateLast && idx === total - 1) {
+        sp.y = posY - 45;
+        sp.setScale(targetScale * 0.7, targetScale * 1.2);
+        this.tweens.add({
+          targets: sp,
+          y: posY,
+          scaleX: targetScale,
+          scaleY: targetScale,
+          duration: 320,
+          ease: 'Bounce.easeOut'
+        });
+      }
+    });
+  }
+
+  // 繪製目前選中格子的高亮外框
+  drawSelectedHighlight() {
+    const hg = this.highlightLayer;
+    hg.clear();
+    const target = SLOT_COORDS[state.selectedSlot];
+    if (!target) return;
+
+    hg.lineStyle(2.8, 0x38bdf8, 1);
+    hg.strokeRoundedRect(target.x - target.w / 2, target.y - target.h / 2, target.w, target.h, 8);
+    hg.fillStyle(0x38bdf8, 0.12);
+    hg.fillRoundedRect(target.x - target.w / 2, target.y - target.h / 2, target.w, target.h, 8);
+  }
+
+  // 在每一格上方顯示即時重量 (g) 與熱量 (kcal) 小標籤
+  drawCompartmentBadges() {
+    this.labelsContainer.removeAll(true);
+
+    // 後方三小格標籤
+    for (let i = 0; i < 3; i++) {
+      const c = SLOT_COORDS[i];
+      const dish = state.sideSlots[i];
+      const isSel = state.selectedSlot === i;
+      const textStr = dish
+        ? `${dish.name}\n${dish.weight}g·${dish.kcal}卡`
+        : (isSel ? `📍格${i + 1}(待選菜)` : `格${i + 1}(空)`);
+
+      const txt = this.add.text(c.x, c.y - 26, textStr, {
+        fontSize: '10px',
+        fontFamily: 'Noto Sans TC, sans-serif',
+        fontStyle: 'bold',
+        color: dish ? '#ffffff' : (isSel ? '#38bdf8' : '#cbd5e1'),
+        backgroundColor: dish ? 'rgba(15,23,42,0.82)' : 'rgba(15,23,42,0.55)',
+        padding: { x: 4, y: 2 },
+        align: 'center'
+      }).setOrigin(0.5);
+      this.labelsContainer.add(txt);
+    }
+
+    // 前方大格底部標籤 (顯示白飯份量 + 主菜總重與總卡路里)
+    const riceObj = RICE_PORTIONS[state.ricePortion];
+    const mainWeight = state.mainAddons.reduce((s, d) => s + d.weight, 0) +
+                       riceObj.weight +
+                       (state.hasBraisedSauce ? BRAISED_SAUCE.weight : 0);
+    const mainKcal = state.mainAddons.reduce((s, d) => s + d.kcal, 0) +
+                     riceObj.kcal +
+                     (state.hasBraisedSauce ? BRAISED_SAUCE.kcal : 0);
+
+    const mainLabel = `🍚 ${riceObj.label}${state.hasBraisedSauce ? '+滷汁' : ''}${state.mainAddons.length > 0 ? ` + ${state.mainAddons.length}道主菜/加點` : ''} ｜ 大格合計 ${mainWeight}g · ${mainKcal}kcal`;
+
+    const mainTxt = this.add.text(225, 252, mainLabel, {
+      fontSize: '11px',
+      fontFamily: 'Noto Sans TC, sans-serif',
+      fontStyle: 'bold',
+      color: '#fde047',
+      backgroundColor: 'rgba(9,13,28,0.88)',
+      padding: { x: 8, y: 3 },
+      align: 'center'
+    }).setOrigin(0.5);
+    this.labelsContainer.add(mainTxt);
+  }
+
+  // 放菜時的浮動文字特效 (+80g | +115kcal | +$15)
+  spawnFloatingTag(slotKey, text) {
+    const c = SLOT_COORDS[slotKey] || SLOT_COORDS.main;
+    const floatTxt = this.add.text(c.x, c.y - 12, text, {
+      fontSize: '12px',
+      fontStyle: 'bold',
+      fontFamily: 'Noto Sans TC, sans-serif',
+      color: '#4ade80',
+      stroke: '#050811',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(85);
+
+    this.tweens.add({
+      targets: floatTxt,
+      y: c.y - 46,
+      alpha: 0,
+      duration: 850,
+      onComplete: () => floatTxt.destroy()
+    });
+  }
+}
+
+/**
+ * ============================================================================
+ * 6. 介面互動與算錢・算卡路里・算重量邏輯
+ * ============================================================================
+ */
+function selectSlot(slotKey) {
+  state.selectedSlot = slotKey;
+  playTone(520, 'sine', 0.06);
+
+  // 選格1~3時自動切到「配菜區」，選前方大格時自動切到「主菜與加點」
+  if (slotKey === 'main' && state.activeCategory !== 'main') {
+    state.activeCategory = 'main';
+  } else if (slotKey !== 'main' && state.activeCategory !== 'side') {
+    state.activeCategory = 'side';
+  }
+
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
+function switchCategory(cat) {
+  state.activeCategory = cat;
+  if (cat === 'main' && state.selectedSlot !== 'main') {
+    state.selectedSlot = 'main';
+  } else if (cat === 'side' && state.selectedSlot === 'main') {
+    const emptyIdx = state.sideSlots.findIndex(s => s === null);
+    state.selectedSlot = emptyIdx !== -1 ? emptyIdx : 0;
+  }
+  playTone(460, 'triangle', 0.06);
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
+function setRicePortion(ratio) {
+  state.ricePortion = ratio;
+  playTone(340 + ratio * 220, 'sine', 0.08);
+  updateUI();
+  if (phaserScene) {
+    const r = RICE_PORTIONS[ratio];
+    phaserScene.refreshVisuals();
+    phaserScene.spawnFloatingTag('main', `${r.label} (${r.weight}g | ${r.kcal}kcal | $${r.price})`);
+  }
+}
+
+function toggleBraisedSauce() {
+  state.hasBraisedSauce = !state.hasBraisedSauce;
+  playTone(state.hasBraisedSauce ? 580 : 320, 'sine', 0.08);
+  updateUI();
+  if (phaserScene) {
+    phaserScene.refreshVisuals();
+    if (state.hasBraisedSauce) {
+      phaserScene.spawnFloatingTag('main', `+淋滷肉燥汁 +${BRAISED_SAUCE.weight}g | +$${BRAISED_SAUCE.price}`);
+    }
+  }
+}
+
+// 點擊菜色卡片：放入目前指定的格子
+function handleDishClick(dishId, type) {
+  if (type === 'side') {
+    const dish = SIDE_DISHES.find(d => d.id === dishId);
+    if (!dish) return;
+
+    let targetSlot = state.selectedSlot;
+    if (targetSlot === 'main') {
+      const emptyIdx = state.sideSlots.findIndex(s => s === null);
+      targetSlot = emptyIdx !== -1 ? emptyIdx : 0;
+      state.selectedSlot = targetSlot;
+    }
+
+    state.sideSlots[targetSlot] = dish;
+    playTone(620, 'triangle', 0.09);
+
+    if (phaserScene) {
+      phaserScene.refreshVisuals(targetSlot);
+      phaserScene.spawnFloatingTag(targetSlot, `${dish.name} ${dish.weight}g | ${dish.kcal}kcal | +$${dish.price}`);
+    }
+
+    // 若還有其他空的小格，自動跳到下一個空小格方便連續點菜；若已滿則留在原格方便直接換菜
+    const nextEmpty = state.sideSlots.findIndex(s => s === null);
+    if (nextEmpty !== -1) {
+      state.selectedSlot = nextEmpty;
+    }
+  } else {
+    const dish = MAIN_DISHES.find(d => d.id === dishId);
+    if (!dish) return;
+    state.selectedSlot = 'main';
+
+    if (state.mainAddons.length >= 4) {
+      state.mainAddons.shift();
+    }
+    state.mainAddons.push(dish);
+    playTone(500, 'square', 0.09);
+
+    if (phaserScene) {
+      phaserScene.refreshVisuals('main');
+      phaserScene.spawnFloatingTag('main', `+${dish.name} ${dish.weight}g | ${dish.kcal}kcal | +$${dish.price}`);
+    }
+  }
+
+  updateUI();
+}
+
+// 移除某道菜
+function removeDish(dishId, type, event) {
+  event.stopPropagation();
+  playTone(280, 'sine', 0.08);
+
+  if (type === 'side') {
+    const idx = state.sideSlots.findIndex(d => d && d.id === dishId);
+    if (idx !== -1) {
+      state.sideSlots[idx] = null;
+      state.selectedSlot = idx;
+    }
+  } else {
+    const idx = state.mainAddons.findIndex(d => d.id === dishId);
+    if (idx !== -1) {
+      state.mainAddons.splice(idx, 1);
+    }
+  }
+
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
+// 計算總重量 (g)、總卡路里 (kcal)、總金額 ($) 與套餐優惠
+function calculateTotals() {
+  const rice = RICE_PORTIONS[state.ricePortion];
+  let totalWeight = rice.weight;
+  let totalKcal = rice.kcal;
+  let rawPrice = rice.price;
+
+  if (state.hasBraisedSauce) {
+    totalWeight += BRAISED_SAUCE.weight;
+    totalKcal += BRAISED_SAUCE.kcal;
+    rawPrice += BRAISED_SAUCE.price;
+  }
+
+  let filledSideCount = 0;
+  state.sideSlots.forEach(d => {
+    if (d) {
+      filledSideCount++;
+      totalWeight += d.weight;
+      totalKcal += d.kcal;
+      rawPrice += d.price;
+    }
+  });
+
+  let hasBigMain = false;
+  state.mainAddons.forEach(d => {
+    totalWeight += d.weight;
+    totalKcal += d.kcal;
+    rawPrice += d.price;
+    if (d.isBigMain) hasBigMain = true;
+  });
+
+  // 湊齊「三格配菜 + 任一主菜肉排」享便當套餐折抵 $10
+  const discount = (filledSideCount === 3 && hasBigMain) ? 10 : 0;
+  const finalPrice = Math.max(0, rawPrice - discount);
+
+  return { totalWeight, totalKcal, rawPrice, discount, finalPrice };
+}
+
+// 更新 DOM 畫面與繪製下方菜色手繪縮圖
+function updateUI() {
+  const totals = calculateTotals();
+
+  // 1. 頂部三合一數據
+  document.getElementById('ui-total-weight').textContent = `${totals.totalWeight} g`;
+  document.getElementById('ui-total-kcal').textContent = `${totals.totalKcal} kcal`;
+  document.getElementById('ui-total-price').textContent = `NT$ ${totals.finalPrice}`;
+
+  // 2. 白飯按鈕狀態
+  const rice = RICE_PORTIONS[state.ricePortion];
+  const sauceText = state.hasBraisedSauce ? ` + 滷汁(${BRAISED_SAUCE.weight}g)` : '';
+  document.getElementById('ui-rice-detail').textContent =
+    `${rice.label}${sauceText} | ${rice.weight + (state.hasBraisedSauce ? BRAISED_SAUCE.weight : 0)}g | ${rice.kcal + (state.hasBraisedSauce ? BRAISED_SAUCE.kcal : 0)}kcal | $${rice.price + (state.hasBraisedSauce ? BRAISED_SAUCE.price : 0)}`;
+
+  document.querySelectorAll('.rice-btn[data-ratio]').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.ratio) === state.ricePortion);
+  });
+  document.getElementById('btn-lurou').classList.toggle('active', state.hasBraisedSauce);
+
+  // 3. 四格選格器狀態
+  [0, 1, 2].forEach(i => {
+    const tab = document.getElementById(`slot-tab-${i}`);
+    const sub = document.getElementById(`slot-sub-${i}`);
+    tab.classList.toggle('active', state.selectedSlot === i);
+    const d = state.sideSlots[i];
+    sub.textContent = d ? `${d.name}(${d.weight}g)` : '空・點擊選菜';
+  });
+
+  const mainTab = document.getElementById('slot-tab-main');
+  const mainSub = document.getElementById('slot-sub-main');
+  mainTab.classList.toggle('active', state.selectedSlot === 'main');
+  mainSub.textContent = state.mainAddons.length > 0
+    ? `飯+${state.mainAddons.map(d => d.name).join('、')}`
+    : `${rice.label}・點選主菜`;
+
+  // 4. 分類按鈕與目標提示
+  document.getElementById('cat-side').classList.toggle('active', state.activeCategory === 'side');
+  document.getElementById('cat-main').classList.toggle('active', state.activeCategory === 'main');
+  document.getElementById('ui-target-hint').textContent =
+    `目標：【${SLOT_COORDS[state.selectedSlot].label}】`;
+
+  // 5. 渲染菜色卡片網格 (每張卡片內嵌獨立 Canvas 繪製的精細菜色插畫)
+  const grid = document.getElementById('dishes-grid');
+  grid.innerHTML = '';
+  const list = state.activeCategory === 'side' ? SIDE_DISHES : MAIN_DISHES;
+
+  list.forEach(dish => {
+    let count = 0;
+    if (state.activeCategory === 'side') {
+      count = state.sideSlots.filter(d => d && d.id === dish.id).length;
+    } else {
+      count = state.mainAddons.filter(d => d.id === dish.id).length;
+    }
+
+    const card = document.createElement('div');
+    card.className = `dish-card ${count > 0 ? 'selected' : ''}`;
+    card.onclick = () => handleDishClick(dish.id, state.activeCategory);
+
+    if (count > 0) {
+      const remBtn = document.createElement('div');
+      remBtn.className = 'dish-remove-btn';
+      remBtn.textContent = '−';
+      remBtn.onclick = (e) => removeDish(dish.id, state.activeCategory, e);
+      card.appendChild(remBtn);
+
+      const badge = document.createElement('div');
+      badge.className = 'dish-badge-count';
+      badge.textContent = count > 1 ? `×${count}` : '✓';
+      card.appendChild(badge);
+    }
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'dish-thumb-wrap';
+    const cvs = document.createElement('canvas');
+    cvs.width = 76;
+    cvs.height = 58;
+    cvs.className = 'dish-thumb-canvas';
+    drawCulinaryDish(cvs.getContext('2d'), dish.id, 76, 58);
+    thumbWrap.appendChild(cvs);
+    card.appendChild(thumbWrap);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'dish-name';
+    nameEl.textContent = dish.name;
+    card.appendChild(nameEl);
+
+    const metaEl = document.createElement('div');
+    metaEl.className = 'dish-meta';
+    metaEl.innerHTML = `<span class="w-tag">${dish.weight}g</span> · <span class="k-tag">${dish.kcal}卡</span>`;
+    card.appendChild(metaEl);
+
+    const priceEl = document.createElement('div');
+    priceEl.className = 'dish-price-tag';
+    priceEl.textContent = `$${dish.price}`;
+    card.appendChild(priceEl);
+
+    grid.appendChild(card);
+  });
+
+  // 6. 底部結帳欄
+  const discountPill = document.getElementById('ui-discount-pill');
+  discountPill.style.display = totals.discount > 0 ? 'inline-block' : 'none';
+  document.getElementById('ui-checkout-btn-text').textContent =
+    `${totals.totalWeight}g | ${totals.totalKcal}kcal | NT$ ${totals.finalPrice}`;
+}
+
+// 隨機配好一個豐盛便當
+function randomBento() {
+  const ratios = [0.2, 0.4, 0.6, 0.8, 1.0];
+  state.ricePortion = ratios[Math.floor(Math.random() * ratios.length)];
+  state.hasBraisedSauce = Math.random() > 0.45;
+
+  const shuffledSides = [...SIDE_DISHES].sort(() => Math.random() - 0.5);
+  state.sideSlots = [shuffledSides[0], shuffledSides[1], shuffledSides[2]];
+
+  const bigMains = MAIN_DISHES.filter(d => d.isBigMain);
+  const smallAddons = MAIN_DISHES.filter(d => !d.isBigMain);
+  state.mainAddons = [
+    bigMains[Math.floor(Math.random() * bigMains.length)],
+    smallAddons[Math.floor(Math.random() * smallAddons.length)]
+  ];
+
+  playTone(680, 'triangle', 0.12);
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
+// 清空重裝
+function clearAll() {
+  state.ricePortion = 1.0;
+  state.hasBraisedSauce = false;
+  state.sideSlots = [null, null, null];
+  state.mainAddons = [];
+  state.selectedSlot = 0;
+  state.activeCategory = 'side';
+  playTone(300, 'sine', 0.1);
+  updateUI();
+  if (phaserScene) phaserScene.refreshVisuals();
+}
+
+// 結帳與找錢明細 Modal
+function openCheckoutModal() {
+  playTone(740, 'triangle', 0.12);
+  const totals = calculateTotals();
+  const rice = RICE_PORTIONS[state.ricePortion];
+  const listEl = document.getElementById('receipt-items');
+  listEl.innerHTML = '';
+
+  const rows = [];
+  rows.push({
+    title: `【前方大格基底】${rice.label}`,
+    sub: `重量 ${rice.weight}g ｜ 熱量 ${rice.kcal} kcal`,
+    price: rice.price
+  });
+
+  if (state.hasBraisedSauce) {
+    rows.push({
+      title: `【大格加醬】${BRAISED_SAUCE.name}`,
+      sub: `重量 ${BRAISED_SAUCE.weight}g ｜ 熱量 ${BRAISED_SAUCE.kcal} kcal`,
+      price: BRAISED_SAUCE.price
+    });
+  }
+
+  [0, 1, 2].forEach(i => {
+    const d = state.sideSlots[i];
+    if (d) {
+      rows.push({
+        title: `【配菜格${i + 1}】${d.name}`,
+        sub: `重量 ${d.weight}g ｜ 熱量 ${d.kcal} kcal`,
+        price: d.price
+      });
+    } else {
+      rows.push({
+        title: `【配菜格${i + 1}】（未選菜）`,
+        sub: `重量 0g ｜ 熱量 0 kcal`,
+        price: 0
+      });
+    }
+  });
+
+  state.mainAddons.forEach(d => {
+    rows.push({
+      title: `【大格主菜/加點】${d.name}`,
+      sub: `重量 ${d.weight}g ｜ 熱量 ${d.kcal} kcal`,
+      price: d.price
+    });
+  });
+
+  rows.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'receipt-row';
+    div.innerHTML = `
+      <div class="receipt-row-left">
+        <strong>${r.title}</strong>
+        <span class="receipt-row-sub">${r.sub}</span>
+      </div>
+      <div style="font-weight:900;">NT$ ${r.price}</div>
+    `;
+    listEl.appendChild(div);
+  });
+
+  const summaryEl = document.getElementById('receipt-summary');
+  summaryEl.innerHTML = `
+    <div class="summary-line"><span>⚖️ 便當總重量：</span><span>${totals.totalWeight} g</span></div>
+    <div class="summary-line"><span>🔥 便當總熱量：</span><span>${totals.totalKcal} kcal</span></div>
+    <div class="summary-line"><span>原價小計：</span><span>NT$ ${totals.rawPrice}</span></div>
+    ${totals.discount > 0 ? `<div class="summary-line" style="color:#16a34a;"><span>🎁 三菜一主菜套餐折抵：</span><span>- NT$ ${totals.discount}</span></div>` : ''}
+    <div class="summary-line total"><span>應付總金額：</span><span>NT$ ${totals.finalPrice}</span></div>
+  `;
+
+  updateCashChangeUI();
+  document.getElementById('checkout-modal').classList.add('show');
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkout-modal').classList.remove('show');
+}
+
+function setPaidCash(amount, btnEl) {
+  state.paidCash = amount;
+  document.querySelectorAll('.cash-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  updateCashChangeUI();
+}
+
+function updateCashChangeUI() {
+  const { finalPrice } = calculateTotals();
+  const resEl = document.getElementById('cash-change-result');
+  if (state.paidCash < finalPrice) {
+    resEl.style.color = '#dc2626';
+    resEl.textContent = `⚠️ 付現 $${state.paidCash} 不足，還差 NT$ ${finalPrice - state.paidCash} 元！`;
+  } else {
+    const change = state.paidCash - finalPrice;
+    resEl.style.color = '#0369a1';
+    resEl.textContent = `✅ 收您 $${state.paidCash} 元，應找零：NT$ ${change} 元`;
+  }
+}
+
+// 啟動 Phaser 3 與初始化介面
+window.onload = function () {
+  updateUI();
+  const config = {
+    type: Phaser.AUTO,
+    parent: 'phaser-container',
+    width: 460,
+    height: 276,
+    transparent: true,
+    scene: [BentoScene],
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    }
+  };
+  new Phaser.Game(config);
+};
+</script>
 </body>
 </html>
