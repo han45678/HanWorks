@@ -1,0 +1,3291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl</title>
+    <!-- 分頁小圖示（內嵌，免得瀏覽器去抓不存在的 favicon.ico） -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚬</text></svg>">
+    <!-- Phaser 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <!-- 內建漫畫原圖（與本檔放在同一個資料夾；缺少時自動改用程式繪製的備援美術） -->
+    <script src="phaser_2d_art.js"></script>
+    <!-- Google Fonts：中文 Noto Serif TC、英文 Noto Serif（全站統一） -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Serif:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            /* 手機點擊時不要整個畫布閃一下灰色 */
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #080a0f;
+            overflow: hidden;
+            font-family: "Noto Serif", "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+            touch-action: none;
+        }
+
+        #game-wrapper {
+            position: relative;
+            width: 100vw;
+            /* --ad-reserve：底部廣告要讓出的高度，由 layoutAdBar() 設定（廣告放左下角或收起時為 0） */
+            height: calc(100vh - var(--ad-reserve, 0px));
+            height: calc(100dvh - var(--ad-reserve, 0px));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #161c24 0%, #05070a 100%);
+        }
+
+        /* 置中交給 Phaser 的 autoCenter（canvas margin）；這裡不要再用 flex 置中，否則會疊加位移、畫布偏一邊 */
+        #phaser-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* 底部小橫幅廣告（320×50）：不疊在遊戲上，並與遊戲保持 Google 建議的 150px 以上距離 */
+        #ad-bar {
+            position: fixed;
+            bottom: 8px;
+            left: 50%;
+            width: 320px;
+            height: 50px;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        body.ad-corner #ad-bar {
+            left: 16px;
+            transform: none;
+        }
+
+        body.ad-hidden #ad-bar {
+            display: none;
+        }
+
+        /* 右上角音樂按鈕（原本用 Tailwind CDN，全頁只剩這顆按鈕在用，改成手寫樣式） */
+        #top-bar {
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #btn-mute {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font: inherit;
+            font-size: 12px;
+            line-height: 16px;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(28, 25, 23, 0.85);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        #btn-mute:hover {
+            background: #292524;
+        }
+
+        #mute-text {
+            display: none;
+        }
+
+        @media (min-width: 640px) {
+            #mute-text {
+                display: inline;
+            }
+        }
+
+        canvas {
+            display: block;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 15px rgba(255, 100, 30, 0.18);
+            border-radius: 6px;
+        }
+
+        /* Persistent Cover Video Layer */
+        #cover-video-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 12;
+            object-fit: cover;
+            border-radius: 6px;
+            transition: opacity 0.6s ease;
+            opacity: 0;
+        }
+
+        .comic-stroke {
+            text-shadow:
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000,
+                0px 4px 12px rgba(0, 0, 0, 0.9);
+        }
+
+        .neon-glow-red {
+            text-shadow: 0 0 10px #ff3b1f, 0 0 22px #ff1100, 2px 2px 0 #000;
+        }
+
+        /* Custom scrollbar for modal */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-wrapper">
+        <!-- Persistent Video Element (plays cover video visually on CoverScene, stays alive for continuous music when entering game) -->
+        <video id="cover-video-layer" playsinline loop preload="auto"></video>
+
+        <!-- Phaser Game Canvas Mount -->
+        <div id="phaser-container"></div>
+
+        <!-- 右上角音樂開關 -->
+        <div id="top-bar">
+            <button id="btn-mute">
+                <span id="mute-icon">🔊</span> <span id="mute-text">街頭搖滾 BGM</span>
+            </button>
+
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * ============================================================================
+         * 1. CONTINUOUS ROCK & STREET AMBIENT SOUND ENGINE + TAIWANESE HOKKIEN VOICE
+         * ============================================================================
+         * Ensures music starts on the Cover Screen and NEVER stops or resets when
+         * transitioning into the story and gameplay. Also handles authentic Taiwanese
+         * Hokkien (台語) burn voice exclamations + sizzle/inhale sound effects.
+         */
+        class StreetAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = false;
+                this.isPlayingBGM = false;
+                this.hasCustomVideoAudio = false;
+                this.bgmStep = 0;
+                this.bgmTimer = null;
+                this.inhaleNode = null;
+                this.inhaleGain = null;
+                this.rainGain = null;
+
+                // Taiwanese Hokkien Burn Lines (台式閩南語燙傷語音台詞)
+                this.taiwaneseBurnLines = [
+                    { text: "啊娘喂！燒啦！燙死林北啦！", tts: "啊娘喂！休啦！燙死林北啦！", pitch: 1.15, rate: 1.25 },
+                    { text: "靠北喔！燒燙燙！嘴唇起水泡啦！", tts: "靠北喔！休燙燙！嘴唇起水泡啦！", pitch: 1.05, rate: 1.3 },
+                    { text: "夭壽骨喔！燒到手指頭啦！痛死！", tts: "夭壽骨喔！休到手指頭啦！痛死！", pitch: 1.2, rate: 1.28 },
+                    { text: "林老師咧！這支菸頭有夠燒！", tts: "林老師咧！這支菸頭有夠休！", pitch: 0.95, rate: 1.25 },
+                    { text: "哎喲喂呀！燒到嘴角臭火乾啦！", tts: "哎喲喂呀！休到嘴角臭火搭啦！", pitch: 1.1, rate: 1.22 }
+                ];
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            startContinuousBGM() {
+                this.init();
+                // Also ensure cover video plays unmuted if user uploaded/loaded a video with sound
+                const videoEl = document.getElementById('cover-video-layer');
+                if (videoEl && videoEl.src && this.hasCustomVideoAudio) {
+                    videoEl.muted = this.isMuted;
+                    videoEl.volume = 0.85;
+                    videoEl.play().catch(() => { });
+                }
+
+                if (this.isPlayingBGM) return;
+                this.isPlayingBGM = true;
+
+                // Start continuous subtle night street rain / neon hum ambience
+                this.startRainAmbience();
+
+                // Grunge / Taiwanese Street Rock Guitar & Bass Riff Sequencer (matches the cover video's gritty rock riff)
+                // Riff pattern in E minor pentatonic (E2, G2, A2, Bb2, A2, G2, E2)
+                const riffNotes = [
+                    { freq: 82.41, dur: 0.22, accent: true },   // E2
+                    { freq: 82.41, dur: 0.18, accent: false },  // E2
+                    { freq: 98.00, dur: 0.24, accent: true },   // G2
+                    { freq: 110.00, dur: 0.24, accent: true },  // A2
+                    { freq: 116.54, dur: 0.20, accent: true },  // Bb2 (blues gritty flat 5)
+                    { freq: 110.00, dur: 0.22, accent: false }, // A2
+                    { freq: 98.00, dur: 0.24, accent: true },   // G2
+                    { freq: 82.41, dur: 0.32, accent: true },   // E2
+                    { freq: 82.41, dur: 0.18, accent: false },  // E2
+                    { freq: 110.00, dur: 0.24, accent: true },  // A2
+                    { freq: 123.47, dur: 0.25, accent: true },  // B2
+                    { freq: 116.54, dur: 0.20, accent: true },  // Bb2
+                    { freq: 110.00, dur: 0.22, accent: false }, // A2
+                    { freq: 98.00, dur: 0.22, accent: true },   // G2
+                    { freq: 73.42, dur: 0.25, accent: true },   // D2
+                    { freq: 82.41, dur: 0.35, accent: true }    // E2
+                ];
+
+                const stepIntervalMs = 240; // 125 BPM eighth-note rock groove
+                this.bgmTimer = setInterval(() => {
+                    if (this.isMuted || !this.ctx) return;
+                    // If user loaded a custom video with its own audio track and it's actively playing, lower synth volume so video BGM shines
+                    const videoEl = document.getElementById('cover-video-layer');
+                    const videoAudioActive = (this.hasCustomVideoAudio && videoEl && !videoEl.paused && !videoEl.muted);
+                    const masterVol = videoAudioActive ? 0.04 : 0.18;
+
+                    const step = riffNotes[this.bgmStep % riffNotes.length];
+                    this.playGrungeGuitarNote(step.freq, step.dur, step.accent, masterVol);
+                    if (this.bgmStep % 2 === 0) {
+                        this.playDrumKickOrSnare((this.bgmStep % 4 === 2) ? 'snare' : 'kick', masterVol * 1.1);
+                    }
+                    this.bgmStep++;
+                }, stepIntervalMs);
+            }
+
+            startRainAmbience() {
+                if (!this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 2;
+                    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    const whiteNoise = this.ctx.createBufferSource();
+                    whiteNoise.buffer = noiseBuffer;
+                    whiteNoise.loop = true;
+
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 950;
+                    filter.Q.value = 0.7;
+
+                    this.rainGain = this.ctx.createGain();
+                    this.rainGain.gain.value = this.isMuted ? 0 : 0.025;
+
+                    whiteNoise.connect(filter);
+                    filter.connect(this.rainGain);
+                    this.rainGain.connect(this.ctx.destination);
+                    whiteNoise.start(0);
+                } catch (e) { }
+            }
+
+            playGrungeGuitarNote(freq, duration, accent, maxGain = 0.18) {
+                if (!this.ctx || this.isMuted) return;
+                const now = this.ctx.currentTime;
+
+                // Root + Fifth power chord oscillators
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                osc1.type = 'sawtooth';
+                osc2.type = 'square';
+                osc1.frequency.setValueAtTime(freq, now);
+                osc2.frequency.setValueAtTime(freq * 1.498, now); // Power fifth
+
+                // Overdrive waveshaper
+                const shaper = this.ctx.createWaveShaper();
+                const curve = new Float32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    const x = (i * 2) / 256 - 1;
+                    curve[i] = Math.tanh(x * (accent ? 6.5 : 4.0));
+                }
+                shaper.curve = curve;
+
+                // Cabinet lowpass filter
+                const cabFilter = this.ctx.createBiquadFilter();
+                cabFilter.type = 'lowpass';
+                cabFilter.frequency.setValueAtTime(accent ? 1850 : 1300, now);
+
+                const gain = this.ctx.createGain();
+                const peak = accent ? maxGain : maxGain * 0.7;
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(peak, now + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc1.connect(shaper);
+                osc2.connect(shaper);
+                shaper.connect(cabFilter);
+                cabFilter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration + 0.02);
+                osc2.stop(now + duration + 0.02);
+            }
+
+            playDrumKickOrSnare(type, vol = 0.18) {
+                if (!this.ctx || this.isMuted) return;
+                const now = this.ctx.currentTime;
+                if (type === 'kick') {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.exponentialRampToValueAtTime(36, now + 0.12);
+                    gain.gain.setValueAtTime(vol, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else {
+                    // Snare burst
+                    const bufSize = this.ctx.sampleRate * 0.1;
+                    const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+                    const data = buf.getChannelData(0);
+                    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.4));
+                    const src = this.ctx.createBufferSource();
+                    src.buffer = buf;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'highpass';
+                    filter.frequency.value = 400;
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(vol * 0.65, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    src.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    src.start(now);
+                }
+            }
+
+            // Lighter flint strike sound ("chk-chk-fwoosh")
+            playLighterFlick() {
+                this.init();
+                if (!this.ctx || this.isMuted) return;
+                const now = this.ctx.currentTime;
+                const bufSize = this.ctx.sampleRate * 0.35;
+                const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+                const data = buf.getChannelData(0);
+                for (let i = 0; i < bufSize; i++) {
+                    const env = i < bufSize * 0.15 ? 1.0 : Math.exp(-(i - bufSize * 0.15) / (bufSize * 0.3));
+                    data[i] = (Math.random() * 2 - 1) * env;
+                }
+                const src = this.ctx.createBufferSource();
+                src.buffer = buf;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(3200, now);
+                filter.frequency.exponentialRampToValueAtTime(800, now + 0.32);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+                src.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                src.start(now);
+            }
+
+            // Continuous tobacco crackling sound while holding/inhaling
+            setInhaleSound(isInhaling, heatRatio = 0.5) {
+                this.init();
+                if (!this.ctx || this.isMuted) {
+                    if (this.inhaleGain) this.inhaleGain.gain.value = 0;
+                    return;
+                }
+                if (isInhaling) {
+                    if (!this.inhaleNode) {
+                        const bufSize = this.ctx.sampleRate * 1.5;
+                        const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+                        const data = buf.getChannelData(0);
+                        for (let i = 0; i < bufSize; i++) {
+                            // Crackling tobacco pop texture
+                            const crackle = Math.random() > 0.96 ? (Math.random() * 2 - 1) * 2.5 : (Math.random() * 2 - 1) * 0.35;
+                            data[i] = crackle;
+                        }
+                        this.inhaleNode = this.ctx.createBufferSource();
+                        this.inhaleNode.buffer = buf;
+                        this.inhaleNode.loop = true;
+
+                        this.inhaleFilter = this.ctx.createBiquadFilter();
+                        this.inhaleFilter.type = 'bandpass';
+                        this.inhaleFilter.frequency.value = 1200;
+
+                        this.inhaleGain = this.ctx.createGain();
+                        this.inhaleGain.gain.value = 0.08;
+
+                        this.inhaleNode.connect(this.inhaleFilter);
+                        this.inhaleFilter.connect(this.inhaleGain);
+                        this.inhaleGain.connect(this.ctx.destination);
+                        this.inhaleNode.start(0);
+                    }
+                    const targetFreq = 900 + heatRatio * 1800;
+                    this.inhaleFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.05);
+                    this.inhaleGain.gain.setTargetAtTime(0.08 + heatRatio * 0.14, this.ctx.currentTime, 0.05);
+                } else if (this.inhaleGain) {
+                    this.inhaleGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.06);
+                }
+            }
+
+            // Trigger Taiwanese Hokkien Burn Voice + Sizzle Sound!
+            playTaiwaneseBurnVoice() {
+                this.init();
+                const line = this.taiwaneseBurnLines[Math.floor(Math.random() * this.taiwaneseBurnLines.length)];
+
+                if (!this.isMuted && this.ctx) {
+                    const now = this.ctx.currentTime;
+                    // 1. Hot skin sizzle sound ("Tssss!")
+                    const sizzleBuf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.4, this.ctx.sampleRate);
+                    const ch = sizzleBuf.getChannelData(0);
+                    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ch.length * 0.35));
+                    const sizzleSrc = this.ctx.createBufferSource();
+                    sizzleSrc.buffer = sizzleBuf;
+                    const sizzleFilter = this.ctx.createBiquadFilter();
+                    sizzleFilter.type = 'highpass';
+                    sizzleFilter.frequency.value = 2800;
+                    const sizzleGain = this.ctx.createGain();
+                    sizzleGain.gain.setValueAtTime(0.45, now);
+                    sizzleGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+                    sizzleSrc.connect(sizzleFilter);
+                    sizzleFilter.connect(sizzleGain);
+                    sizzleGain.connect(this.ctx.destination);
+                    sizzleSrc.start(now);
+
+                    // 2. Synthesized vocal pain grunt/cry fallback ("Ah-niang-wei! Sio-lah!")
+                    const vOsc = this.ctx.createOscillator();
+                    const vGain = this.ctx.createGain();
+                    vOsc.type = 'sawtooth';
+                    // Taiwanese exclamation pitch contour
+                    vOsc.frequency.setValueAtTime(290, now + 0.05);
+                    vOsc.frequency.linearRampToValueAtTime(420, now + 0.18); // "啊娘~"
+                    vOsc.frequency.linearRampToValueAtTime(240, now + 0.34); // "喂~"
+                    vOsc.frequency.setValueAtTime(380, now + 0.38);          // "燒(Sio)!"
+                    vOsc.frequency.exponentialRampToValueAtTime(170, now + 0.68); // "啦!"
+
+                    const formant = this.ctx.createBiquadFilter();
+                    formant.type = 'bandpass';
+                    formant.frequency.setValueAtTime(850, now);
+                    formant.Q.value = 3.5;
+
+                    vGain.gain.setValueAtTime(0.001, now);
+                    vGain.gain.linearRampToValueAtTime(0.28, now + 0.06);
+                    vGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+                    vOsc.connect(formant);
+                    formant.connect(vGain);
+                    vGain.connect(this.ctx.destination);
+                    vOsc.start(now + 0.05);
+                    vOsc.stop(now + 0.72);
+                }
+
+                // 3. Web Speech API with Taiwanese Mandarin/Hokkien phonetic inflection
+                if (!this.isMuted && 'speechSynthesis' in window) {
+                    try {
+                        window.speechSynthesis.cancel();
+                        const utter = new SpeechSynthesisUtterance(line.tts);
+                        utter.lang = 'zh-TW';
+                        utter.pitch = line.pitch;
+                        utter.rate = line.rate;
+                        utter.volume = 1.0;
+                        const voices = window.speechSynthesis.getVoices();
+                        const twVoice = voices.find(v => v.lang.includes('TW') || v.name.includes('Taiwan') || v.name.includes('Meijia') || v.name.includes('Hsiao'));
+                        if (twVoice) utter.voice = twVoice;
+                        window.speechSynthesis.speak(utter);
+                    } catch (e) { }
+                }
+
+                return line.text;
+            }
+
+            playCoughWarning() {
+                if (!this.ctx || this.isMuted) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.exponentialRampToValueAtTime(95, now + 0.18);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.21);
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                if (this.rainGain && this.ctx) {
+                    this.rainGain.gain.setValueAtTime(this.isMuted ? 0 : 0.025, this.ctx.currentTime);
+                }
+                const videoEl = document.getElementById('cover-video-layer');
+                if (videoEl) {
+                    videoEl.muted = this.isMuted;
+                }
+                return this.isMuted;
+            }
+        }
+
+        const audioEngine = new StreetAudioEngine();
+
+        /**
+         * ============================================================================
+         * 2. HIGH-DETAIL PROCEDURAL COMIC ARTWORK GENERATOR (FALLBACK FOR 0.jpg ~ 6.jpg)
+         * ============================================================================
+         * Recreates the exact dark ink-and-watercolor Taiwanese street comic aesthetic
+         * of 0.jpg, 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg, and 6.jpg on HTML5 Canvas
+         * so the game is 100% playable and visually authentic immediately, while also
+         * supporting hot-swapping with the user's actual image files.
+         */
+        class ComicArtGenerator {
+            static generateAllTextures(scene) {
+                const W = 540, H = 960;
+                const configs = [
+                    { key: 'img0', drawFn: (ctx) => ComicArtGenerator.drawScene0_NeonStreet(ctx, W, H) },
+                    { key: 'img1', drawFn: (ctx) => ComicArtGenerator.drawScene1_AlleyFar(ctx, W, H, false) },
+                    { key: 'img2', drawFn: (ctx) => ComicArtGenerator.drawScene1_AlleyFar(ctx, W, H, true) },
+                    { key: 'img3', drawFn: (ctx) => ComicArtGenerator.drawScene3_AshtrayClose(ctx, W, H, false) },
+                    { key: 'img4', drawFn: (ctx) => ComicArtGenerator.drawScene3_AshtrayClose(ctx, W, H, true) },
+                    { key: 'img5', drawFn: (ctx) => ComicArtGenerator.drawScene5_SmokingProfile(ctx, W, H, false) },
+                    { key: 'img6', drawFn: (ctx) => ComicArtGenerator.drawScene5_SmokingProfile(ctx, W, H, true) }
+                ];
+
+                configs.forEach(cfg => {
+                    if (!scene.textures.exists(cfg.key)) {
+                        const canvasTex = scene.textures.createCanvas(cfg.key, W, H);
+                        const ctx = canvasTex.getContext();
+                        cfg.drawFn(ctx);
+                        canvasTex.refresh();
+                    }
+                });
+            }
+
+            // Helper: Gritty comic ink crosshatching & vignette
+            static applyComicFinish(ctx, W, H) {
+                // Ink hatching lines
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 120; i++) {
+                    const x = (i * 37) % W;
+                    const y = (i * 83) % H;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + 8, y + 24);
+                    ctx.stroke();
+                }
+                // Dark comic vignette border
+                const vig = ctx.createRadialGradient(W / 2, H / 2, W * 0.35, W / 2, H / 2, H * 0.65);
+                vig.addColorStop(0, 'rgba(0,0,0,0)');
+                vig.addColorStop(1, 'rgba(4,6,10,0.68)');
+                ctx.fillStyle = vig;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+            }
+
+            static drawNeonSign(ctx, x, y, w, h, bgColor, borderColor, text, textColor = '#fff', vertical = true) {
+                ctx.save();
+                ctx.shadowColor = bgColor;
+                ctx.shadowBlur = 16;
+                ctx.fillStyle = bgColor;
+                ctx.strokeStyle = borderColor;
+                ctx.lineWidth = 3;
+                ctx.fillRect(x, y, w, h);
+                ctx.strokeRect(x, y, w, h);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = textColor;
+                ctx.font = `900 ${vertical ? Math.floor(w * 0.62) : Math.floor(h * 0.58)}px ${FONT_SERIF}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                if (vertical) {
+                    const chars = text.split('');
+                    const step = h / (chars.length + 0.6);
+                    chars.forEach((ch, idx) => {
+                        ctx.fillText(ch, x + w / 2, y + step * (idx + 0.8));
+                    });
+                } else {
+                    ctx.fillText(text, x + w / 2, y + h / 2);
+                }
+                ctx.restore();
+            }
+
+            // SCENE 0: Ah-Rui leaning on brick wall in Taiwanese neon street ("老蔡家快炒", "台灣牛肉麵", Taiwan Post mailbox)
+            static drawScene0_NeonStreet(ctx, W, H) {
+                // Night sky & distant city
+                const sky = ctx.createLinearGradient(0, 0, 0, H);
+                sky.addColorStop(0, '#0d1924');
+                sky.addColorStop(0.55, '#1c3140');
+                sky.addColorStop(1, '#121820');
+                ctx.fillStyle = sky;
+                ctx.fillRect(0, 0, W, H);
+
+                // Distant apartment buildings & tangled power lines
+                ctx.fillStyle = '#15222e';
+                ctx.fillRect(210, 40, 120, 450);
+                ctx.fillRect(360, 80, 140, 420);
+
+                // Wet street pavement with neon reflections
+                const road = ctx.createLinearGradient(0, 520, 0, H);
+                road.addColorStop(0, '#25333f');
+                road.addColorStop(1, '#141b22');
+                ctx.fillStyle = road;
+                ctx.fillRect(0, 520, W, H - 520);
+
+                // Neon Signs matching 0.jpg
+                ComicArtGenerator.drawNeonSign(ctx, 232, 6, 56, 195, '#d92626', '#ffaaaa', '老蔡家快炒', '#fff', true);
+                ComicArtGenerator.drawNeonSign(ctx, 314, 195, 34, 96, '#c82828', '#ffcccc', '台灣牛肉麵', '#fff', true);
+                ComicArtGenerator.drawNeonSign(ctx, 265, 290, 96, 36, '#c82828', '#ffcccc', '台灣牛肉麵', '#fff', false);
+                ComicArtGenerator.drawNeonSign(ctx, 468, 235, 32, 100, '#1e824c', '#a3e4d7', '檳榔老葉', '#fff', true);
+                ComicArtGenerator.drawNeonSign(ctx, 505, 58, 34, 138, '#f39c12', '#fff', '機車修理', '#c0392b', true);
+
+                // Left red brick wall with graffiti
+                ctx.fillStyle = '#5c3328';
+                ctx.fillRect(0, 0, 135, 780);
+                ctx.strokeStyle = '#1a0f0c';
+                ctx.lineWidth = 2;
+                for (let y = 0; y < 780; y += 22) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(135, y); ctx.stroke();
+                    for (let x = (y % 44 === 0 ? 20 : 40); x < 135; x += 45) {
+                        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 22); ctx.stroke();
+                    }
+                }
+
+                // Green Taiwan Post Mailbox (中華郵政綠色郵筒)
+                ctx.fillStyle = '#1e6b3b';
+                ctx.strokeStyle = '#091f11';
+                ctx.lineWidth = 3;
+                ctx.fillRect(285, 372, 76, 135);
+                ctx.strokeRect(285, 372, 76, 135);
+                ctx.fillStyle = '#b8332a';
+                ctx.fillRect(298, 460, 50, 34);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold 9px ${FONT_SERIF}`;
+                ctx.fillText('TAIWAN POST', 293, 452);
+
+                // Scooters on right street
+                ctx.fillStyle = '#2c3e50';
+                ctx.beginPath(); ctx.arc(430, 535, 22, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(418, 495, 24, 14);
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(416, 514, 28, 12);
+
+                // Cardboard & black trash bags at bottom left
+                ctx.fillStyle = '#8c6d46';
+                ctx.beginPath(); ctx.moveTo(75, 750); ctx.lineTo(155, 720); ctx.lineTo(205, 890); ctx.lineTo(115, 910); ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#1b2026';
+                ctx.beginPath(); ctx.arc(55, 890, 68, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                // Ah-Rui Full Body Character (Beanie, army green parka, ripped jeans, worn boots, backpack)
+                ctx.save();
+                // Legs / Ripped Blue Jeans
+                ctx.fillStyle = '#2d4c68';
+                ctx.strokeStyle = '#0a0e14';
+                ctx.lineWidth = 3.5;
+                ctx.fillRect(190, 550, 65, 280);
+                ctx.strokeRect(190, 550, 65, 280);
+                ctx.fillRect(255, 550, 62, 260);
+                ctx.strokeRect(255, 550, 62, 260);
+                // Knee rips
+                ctx.fillStyle = '#c29979';
+                ctx.fillRect(202, 665, 42, 24);
+                ctx.fillRect(268, 645, 38, 22);
+                // Worn Brown Boots
+                ctx.fillStyle = '#5c4332';
+                ctx.beginPath(); ctx.roundRect(225, 855, 88, 42, 12); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.roundRect(285, 825, 82, 36, 10); ctx.fill(); ctx.stroke();
+
+                // Army Green Parka Jacket
+                ctx.fillStyle = '#3f5138';
+                ctx.beginPath();
+                ctx.moveTo(95, 265);
+                ctx.lineTo(265, 255);
+                ctx.lineTo(312, 560);
+                ctx.lineTo(112, 585);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Patch on sleeve
+                ctx.fillStyle = '#2e3b29';
+                ctx.fillRect(85, 355, 36, 42);
+                ctx.strokeRect(85, 355, 36, 42);
+
+                // Head, long messy hair, beard & knitted beanie
+                ctx.fillStyle = '#d4a181';
+                ctx.beginPath(); ctx.arc(215, 222, 42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                // Hair strands
+                ctx.fillStyle = '#141619';
+                ctx.fillRect(160, 200, 26, 95);
+                ctx.fillRect(242, 205, 20, 85);
+                // Knitted Beanie
+                ctx.fillStyle = '#3b423e';
+                ctx.beginPath(); ctx.arc(212, 196, 52, Math.PI, 0); ctx.fill(); ctx.stroke();
+                ctx.fillRect(158, 185, 108, 26); ctx.strokeRect(158, 185, 108, 26);
+
+                // Cigarette in mouth with rising smoke trail
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(242, 243, 26, 6);
+                ctx.strokeRect(242, 243, 26, 6);
+                ctx.strokeStyle = 'rgba(220,235,245,0.45)';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(272, 242);
+                ctx.bezierCurveTo(310, 210, 290, 160, 345, 120);
+                ctx.stroke();
+                ctx.restore();
+
+                ComicArtGenerator.applyComicFinish(ctx, W, H);
+            }
+
+            // SCENE 1 & 2: Dark Alley with Rusty Trash Can + Square Iron Tray Ashtray
+            static drawScene1_AlleyFar(ctx, W, H, closerZoom = false) {
+                ctx.save();
+                if (closerZoom) {
+                    ctx.translate(W / 2, H * 0.62);
+                    ctx.scale(1.18, 1.18);
+                    ctx.translate(-W / 2, -H * 0.62);
+                }
+
+                // Alley night background
+                const bg = ctx.createLinearGradient(0, 0, 0, H);
+                bg.addColorStop(0, '#0f1c26');
+                bg.addColorStop(0.5, '#1e3342');
+                bg.addColorStop(1, '#181c24');
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+
+                // Left & right grimy alley walls in perspective
+                ctx.fillStyle = '#253540';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(220, 220); ctx.lineTo(220, 520); ctx.lineTo(0, 720); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#2b3d48';
+                ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(320, 220); ctx.lineTo(320, 520); ctx.lineTo(W, 720); ctx.closePath(); ctx.fill();
+
+                // Distant neon signs ("ラーメン", "居酒屋")
+                ComicArtGenerator.drawNeonSign(ctx, 326, 215, 24, 65, '#d63031', '#ff7675', 'ラーメン', '#fff', true);
+                ComicArtGenerator.drawNeonSign(ctx, 290, 315, 70, 24, '#c0392b', '#fab1a0', '居酒屋', '#fff', false);
+
+                // Wet alley ground & neon puddle reflection
+                ctx.fillStyle = '#1b222a';
+                ctx.fillRect(0, 500, W, H - 500);
+                if (!closerZoom) {
+                    const puddle = ctx.createRadialGradient(310, 910, 8, 310, 910, 65);
+                    puddle.addColorStop(0, 'rgba(255, 80, 230, 0.75)');
+                    puddle.addColorStop(1, 'rgba(255, 80, 230, 0)');
+                    ctx.fillStyle = puddle;
+                    ctx.fillRect(220, 850, 180, 100);
+                }
+
+                // Trash bags on left, parked scooter on right
+                ctx.fillStyle = '#1680c2';
+                ctx.beginPath(); ctx.arc(115, 535, 38, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#14181c';
+                ctx.beginPath(); ctx.arc(145, 585, 45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                // CENTER HERO OBJECT: Rusty Cylindrical Metal Trash Barrel + Square Iron Tray on top
+                const cx = W / 2, cy = 635;
+                // Barrel body
+                const barrelGrad = ctx.createLinearGradient(cx - 80, cy, cx + 80, cy);
+                barrelGrad.addColorStop(0, '#30383d');
+                barrelGrad.addColorStop(0.45, '#595247');
+                barrelGrad.addColorStop(0.75, '#6b4c35');
+                barrelGrad.addColorStop(1, '#262c30');
+                ctx.fillStyle = barrelGrad;
+                ctx.strokeStyle = '#090b0d';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.roundRect(cx - 72, cy - 55, 144, 175, 14);
+                ctx.fill();
+                ctx.stroke();
+
+                // Vertical ribs on trash barrel
+                for (let rx = cx - 50; rx <= cx + 50; rx += 25) {
+                    ctx.beginPath(); ctx.moveTo(rx, cy - 35); ctx.lineTo(rx, cy + 110); ctx.stroke();
+                }
+
+                // Square Iron Tray Ashtray on top of barrel (perspective diamond/trapezoid)
+                ctx.fillStyle = '#636c72';
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 102);
+                ctx.lineTo(cx + 112, cy - 68);
+                ctx.lineTo(cx, cy - 26);
+                ctx.lineTo(cx - 112, cy - 68);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Pile of ash & cigarette butts on the iron tray
+                ctx.fillStyle = '#2d3134';
+                ctx.beginPath(); ctx.ellipse(cx, cy - 66, 52, 20, 0, 0, Math.PI * 2); ctx.fill();
+                for (let b = 0; b < 18; b++) {
+                    const bx = cx - 38 + (b * 19) % 76;
+                    const by = cy - 76 + (b * 11) % 24;
+                    ctx.fillStyle = b % 2 === 0 ? '#e67e22' : '#ecf0f1';
+                    ctx.fillRect(bx, by, 12, 4);
+                }
+
+                // Scattered cigarette butts on ground
+                for (let g = 0; g < 28; g++) {
+                    const gx = (g * 73) % (W - 40) + 20;
+                    const gy = 710 + (g * 43) % 230;
+                    ctx.fillStyle = '#d35400';
+                    ctx.fillRect(gx, gy, 10, 4);
+                    ctx.fillStyle = '#bdc3c7';
+                    ctx.fillRect(gx + 10, gy, 8, 4);
+                }
+
+                ctx.restore();
+                ComicArtGenerator.applyComicFinish(ctx, W, H);
+            }
+
+            // SCENE 3 & 4: Top-down Close-up of the Square Iron Tray Ashtray (+ Hand picking butt in Scene 4)
+            static drawScene3_AshtrayClose(ctx, W, H, withHand = false) {
+                // Blurry dark alley floor background
+                ctx.fillStyle = '#18222b';
+                ctx.fillRect(0, 0, W, H);
+
+                // Barrel lower rim visible under tray
+                const barrelGrad = ctx.createLinearGradient(70, 620, 470, 620);
+                barrelGrad.addColorStop(0, '#1d2429');
+                barrelGrad.addColorStop(0.5, '#4c463d');
+                barrelGrad.addColorStop(1, '#191f24');
+                ctx.fillStyle = barrelGrad;
+                ctx.strokeStyle = '#080a0c';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(W / 2, 650, 225, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Large Tilted Square Rusty Iron Tray
+                ctx.save();
+                ctx.fillStyle = '#6c767d';
+                ctx.strokeStyle = '#0c0e12';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(260, 185);
+                ctx.lineTo(535, 345);
+                ctx.lineTo(285, 835);
+                ctx.lineTo(5, 575);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Rust stains on iron tray
+                ctx.fillStyle = 'rgba(138, 66, 36, 0.48)';
+                ctx.beginPath(); ctx.arc(280, 740, 65, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(445, 520, 50, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(140, 320, 45, 0, Math.PI * 2); ctx.fill();
+
+                // Central mound of dark gray cigarette ash
+                ctx.fillStyle = '#2d3236';
+                ctx.beginPath();
+                ctx.arc(275, 455, 138, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rusty iron handle in center of tray
+                ctx.strokeStyle = '#1a1d20';
+                ctx.lineWidth = 18;
+                ctx.beginPath();
+                ctx.moveTo(225, 365);
+                ctx.lineTo(330, 425);
+                ctx.stroke();
+                ctx.strokeStyle = '#6e5c4f';
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                // Draw 26 detailed comic cigarette butts piled around the tray
+                const butts = [
+                    { x: 145, y: 445, ang: -0.35, len: 58, filter: 24 },
+                    { x: 185, y: 515, ang: -0.52, len: 52, filter: 22 },
+                    { x: 285, y: 565, ang: 0.32, len: 48, filter: 24 },
+                    { x: 350, y: 505, ang: 1.15, len: 62, filter: 25 },
+                    { x: 382, y: 452, ang: 1.62, len: 56, filter: 24 },
+                    { x: 432, y: 435, ang: 0.25, len: 64, filter: 24 },
+                    { x: 255, y: 310, ang: -1.1, len: 55, filter: 22 },
+                    { x: 325, y: 325, ang: -0.75, len: 60, filter: 24 },
+                    { x: 165, y: 380, ang: 0.4, len: 50, filter: 22 },
+                    { x: 285, y: 475, ang: -1.25, len: 64, filter: 28 } // Center featured butt
+                ];
+
+                butts.forEach(b => {
+                    ctx.save();
+                    ctx.translate(b.x, b.y);
+                    ctx.rotate(b.ang);
+                    ctx.strokeStyle = '#0c0e10';
+                    ctx.lineWidth = 2.5;
+                    // Orange filter
+                    ctx.fillStyle = '#d9823b';
+                    ctx.fillRect(0, -8, b.filter, 16);
+                    ctx.strokeRect(0, -8, b.filter, 16);
+                    // White paper
+                    ctx.fillStyle = '#dfe4e8';
+                    ctx.fillRect(b.filter, -8, b.len - b.filter, 16);
+                    ctx.strokeRect(b.filter, -8, b.len - b.filter, 16);
+                    // Charred tip
+                    ctx.fillStyle = '#222629';
+                    ctx.fillRect(b.len - 6, -8, 6, 16);
+                    ctx.restore();
+                });
+
+                // If Scene 4 (withHand = true), draw Ah-Rui's weathered dirty hand pinching the central butt
+                if (withHand) {
+                    ctx.save();
+                    ctx.fillStyle = '#b58d74';
+                    ctx.strokeStyle = '#0a0c0e';
+                    ctx.lineWidth = 4;
+                    // Hand palm & wrist coming from top-right
+                    ctx.beginPath();
+                    ctx.moveTo(540, 175);
+                    ctx.lineTo(355, 170);
+                    ctx.lineTo(260, 295);
+                    ctx.lineTo(285, 445);
+                    ctx.lineTo(325, 440);
+                    ctx.lineTo(360, 325);
+                    ctx.lineTo(335, 445);
+                    ctx.lineTo(385, 435);
+                    ctx.lineTo(485, 345);
+                    ctx.lineTo(540, 340);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Grime & knuckle shading lines
+                    ctx.strokeStyle = 'rgba(20, 15, 12, 0.55)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(355, 210); ctx.lineTo(310, 310);
+                    ctx.moveTo(410, 235); ctx.lineTo(350, 355);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                ctx.restore();
+                ComicArtGenerator.applyComicFinish(ctx, W, H);
+            }
+
+            // SCENE 5 & 6: Close-up Side Profile of Ah-Rui Smoking in the Alley
+            // (isGlowing = false -> 5.jpg dim ember; isGlowing = true -> 6.jpg bright red-orange ember)
+            static drawScene5_SmokingProfile(ctx, W, H, isGlowing = false) {
+                // Blurred alley background
+                ComicArtGenerator.drawScene1_AlleyFar(ctx, W, H, false);
+                ctx.fillStyle = 'rgba(10, 15, 22, 0.32)';
+                ctx.fillRect(0, 0, W, H);
+
+                ctx.save();
+                ctx.strokeStyle = '#080a0d';
+                ctx.lineWidth = 4;
+
+                // Green Parka Collar & Shoulder (Bottom Left)
+                ctx.fillStyle = '#3e5237';
+                ctx.beginPath();
+                ctx.moveTo(0, 620);
+                ctx.lineTo(185, 725);
+                ctx.lineTo(260, 960);
+                ctx.lineTo(0, 960);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Ah-Rui's Face Profile (Left side looking right)
+                ctx.fillStyle = isGlowing ? '#dfb092' : '#cfa082';
+                ctx.beginPath();
+                ctx.moveTo(0, 180);
+                ctx.lineTo(185, 200); // Forehead
+                ctx.lineTo(192, 295); // Brow bridge
+                ctx.lineTo(248, 395); // Nose tip
+                ctx.lineTo(205, 428); // Under nose
+                ctx.lineTo(212, 472); // Upper lip
+                ctx.lineTo(206, 515); // Lower lip
+                ctx.lineTo(192, 585); // Chin
+                ctx.lineTo(85, 610);  // Jawline
+                ctx.lineTo(0, 650);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Deep-set weary eye & heavy dark eyebags
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.ellipse(132, 312, 22, 10, 0.08, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#1f1612';
+                ctx.beginPath(); ctx.arc(140, 312, 8, 0, Math.PI * 2); ctx.fill();
+                // Thick eyebrow
+                ctx.fillStyle = '#111317';
+                ctx.beginPath(); ctx.roundRect(85, 265, 92, 16, 6); ctx.fill();
+
+                // Stubble / Moustache & Chin Beard hatching
+                ctx.strokeStyle = 'rgba(20, 22, 25, 0.65)';
+                ctx.lineWidth = 1.8;
+                for (let s = 0; s < 55; s++) {
+                    const sx = 125 + (s * 13) % 82;
+                    const sy = 445 + (s * 19) % 135;
+                    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx - 3, sy + 9); ctx.stroke();
+                }
+
+                // Long messy black hair strands hanging down side of face
+                ctx.fillStyle = '#0e1114';
+                ctx.beginPath();
+                ctx.moveTo(0, 195);
+                ctx.lineTo(105, 205);
+                ctx.lineTo(68, 495);
+                ctx.lineTo(95, 720);
+                ctx.lineTo(0, 740);
+                ctx.closePath();
+                ctx.fill();
+
+                // Knitted Olive Beanie Hat (Top Left)
+                ctx.fillStyle = '#434d46';
+                ctx.strokeStyle = '#080a0d';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, 12);
+                ctx.quadraticCurveTo(185, 55, 235, 215);
+                ctx.lineTo(0, 265);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Cigarette Butt held between lips (y ~ 490)
+                // Orange filter in mouth
+                ctx.fillStyle = '#cf7b34';
+                ctx.fillRect(198, 480, 48, 17);
+                ctx.strokeRect(198, 480, 48, 17);
+                // White cigarette paper
+                ctx.fillStyle = '#e8ecef';
+                ctx.fillRect(246, 480, 62, 17);
+                ctx.strokeRect(246, 480, 62, 17);
+
+                // Ember Tip (Dim ash in 5.jpg vs Intense Glowing Red-Orange Ember in 6.jpg)
+                if (isGlowing) {
+                    ctx.save();
+                    ctx.shadowColor = '#ff3300';
+                    ctx.shadowBlur = 28;
+                    ctx.fillStyle = '#ff4500';
+                    ctx.beginPath();
+                    ctx.arc(315, 488, 11, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffee88';
+                    ctx.beginPath();
+                    ctx.arc(316, 488, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#2b2f33';
+                    ctx.beginPath();
+                    ctx.arc(313, 488, 9, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+
+                // Ah-Rui's Weathered Right Hand holding the cigarette
+                ctx.fillStyle = isGlowing ? '#d5a386' : '#c4957a';
+                ctx.strokeStyle = '#080a0d';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(205, 535);
+                ctx.lineTo(265, 498);
+                ctx.lineTo(345, 520);
+                ctx.lineTo(425, 645);
+                ctx.lineTo(395, 845);
+                ctx.lineTo(275, 845);
+                ctx.lineTo(212, 695);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Green Parka Sleeve Cuff at bottom right
+                ctx.fillStyle = '#3e5237';
+                ctx.beginPath();
+                ctx.moveTo(245, 835);
+                ctx.lineTo(435, 815);
+                ctx.lineTo(485, 960);
+                ctx.lineTo(255, 960);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+                ComicArtGenerator.applyComicFinish(ctx, W, H);
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 3. CIGARETTE BUTT DATA (越好的煙屁股 難度越高)
+         * ============================================================================
+         */
+        const CIGARETTE_BUTTS = [
+            {
+                id: 'damp_long',
+                name: '受潮長菸蒂',
+                subtitle: '路邊水窪旁撿到的半支長壽菸',
+                stars: '★☆☆☆☆',
+                difficultyLabel: '簡單',
+                badgeColor: '#2ecc71',
+                heatRate: 28,          // % per second when holding
+                coolRate: 38,          // % per second when released
+                sweetMin: 45,          // Sweet spot start %
+                sweetMax: 85,          // Sweet spot end %
+                scoreMultiplier: 1.0,
+                burnPenalty: 120,
+                trayPos: { x: 84, y: 367 }, // 鐵盤原圖上實際菸蒂的位置（540x960 遊戲座標）
+                desc: '菸身較長且微濕，升溫慢、容錯率高，適合剛入巷弄的新手。'
+            },
+            {
+                id: 'half_rich',
+                name: '半截濃醇菸屁股',
+                subtitle: '快炒店老闆剛捻熄的七星濃菸',
+                stars: '★★★☆☆',
+                difficultyLabel: '適中',
+                badgeColor: '#f1c40f',
+                heatRate: 44,
+                coolRate: 34,
+                sweetMin: 55,
+                sweetMax: 86,
+                scoreMultiplier: 1.8,
+                burnPenalty: 180,
+                trayPos: { x: 292, y: 467 },
+                desc: '菸草乾燥紮實、吸起來濃郁過癮，但火頭推進速度明顯加快！'
+            },
+            {
+                id: 'short_import',
+                name: '極短進口濃菸頭',
+                subtitle: '居酒屋日本客留下的極短赤マル',
+                stars: '★★★★☆',
+                difficultyLabel: '困難',
+                badgeColor: '#e67e22',
+                heatRate: 64,
+                coolRate: 30,
+                sweetMin: 62,
+                sweetMax: 88,
+                scoreMultiplier: 3.0,
+                burnPenalty: 260,
+                trayPos: { x: 134, y: 496 },
+                desc: '火源已經貼近濾嘴邊緣！稍微貪吸半秒就會直接燙爆嘴唇！'
+            },
+            {
+                id: 'legend_gold',
+                name: '傳說貼皮黃金屁股',
+                subtitle: '只剩 3mm 的頂級雪茄型濃菸頭',
+                stars: '★★★★★',
+                difficultyLabel: '地獄',
+                badgeColor: '#e74c3c',
+                heatRate: 88,
+                coolRate: 27,
+                sweetMin: 68,
+                sweetMax: 90,
+                scoreMultiplier: 5.0,
+                burnPenalty: 400,
+                trayPos: { x: 489, y: 328 },
+                desc: '街友界傳說極品！每一口都是五倍暴利積分，但需要毫秒級放開控溫！'
+            }
+        ];
+
+        // Shared Game State
+        const GAME_STATE = {
+            selectedButt: CIGARETTE_BUTTS[1],
+            lastResult: null,
+            customVideoLoaded: false
+        };
+
+        /**
+         * ============================================================================
+         * 4. RENDER SETTINGS & ART CALIBRATION
+         * ============================================================================
+         * 遊戲邏輯座標固定為 540x960；畫布實際以 RENDER_SCALE 倍像素渲染（攝影機放大），
+         * 讓漫畫線稿與文字在手機 / Retina 螢幕上維持銳利。
+         */
+        const GAME_W = 540;
+        const GAME_H = 960;
+        const RENDER_SCALE = 2;
+        const ADD = Phaser.BlendModes.ADD;
+
+        // 全站字型：英文字母取 Noto Serif，中文 Noto Serif 沒有字形會自動落到 Noto Serif TC
+        const FONT_SERIF = '"Noto Serif", "Noto Serif TC", "Songti TC", "PMingLiU", serif';
+        const FONT_UI = FONT_SERIF;
+        const FONT_TITLE = FONT_SERIF;
+        const FONT_NUM = FONT_SERIF;
+        const INK = '#1c1917';
+        const PAPER = 0xf2e8cf;
+
+        // 所有 Text 都以 RENDER_SCALE 解析度繪製，配合攝影機放大後才不會糊
+        (function patchTextResolution() {
+            const factory = Phaser.GameObjects.GameObjectFactory.prototype;
+            const createText = factory.text;
+            factory.text = function (...args) {
+                return createText.apply(this, args).setResolution(RENDER_SCALE);
+            };
+        })();
+
+        // 內建原圖上的關鍵位置（已換算成 540x960 遊戲座標）
+        const ALLEY_NEON = [
+            { x: 338, y: 241, w: 21, h: 67, color: 0xff3326 },   // ラーメン
+            { x: 318, y: 314, w: 60, h: 25, color: 0xff3326 },   // 居酒屋
+            { x: 327, y: 93, w: 22, h: 60, color: 0xa78bfa }     // 紫色直招牌
+        ];
+        const PROFILE_NEON = [
+            { x: 348, y: 241, w: 18, h: 65, color: 0xff3326 },
+            { x: 330, y: 314, w: 60, h: 21, color: 0xff3326 },
+            { x: 334, y: 96, w: 12, h: 52, color: 0xa78bfa }
+        ];
+        const PROFILE_FX = {
+            lamp: { x: 294, y: 117 },
+            neon: PROFILE_NEON,
+            ember: { x: 321, y: 492 },   // 菸頭
+            mouth: { x: 200, y: 494 }    // 叼菸的嘴角
+        };
+        const ART_FX = {
+            img0: {
+                ember: { x: 264, y: 247 },
+                neon: [
+                    { x: 262, y: 95, w: 60, h: 197, color: 0xff3a2a },    // 老蔡家快炒
+                    { x: 326, y: 237, w: 26, h: 102, color: 0xff3a2a },   // 台灣牛肉麵（直）
+                    { x: 315, y: 300, w: 95, h: 31, color: 0xff3a2a },    // 台灣牛肉麵（橫）
+                    { x: 354, y: 183, w: 16, h: 119, color: 0x38bdf8 },   // 藍色直招牌
+                    { x: 482, y: 278, w: 25, h: 99, color: 0x22c55e },    // 檳榔老葉
+                    { x: 455, y: 323, w: 19, h: 77, color: 0x22c55e },
+                    { x: 525, y: 118, w: 30, h: 137, color: 0xffc04a }    // 機車修理
+                ]
+            },
+            img1: { lamp: { x: 285, y: 116 }, neon: ALLEY_NEON },
+            img2: { lamp: { x: 285, y: 116 }, neon: ALLEY_NEON, treasure: { x: 281, y: 590 } },
+            img4: { pinch: { x: 288, y: 472 } },
+            img5: PROFILE_FX,
+            img6: PROFILE_FX
+        };
+
+        /**
+         * ============================================================================
+         * 5. SHARED VISUAL FX (柔光、煙霧、雨絲、暗角、底片顆粒、漫畫框)
+         * ============================================================================
+         */
+        const FxTextures = {
+            generate(scene) {
+                const make = (key, w, h, draw) => {
+                    if (scene.textures.exists(key)) return;
+                    const canvasTex = scene.textures.createCanvas(key, w, h);
+                    draw(canvasTex.getContext(), w, h);
+                    canvasTex.refresh();
+                };
+
+                // 柔光圓：霓虹、菸頭、路燈光暈
+                make('fx-glow', 128, 128, (ctx, w, h) => {
+                    const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+                    g.addColorStop(0, 'rgba(255,255,255,1)');
+                    g.addColorStop(0.25, 'rgba(255,255,255,0.55)');
+                    g.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+                    g.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(0, 0, w, h);
+                });
+
+                // 煙霧團：幾顆柔邊圓疊出不規則的雲
+                make('fx-smoke', 128, 128, (ctx, w, h) => {
+                    for (let i = 0; i < 9; i++) {
+                        const a = (i / 9) * Math.PI * 2;
+                        const r = 18 + (i % 3) * 7;
+                        const cx = w / 2 + Math.cos(a) * 16;
+                        const cy = h / 2 + Math.sin(a) * 14;
+                        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r + 14);
+                        g.addColorStop(0, 'rgba(255,255,255,0.32)');
+                        g.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = g;
+                        ctx.fillRect(0, 0, w, h);
+                    }
+                });
+
+                make('fx-rain', 4, 64, (ctx, w, h) => {
+                    const g = ctx.createLinearGradient(0, 0, 0, h);
+                    g.addColorStop(0, 'rgba(200,225,255,0)');
+                    g.addColorStop(1, 'rgba(200,225,255,0.9)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(1, 0, 2, h);
+                });
+
+                make('fx-spark', 16, 16, (ctx, w, h) => {
+                    const g = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+                    g.addColorStop(0, 'rgba(255,255,230,1)');
+                    g.addColorStop(0.4, 'rgba(255,190,80,0.9)');
+                    g.addColorStop(1, 'rgba(255,80,0,0)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(0, 0, w, h);
+                });
+
+                // 暗角（黑）與燙傷閃紅（紅）分開做，Canvas renderer 不支援 tint
+                const vignette = (rgb) => (ctx, w, h) => {
+                    const g = ctx.createRadialGradient(w / 2, h * 0.48, w * 0.32, w / 2, h * 0.5, h * 0.62);
+                    g.addColorStop(0, `rgba(${rgb},0)`);
+                    g.addColorStop(1, `rgba(${rgb},1)`);
+                    ctx.fillStyle = g;
+                    ctx.fillRect(0, 0, w, h);
+                };
+                make('fx-vignette', 270, 480, vignette('0,0,0'));
+                make('fx-vignette-red', 270, 480, vignette('220,20,0'));
+
+                // 底片顆粒：黑白雜點各帶隨機透明度
+                make('fx-grain', 128, 128, (ctx, w, h) => {
+                    const img = ctx.createImageData(w, h);
+                    for (let i = 0; i < img.data.length; i += 4) {
+                        const v = Math.random() < 0.5 ? 0 : 255;
+                        img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+                        img.data[i + 3] = Math.random() * 90;
+                    }
+                    ctx.putImageData(img, 0, 0);
+                });
+
+                // 漫畫網點
+                make('fx-halftone', 10, 10, (ctx) => {
+                    ctx.fillStyle = 'rgba(60,40,20,0.22)';
+                    ctx.beginPath();
+                    ctx.arc(5, 5, 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+        };
+
+        // 燙度計漸層依各菸蒂的黃金區間產生（下綠→黃金區→上紅）
+        function ensureHeatTexture(scene, butt) {
+            const key = `fx-heat-${butt.id}`;
+            if (scene.textures.exists(key)) return key;
+            const w = 40, h = 600;
+            const canvasTex = scene.textures.createCanvas(key, w, h);
+            const ctx = canvasTex.getContext();
+            const lo = butt.sweetMin / 100;
+            const hi = butt.sweetMax / 100;
+            const g = ctx.createLinearGradient(0, h, 0, 0);
+            g.addColorStop(0, '#15803d');
+            g.addColorStop(lo - 0.08, '#65a30d');
+            g.addColorStop(lo, '#facc15');
+            g.addColorStop(hi, '#f59e0b');
+            g.addColorStop(Math.min(1, hi + 0.04), '#f97316');
+            g.addColorStop(1, '#dc2626');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(w * 0.18, 0, w * 0.14, h);
+            canvasTex.refresh();
+            return key;
+        }
+
+        function hexColor(str) {
+            return Phaser.Display.Color.HexStringToColor(str).color;
+        }
+
+        function setupView(scene) {
+            scene.cameras.main.setZoom(RENDER_SCALE).centerOn(GAME_W / 2, GAME_H / 2);
+        }
+
+        // 依原圖比例鋪滿畫面（cover），不再硬拉成 540x960
+        function fitCover(img) {
+            const s = Math.max(GAME_W / img.width, GAME_H / img.height);
+            img.setPosition(GAME_W / 2, GAME_H / 2).setScale(s);
+            img.baseScale = s;
+            return img;
+        }
+
+        function addArtImage(scene, key, depth = 0) {
+            return fitCover(scene.add.image(GAME_W / 2, GAME_H / 2, key).setDepth(depth));
+        }
+
+        // 以 focus 為定點慢慢推近（Ken Burns），focus 在畫面上的位置維持不動
+        function kenBurns(scene, img, focus, zoom = 1.06, duration = 6000, yoyo = false) {
+            scene.tweens.killTweensOf(img);
+            const s = img.baseScale;
+            img.setPosition(GAME_W / 2, GAME_H / 2).setScale(s);
+            scene.tweens.add({
+                targets: img,
+                scale: s * zoom,
+                x: focus.x + (GAME_W / 2 - focus.x) * zoom,
+                y: focus.y + (GAME_H / 2 - focus.y) * zoom,
+                duration,
+                ease: 'Sine.easeInOut',
+                yoyo,
+                repeat: yoyo ? -1 : 0
+            });
+        }
+
+        // 記錄物件在原圖上的座標，之後用 syncToArt 讓它跟著鏡頭推移
+        function trackArt(obj) {
+            obj.artX = obj.x;
+            obj.artY = obj.y;
+            obj.artScaleX = obj.scaleX;
+            obj.artScaleY = obj.scaleY;
+            return obj;
+        }
+
+        function syncToArt(img, objs) {
+            const k = img.scale / img.baseScale;
+            objs.forEach(o => {
+                if (!o.active) return;
+                o.x = img.x + (o.artX - GAME_W / 2) * k;
+                o.y = img.y + (o.artY - GAME_H / 2) * k;
+                o.setScale(o.artScaleX * k, o.artScaleY * k);
+            });
+        }
+
+        // 霓虹招牌：ADD 光暈 + 偶爾接觸不良的閃爍
+        function addNeonGlow(scene, signs, depth = 3) {
+            const objs = [];
+            (signs || []).forEach(sign => {
+                const glow = scene.add.image(sign.x, sign.y, 'fx-glow')
+                    .setDisplaySize(sign.w * 2.6 + 30, sign.h * 1.5 + 30)
+                    .setTint(sign.color)
+                    .setBlendMode(ADD)
+                    .setDepth(depth);
+                const dim = scene.add.rectangle(sign.x, sign.y, sign.w, sign.h, 0x000000, 1)
+                    .setAlpha(0)
+                    .setDepth(depth);
+                const base = Phaser.Math.FloatBetween(0.32, 0.46);
+                glow.setAlpha(base);
+
+                const flicker = () => {
+                    if (!glow.active) return;
+                    if (Math.random() < 0.12) {
+                        const steps = [[0, 0.05, 0.55], [60, base + 0.15, 0], [120, 0.08, 0.45], [190, base, 0]];
+                        steps.forEach(([delay, glowAlpha, dimAlpha]) => {
+                            scene.time.delayedCall(delay, () => {
+                                if (!glow.active) return;
+                                glow.setAlpha(glowAlpha);
+                                dim.setAlpha(dimAlpha);
+                            });
+                        });
+                    } else {
+                        glow.setAlpha(base + Phaser.Math.FloatBetween(-0.06, 0.06));
+                    }
+                    scene.time.delayedCall(Phaser.Math.Between(140, 1100), flicker);
+                };
+                flicker();
+                objs.push(trackArt(glow), trackArt(dim));
+            });
+            return objs;
+        }
+
+        function addLampGlow(scene, lamp, depth = 3) {
+            if (!lamp) return [];
+            const glow = scene.add.image(lamp.x, lamp.y, 'fx-glow')
+                .setTint(0x9fe7ff)
+                .setBlendMode(ADD)
+                .setScale(1.1)
+                .setAlpha(0.35)
+                .setDepth(depth);
+            scene.tweens.add({ targets: glow, alpha: 0.2, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            return [trackArt(glow)];
+        }
+
+        function addRain(scene, opts = {}) {
+            const density = opts.density ?? 1;
+            return scene.add.particles(0, 0, 'fx-rain', {
+                x: { min: -60, max: GAME_W + 20 },
+                y: { min: -90, max: -20 },
+                speedY: { min: 950, max: 1250 },
+                speedX: { min: -150, max: -110 },
+                rotate: 7,
+                scaleX: 0.5,
+                scaleY: { min: 0.5, max: 1.1 },
+                alpha: { min: 0.1, max: 0.3 },
+                lifespan: 1150,
+                frequency: Math.round(22 / density),
+                blendMode: ADD
+            }).setDepth(opts.depth ?? 8);
+        }
+
+        // 暗角 + 底片顆粒，讓整體更接近原圖的漫畫印刷質感
+        function addFilmFinish(scene, opts = {}) {
+            const depth = opts.depth ?? 9;
+            scene.add.image(GAME_W / 2, GAME_H / 2, 'fx-vignette')
+                .setDisplaySize(GAME_W, GAME_H)
+                .setAlpha(opts.vignette ?? 0.55)
+                .setDepth(depth);
+            const grain = scene.add.tileSprite(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 'fx-grain')
+                .setTileScale(0.5)
+                .setAlpha(opts.grain ?? 0.4)
+                .setDepth(depth);
+            scene.time.addEvent({
+                delay: 70,
+                loop: true,
+                callback: () => grain.setTilePosition(Phaser.Math.Between(0, 127), Phaser.Math.Between(0, 127))
+            });
+        }
+
+        function setEmitting(emitter, on) {
+            if (on && !emitter.emitting) emitter.start();
+            else if (!on && emitter.emitting) emitter.stop();
+        }
+
+        // 漫畫分格：黑色粗框 + 錯位黑影（x, y 為左上角），回傳組成的所有物件
+        function drawComicPanel(scene, x, y, w, h, opts = {}) {
+            const depth = opts.depth ?? 20;
+            const shadow = opts.shadow ?? 6;
+            const parts = [];
+            const g = scene.add.graphics().setDepth(depth);
+            if (shadow) {
+                g.fillStyle(0x000000, 0.85);
+                g.fillRect(x + shadow, y + shadow, w, h);
+            }
+            g.fillStyle(opts.fill ?? 0x0d1017, opts.alpha ?? 0.92);
+            g.fillRect(x, y, w, h);
+            parts.push(g);
+            if (opts.halftone) {
+                parts.push(scene.add.tileSprite(x + w / 2, y + h / 2, w, h, 'fx-halftone')
+                    .setTileScale(0.6)
+                    .setAlpha(0.7)
+                    .setDepth(depth));
+            }
+            const frame = scene.add.graphics().setDepth(depth);
+            frame.lineStyle(opts.border ?? 3, 0x000000, 1);
+            frame.strokeRect(x, y, w, h);
+            if (opts.accent !== undefined) {
+                frame.lineStyle(1.5, opts.accent, opts.accentAlpha ?? 0.9);
+                frame.strokeRect(x + 5, y + 5, w - 10, h - 10);
+            }
+            parts.push(frame);
+            return parts;
+        }
+
+        // 色塊標籤（章節名、副標題）
+        function addTagLabel(scene, x, y, label, opts = {}) {
+            const text = scene.add.text(0, 0, label, {
+                fontFamily: opts.fontFamily ?? FONT_UI,
+                fontSize: opts.fontSize ?? '16px',
+                fontStyle: '900',
+                color: opts.color ?? '#ffffff'
+            }).setOrigin(0.5);
+            const padX = opts.padX ?? 14;
+            const padY = opts.padY ?? 5;
+            const w = text.width + padX * 2;
+            const h = text.height + padY * 2;
+            const shadow = opts.shadow ?? 4;
+            const g = scene.add.graphics();
+            if (shadow) {
+                g.fillStyle(0x000000, 0.9);
+                g.fillRect(-w / 2 + shadow, -h / 2 + shadow, w, h);
+            }
+            g.fillStyle(opts.fill ?? 0xb91c1c, 1);
+            g.fillRect(-w / 2, -h / 2, w, h);
+            g.lineStyle(opts.border ?? 3, 0x000000, 1);
+            g.strokeRect(-w / 2, -h / 2, w, h);
+            const tag = scene.add.container(x, y, [g, text]).setDepth(opts.depth ?? 21);
+            if (opts.angle) tag.setAngle(opts.angle);
+            tag.boxW = w;
+            tag.boxH = h;
+            return tag;
+        }
+
+        function createComicButton(scene, x, y, w, h, label, opts = {}) {
+            const shadow = opts.shadow ?? 6;
+            const g = scene.add.graphics();
+            g.fillStyle(0x000000, 0.9);
+            g.fillRect(-w / 2 + shadow, -h / 2 + shadow, w, h);
+            g.fillStyle(opts.fill ?? 0xf59e0b, 1);
+            g.fillRect(-w / 2, -h / 2, w, h);
+            g.fillStyle(0xffffff, opts.shine ?? 0.2);
+            g.fillRect(-w / 2, -h / 2, w, h * 0.42);
+            g.lineStyle(opts.border ?? 3.5, 0x000000, 1);
+            g.strokeRect(-w / 2, -h / 2, w, h);
+            const text = scene.add.text(0, 1, label, {
+                fontFamily: FONT_UI,
+                fontSize: opts.fontSize ?? '22px',
+                fontStyle: '900',
+                color: opts.color ?? '#0b0b0b'
+            }).setOrigin(0.5);
+            const btn = scene.add.container(x, y, [g, text]).setDepth(opts.depth ?? 25);
+            btn.setSize(w, h).setInteractive({ useHandCursor: true });
+            return btn;
+        }
+
+        // 中文沒有空白可斷行，依實際字寬手動換行
+        function wrapCJK(text, font, maxWidth) {
+            const ctx = wrapCJK.ctx || (wrapCJK.ctx = document.createElement('canvas').getContext('2d'));
+            ctx.font = font;
+            return text.split('\n').map(para => {
+                const lines = [];
+                let line = '';
+                for (const ch of para) {
+                    if (line && ctx.measureText(line + ch).width > maxWidth) {
+                        lines.push(line);
+                        line = ch;
+                    } else {
+                        line += ch;
+                    }
+                }
+                lines.push(line);
+                return lines.join('\n');
+            }).join('\n');
+        }
+
+        // 台語罵聲在「！」處斷成兩行（取兩行長度最平均的位置），讓爆炸框可以窄一點
+        function splitShout(line) {
+            const chars = Array.from(line);
+            let best = line;
+            let bestMax = chars.length;
+            chars.forEach((ch, i) => {
+                if (ch !== '！' || i === chars.length - 1) return;
+                const longest = Math.max(i + 1, chars.length - i - 1);
+                if (longest < bestMax) {
+                    bestMax = longest;
+                    best = `${chars.slice(0, i + 1).join('')}\n${chars.slice(i + 1).join('')}`;
+                }
+            });
+            return best;
+        }
+
+        // 燙到時的漫畫爆炸對話框，tail 指向嘴巴
+        function drawShoutBurst(g, w, h, tail) {
+            const spikes = 16;
+            const pts = [];
+            for (let i = 0; i < spikes * 2; i++) {
+                const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+                const r = i % 2 === 0 ? 1 + ((i * 7) % 5) * 0.025 : 0.8;
+                pts.push({ x: Math.cos(a) * (w / 2) * r, y: Math.sin(a) * (h / 2) * r });
+            }
+            const tailPts = [
+                { x: tail.baseX - 24, y: tail.baseY },
+                { x: tail.baseX + 24, y: tail.baseY },
+                { x: tail.x, y: tail.y }
+            ];
+            const offset = (list, d) => list.map(p => ({ x: p.x + d, y: p.y + d }));
+            g.fillStyle(0x000000, 0.85);
+            g.fillPoints(offset(tailPts, 6), true);
+            g.fillPoints(offset(pts, 7), true);
+            g.fillStyle(0xffffff, 1);
+            g.fillPoints(tailPts, true);
+            g.lineStyle(4, 0x000000, 1);
+            g.strokePoints(tailPts, true, true);
+            g.fillStyle(0xffffff, 1);
+            g.fillPoints(pts, true);
+            g.fillStyle(0xfde047, 1);
+            g.fillPoints(pts.map(p => ({ x: p.x * 0.82, y: p.y * 0.82 })), true);
+            g.fillStyle(0xffffff, 1);
+            g.fillEllipse(0, 0, w * 0.74, h * 0.62);
+            g.lineStyle(4, 0x000000, 1);
+            g.strokePoints(pts, true, true);
+        }
+
+        function loadEmbeddedArt(scene) {
+            const art = window.STREET_COMIC_ART || {};
+            const keys = Object.keys(art).filter(key => !scene.textures.exists(key));
+            return Promise.all(keys.map(key => new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    if (!scene.textures.exists(key)) scene.textures.addImage(key, img);
+                    resolve();
+                };
+                img.onerror = () => resolve();
+                img.src = art[key];
+            })));
+        }
+
+        // 先載入網頁字型再建立文字，避免 Canvas 文字先用系統字型畫好就定型
+        function loadWebFonts() {
+            if (!document.fonts || !document.fonts.load) return Promise.resolve();
+            const sample = [
+                '街友本色煙屁股大作戰阿睿的巷弄菸屁股生存戰台灣街頭寫實黑色幽默大作點擊進入遊戲跳過劇情繼續挑選',
+                '剩餘時間總分菸蒂長度燙度黃金過癮區壓住此處不放抽煙太燙前要適時放開最終得分結算',
+                ...CIGARETTE_BUTTS.map(b => b.name + b.desc + b.difficultyLabel)
+            ].join('');
+            const jobs = [
+                ...[400, 700, 900].flatMap(weight => [
+                    document.fonts.load(`${weight} 20px "Noto Serif TC"`, sample),
+                    document.fonts.load(`${weight} 20px "Noto Serif"`, 'True Hobo I: Butt Brawl Combo 0123456789.s%x()|+-')
+                ])
+            ].map(p => p.catch(() => { }));
+            return Promise.race([Promise.all(jobs), new Promise(resolve => setTimeout(resolve, 3000))]);
+        }
+
+        /**
+         * ============================================================================
+         * 6. PHASER 3 SCENES
+         * ============================================================================
+         */
+
+        // ----------------------------------------------------------------------------
+        // SCENE A: BOOT & PRELOAD SCENE
+        // 原圖來源：內建原圖 phaser_2d_art.js；缺少時改用程式繪製的備援美術
+        // ----------------------------------------------------------------------------
+        class BootScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'BootScene' });
+            }
+
+            preload() {
+                setupView(this);
+                this.add.text(GAME_W / 2, GAME_H / 2, '正在載入巷弄街景與音效...', {
+                    fontFamily: FONT_UI,
+                    fontSize: '20px',
+                    color: '#f59e0b',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+            }
+
+            create() {
+                // 原圖全部來自 phaser_2d_art.js，不再另外去抓 0.jpg~7.jpg、cover.mp4（上線後只會產生一堆 404）
+                Promise.all([loadWebFonts(), loadEmbeddedArt(this)]).then(() => {
+                    ComicArtGenerator.generateAllTextures(this);
+                    FxTextures.generate(this);
+                    this.scene.start('CoverScene');
+                });
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // SCENE B: COVER SCENE (遊戲封面：霓虹街頭 + 持續不斷電搖滾配樂)
+        // ----------------------------------------------------------------------------
+        class CoverScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'CoverScene' });
+            }
+
+            create() {
+                setupView(this);
+                const W = GAME_W;
+                const H = GAME_H;
+                const fx = ART_FX.img0;
+
+                // 1. 封面原圖：以叼菸的臉為定點緩慢推近
+                this.coverImg = addArtImage(this, 'img0');
+                kenBurns(this, this.coverImg, { x: fx.ember.x - 10, y: fx.ember.y - 10 }, 1.05, 9000, true);
+                this.artFx = addNeonGlow(this, fx.neon, 2);
+
+                // 菸頭火光 + 裊裊白煙
+                const emberGlow = this.add.image(fx.ember.x, fx.ember.y, 'fx-glow')
+                    .setTint(0xff6a1a)
+                    .setBlendMode(ADD)
+                    .setScale(0.32)
+                    .setDepth(4);
+                this.artFx.push(trackArt(emberGlow));
+                this.tweens.add({ targets: emberGlow, alpha: { from: 0.35, to: 0.85 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+                this.add.particles(fx.ember.x + 4, fx.ember.y - 4, 'fx-smoke', {
+                    speedX: { min: 4, max: 22 },
+                    speedY: { min: -48, max: -28 },
+                    accelerationX: 9,
+                    scale: { start: 0.08, end: 0.75 },
+                    alpha: { start: 0.3, end: 0 },
+                    rotate: { min: 0, max: 360 },
+                    lifespan: 3600,
+                    frequency: 160,
+                    tint: 0xdde7ef
+                }).setDepth(5);
+
+                addRain(this, { density: 1.1 });
+                addFilmFinish(this);
+
+                // Sync HTML5 Cover Video overlay if custom video is loaded
+                this.syncVideoOverlay(true);
+
+                // 上下壓暗：標題移到下方，不再擋住阿睿的臉
+                const gradGfx = this.add.graphics().setDepth(10);
+                gradGfx.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.6, 0.6, 0, 0);
+                gradGfx.fillRect(0, 0, W, 90);
+                gradGfx.fillGradientStyle(0x05060a, 0x05060a, 0x05060a, 0x05060a, 0, 0, 0.95, 0.95);
+                gradGfx.fillRect(0, H - 470, W, 470);
+
+                const tagTxt = this.add.text(W / 2, 588, '【 街友本色 一部曲 煙屁股大作戰 】', {
+                    fontFamily: FONT_UI,
+                    fontSize: '13px',
+                    fontStyle: 'bold',
+                    color: '#fbbf24'
+                }).setOrigin(0.5).setShadow(2, 2, '#000', 4).setDepth(12);
+
+                // 遊戲名稱：街友本色 I - 煙屁股大作戰 / True Hobo I: Butt Brawl
+                const titleY = 648;
+                const titleMain = this.add.text(0, titleY, '街友本色', {
+                    fontFamily: FONT_TITLE,
+                    fontSize: '80px',
+                    fontStyle: '900',
+                    color: '#f59e0b',
+                    stroke: '#000000',
+                    strokeThickness: 10
+                }).setOrigin(0.5).setAngle(-3).setShadow(6, 6, '#000000', 0, true, false).setDepth(12);
+                const titleGrad = titleMain.context.createLinearGradient(0, 0, 0, titleMain.height);
+                titleGrad.addColorStop(0, '#fff3b0');
+                titleGrad.addColorStop(0.45, '#fbbf24');
+                titleGrad.addColorStop(1, '#ea580c');
+                titleMain.setFill(titleGrad);
+
+                // 續作編號「I」用紅色襯線字蓋在主標右側（襯線讓它一眼看得出是羅馬數字）
+                const titleNum = this.add.text(0, titleY, 'I', {
+                    fontFamily: FONT_TITLE,
+                    fontSize: '88px',
+                    fontStyle: '900',
+                    color: '#ef4444',
+                    stroke: '#000000',
+                    strokeThickness: 10
+                }).setOrigin(0.5).setAngle(-3).setShadow(6, 6, '#000000', 0, true, false).setDepth(13);
+                const numGrad = titleNum.context.createLinearGradient(0, 0, 0, titleNum.height);
+                numGrad.addColorStop(0, '#fecaca');
+                numGrad.addColorStop(0.5, '#ef4444');
+                numGrad.addColorStop(1, '#991b1b');
+                titleNum.setFill(numGrad);
+
+                // 主標 + 編號整組置中，編號沿著 -3° 的傾斜線往右上排
+                const numGap = 8;
+                const groupW = titleMain.width + numGap + titleNum.width;
+                titleMain.x = W / 2 - groupW / 2 + titleMain.width / 2;
+                const numDx = titleMain.width / 2 + numGap + titleNum.width / 2;
+                titleNum.setPosition(titleMain.x + numDx, titleY - numDx * Math.tan(Phaser.Math.DegToRad(3)));
+
+                const subTitle = addTagLabel(this, W / 2, 716, '煙屁股大作戰', {
+                    fontFamily: FONT_TITLE,
+                    fontSize: '24px',
+                    fill: 0xb91c1c,
+                    color: '#fef2f2',
+                    angle: 1.5,
+                    padX: 20,
+                    padY: 3,
+                    depth: 12
+                });
+
+                const titleEn = this.add.text(W / 2, 760, 'True Hobo I: Butt Brawl', {
+                    fontFamily: FONT_TITLE,
+                    fontSize: '25px',
+                    fontStyle: '900',
+                    color: '#fde68a',
+                    stroke: '#000000',
+                    strokeThickness: 5
+                }).setOrigin(0.5).setShadow(3, 3, '#000000', 0, true, false).setDepth(12);
+
+                // Story intro blurb
+                const blurb = this.add.text(W / 2, 808, '在熱鬧的霓虹街頭轉進暗巷，鐵盤煙灰缸裡躺著各式菸蒂…\n壓住同一個位置猛吸、適時放開控溫，小心別燙起水泡！', {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    color: '#e7e5e4',
+                    align: 'center',
+                    lineSpacing: 6
+                }).setOrigin(0.5).setShadow(1, 2, '#000', 3).setDepth(12);
+
+                // Interactive CTA Button
+                const btnStart = createComicButton(this, W / 2, 870, 290, 60, '🔥 點擊進入遊戲', { fontSize: '24px', depth: 13 });
+                this.tweens.add({
+                    targets: btnStart,
+                    scale: 1.05,
+                    duration: 650,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+
+                this.add.text(W / 2, 934, '🎵 點擊畫面任意處啟動街頭搖滾配樂（進入遊戲後音樂持續不中斷）', {
+                    fontFamily: FONT_UI,
+                    fontSize: '12px',
+                    color: '#a8a29e'
+                }).setOrigin(0.5).setDepth(12);
+
+                // 標題蓋章式登場，續作編號「I」隨後再蓋一次
+                titleMain.setScale(1.7).setAlpha(0);
+                titleNum.setScale(2.6).setAlpha(0);
+                [tagTxt, subTitle, titleEn, blurb].forEach(o => o.setAlpha(0));
+                this.tweens.add({
+                    targets: titleMain,
+                    scale: 1,
+                    alpha: 1,
+                    delay: 250,
+                    duration: 420,
+                    ease: 'Back.easeOut',
+                    onComplete: () => this.cameras.main.shake(160, 0.006)
+                });
+                this.tweens.add({
+                    targets: titleNum,
+                    scale: 1,
+                    alpha: 1,
+                    delay: 700,
+                    duration: 260,
+                    ease: 'Back.easeOut',
+                    onComplete: () => this.cameras.main.shake(120, 0.005)
+                });
+                this.tweens.add({ targets: [tagTxt, subTitle, titleEn, blurb], alpha: 1, delay: 900, duration: 500 });
+
+                // Start BGM on first pointer move/down anywhere, and enter StoryScene on click
+                let entering = false;
+                const handleStart = () => {
+                    if (entering) return;
+                    entering = true;
+                    audioEngine.startContinuousBGM();
+                    audioEngine.playLighterFlick();
+
+                    // Keep video element playing for audio continuity, but hide its visual overlay so Phaser scenes show!
+                    this.syncVideoOverlay(false);
+
+                    this.cameras.main.fadeOut(450, 0, 0, 0);
+                    this.time.delayedCall(460, () => {
+                        this.scene.start('StoryScene');
+                    });
+                };
+
+                this.input.once('pointerdown', handleStart);
+                btnStart.once('pointerdown', handleStart);
+            }
+
+            syncVideoOverlay(visible) {
+                const videoEl = document.getElementById('cover-video-layer');
+                const canvas = this.sys.game.canvas;
+                if (!videoEl || !canvas) return;
+
+                if (visible && GAME_STATE.customVideoLoaded) {
+                    const rect = canvas.getBoundingClientRect();
+                    videoEl.style.width = `${rect.width}px`;
+                    videoEl.style.height = `${rect.height}px`;
+                    videoEl.style.opacity = '0.88';
+                    videoEl.play().catch(() => { });
+                } else {
+                    // Hide visual layer ONLY, never pause the video so its audio continues seamlessly!
+                    videoEl.style.opacity = '0';
+                }
+            }
+
+            update() {
+                syncToArt(this.coverImg, this.artFx);
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // SCENE C: STORY CUTSCENE (0.jpg -> 1.jpg -> 2.jpg)
+        // 街友阿睿在熱鬧街頭走到巷子，巷子裡有一個煙灰垃圾桶，上方放著鐵盤當做煙灰缸
+        // ----------------------------------------------------------------------------
+        class StoryScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'StoryScene' });
+            }
+
+            create() {
+                setupView(this);
+                const W = GAME_W;
+                const H = GAME_H;
+                this.cameras.main.fadeIn(400, 0, 0, 0);
+
+                this.slides = [
+                    {
+                        img: 'img0',
+                        focus: { x: 245, y: 230 },
+                        title: '第一章：霓虹街頭的阿睿',
+                        text: '夜色微涼，熱鬧的台灣街頭人車鼎沸。\n街友阿睿摸了摸空空的大衣口袋，嘴裡那根菸早就熄了…'
+                    },
+                    {
+                        img: 'img1',
+                        focus: { x: 300, y: 430 },
+                        title: '第二章：轉入暗巷',
+                        text: '阿睿熟門熟路地轉進快炒店後方的潮濕暗巷。\n巷子正中央擺著一個生鏽的鐵皮垃圾桶。'
+                    },
+                    {
+                        img: 'img2',
+                        focus: ART_FX.img2.treasure,
+                        title: '第三章：鐵盤煙灰缸的寶藏',
+                        text: '垃圾桶上方被放了一個大鐵盤當作煙灰缸，\n裡頭堆滿了路人剛捻熄的各式菸屁股！阿睿眼睛亮了起來…'
+                    }
+                ];
+
+                this.currentSlideIndex = 0;
+                this.typing = false;
+                this.typeTimer = null;
+                this.slideFx = [];
+                this.chapterTag = null;
+
+                // 兩層背景輪流交叉淡入
+                this.bgFront = addArtImage(this, 'img0', 1);
+                this.bgBack = addArtImage(this, 'img0', 0);
+
+                addRain(this);
+                addFilmFinish(this);
+
+                // 漫畫旁白框
+                this.boxX = 16;
+                this.boxY = H - 182;
+                this.boxW = W - 32;
+                this.boxH = 160;
+                drawComicPanel(this, this.boxX, this.boxY, this.boxW, this.boxH, {
+                    fill: PAPER,
+                    alpha: 0.97,
+                    shadow: 7,
+                    border: 3.5,
+                    halftone: true,
+                    depth: 20
+                });
+
+                this.storyTxt = this.add.text(this.boxX + 22, this.boxY + 34, '', {
+                    fontFamily: FONT_UI,
+                    fontSize: '17px',
+                    fontStyle: 'bold',
+                    color: INK,
+                    lineSpacing: 9
+                }).setDepth(22);
+
+                this.nextPrompt = this.add.text(this.boxX + this.boxW - 18, this.boxY + this.boxH - 20, '點擊繼續 ▶', {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    fontStyle: '900',
+                    color: '#b91c1c'
+                }).setOrigin(1, 0.5).setDepth(22);
+
+                this.tweens.add({
+                    targets: this.nextPrompt,
+                    alpha: 0.35,
+                    duration: 550,
+                    yoyo: true,
+                    repeat: -1
+                });
+
+                // 分鏡進度點
+                this.progressDots = this.slides.map((_, i) =>
+                    this.add.circle(this.boxX + 26 + i * 18, this.boxY + this.boxH - 20, 5, 0xb91c1c, 1)
+                        .setStrokeStyle(2, 0x000000)
+                        .setDepth(22)
+                );
+
+                // Skip button（放左上，避開右上角的音樂 / 載入素材按鈕）
+                const skipBtn = createComicButton(this, 72, 56, 112, 34, '跳過劇情 ⏭', {
+                    fill: 0x111827,
+                    color: '#e5e7eb',
+                    fontSize: '13px',
+                    shadow: 4,
+                    border: 2.5,
+                    shine: 0.06,
+                    depth: 30
+                });
+
+                skipBtn.on('pointerdown', (pointer, x, y, event) => {
+                    event.stopPropagation();
+                    this.scene.start('SelectButtScene');
+                });
+
+                this.showSlide(0);
+
+                this.input.on('pointerdown', () => {
+                    if (this.typing) {
+                        this.finishTyping();
+                        return;
+                    }
+                    this.currentSlideIndex++;
+                    if (this.currentSlideIndex < this.slides.length) {
+                        this.showSlide(this.currentSlideIndex);
+                    } else {
+                        this.scene.start('SelectButtScene');
+                    }
+                });
+            }
+
+            showSlide(idx) {
+                const s = this.slides[idx];
+
+                // 新圖放上層淡入，舊圖留在下層
+                const incoming = this.bgBack;
+                this.bgBack = this.bgFront;
+                this.bgFront = incoming;
+                incoming.setTexture(s.img);
+                fitCover(incoming);
+                incoming.setDepth(1).setAlpha(idx === 0 ? 1 : 0);
+                this.bgBack.setDepth(0);
+                kenBurns(this, incoming, s.focus, 1.07, 7000);
+                if (idx > 0) {
+                    this.tweens.add({ targets: incoming, alpha: 1, duration: 450 });
+                }
+
+                // 該分鏡的霓虹 / 路燈 / 鐵盤閃光
+                this.slideFx.forEach(o => o.destroy());
+                const fx = ART_FX[s.img] || {};
+                this.slideFx = [...addNeonGlow(this, fx.neon, 3), ...addLampGlow(this, fx.lamp, 3)];
+                if (s.img === 'img0') {
+                    const ember = ART_FX.img0.ember;
+                    const glow = this.add.image(ember.x, ember.y, 'fx-glow').setTint(0xff6a1a).setBlendMode(ADD).setScale(0.3).setAlpha(0.6).setDepth(4);
+                    this.tweens.add({ targets: glow, alpha: 0.3, duration: 800, yoyo: true, repeat: -1 });
+                    this.slideFx.push(trackArt(glow));
+                }
+                if (fx.treasure) {
+                    const glow = this.add.image(fx.treasure.x, fx.treasure.y, 'fx-glow')
+                        .setTint(0xffc46b).setBlendMode(ADD).setDisplaySize(260, 90).setAlpha(0.15).setDepth(4);
+                    this.tweens.add({ targets: glow, alpha: 0.45, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+                    const glints = this.add.particles(fx.treasure.x, fx.treasure.y, 'fx-spark', {
+                        x: { min: -55, max: 55 },
+                        y: { min: -18, max: 14 },
+                        scale: { start: 0.6, end: 0 },
+                        alpha: { start: 1, end: 0 },
+                        lifespan: 520,
+                        frequency: 170,
+                        tint: 0xfff1b0,
+                        blendMode: ADD
+                    }).setDepth(5);
+                    this.slideFx.push(trackArt(glow), trackArt(glints));
+                }
+
+                // 章節標籤
+                if (this.chapterTag) this.chapterTag.destroy();
+                this.chapterTag = addTagLabel(this, 0, this.boxY, s.title, { fontSize: '15px', angle: -2, depth: 23 });
+                this.chapterTag.x = this.boxX + 14 + this.chapterTag.boxW / 2;
+
+                this.progressDots.forEach((dot, i) => dot.setFillStyle(i === idx ? 0xb91c1c : 0xd6cdb4, 1));
+                this.nextPrompt.setText(idx === this.slides.length - 1 ? '點擊挑選菸屁股 ▶' : '點擊繼續 ▶');
+                this.typeText(s.text);
+            }
+
+            typeText(fullText) {
+                if (this.typeTimer) this.typeTimer.remove();
+                this.fullText = fullText;
+                this.typedLen = 0;
+                this.typing = true;
+                this.storyTxt.setText('');
+                this.nextPrompt.setVisible(false);
+                this.typeTimer = this.time.addEvent({
+                    delay: 32,
+                    loop: true,
+                    callback: () => {
+                        this.typedLen++;
+                        this.storyTxt.setText(this.fullText.slice(0, this.typedLen));
+                        if (this.typedLen >= this.fullText.length) this.finishTyping();
+                    }
+                });
+            }
+
+            finishTyping() {
+                if (this.typeTimer) {
+                    this.typeTimer.remove();
+                    this.typeTimer = null;
+                }
+                this.storyTxt.setText(this.fullText);
+                this.typing = false;
+                this.nextPrompt.setVisible(true);
+            }
+
+            update() {
+                syncToArt(this.bgFront, this.slideFx);
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // SCENE D: CIGARETTE BUTT SELECTION (3.jpg -> 4.jpg)
+        // 阿睿在鐵盤煙灰缸裡選了一個煙屁股 (越好的煙屁股 難度越高)
+        // ----------------------------------------------------------------------------
+        class SelectButtScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'SelectButtScene' });
+            }
+
+            create() {
+                setupView(this);
+                const W = GAME_W;
+                const H = GAME_H;
+                this.pickingUp = false;
+                this.cameras.main.fadeIn(350, 0, 0, 0);
+
+                // Background: 3.jpg Top-down Iron Tray Ashtray
+                this.trayImg = addArtImage(this, 'img3');
+                this.add.rectangle(W / 2, H / 2, W, H, 0x05070a, 0.18).setDepth(1);
+                addRain(this, { density: 0.5 });
+                addFilmFinish(this, { vignette: 0.45 });
+
+                // Top Header（漫畫旁白框；上緣留空給右上角的 HTML 按鈕）
+                drawComicPanel(this, 14, 48, W - 28, 76, { fill: PAPER, alpha: 0.97, shadow: 6, halftone: true, depth: 20 });
+                this.add.text(W / 2, 74, '🚬 請在鐵盤上挑選一根「煙屁股」', {
+                    fontFamily: FONT_UI,
+                    fontSize: '20px',
+                    fontStyle: '900',
+                    color: '#b91c1c'
+                }).setOrigin(0.5).setDepth(21);
+                this.add.text(W / 2, 102, '越高級的煙屁股得分倍率越高，但火頭極短、升溫超快！', {
+                    fontFamily: FONT_UI,
+                    fontSize: '12px',
+                    fontStyle: 'bold',
+                    color: '#44403c'
+                }).setOrigin(0.5).setDepth(21);
+
+                // 鐵盤上的菸蒂熱點：光暈圈住實際的菸蒂，編號牌拉線標在上方
+                this.hotspots = CIGARETTE_BUTTS.map((butt, idx) => {
+                    const { x, y } = butt.trayPos;
+                    const color = hexColor(butt.badgeColor);
+                    const glow = this.add.image(x, y, 'fx-glow').setTint(color).setBlendMode(ADD).setScale(0.75).setAlpha(0.6).setDepth(10);
+                    const ring = this.add.circle(x, y, 22).setStrokeStyle(3, 0xffffff, 0.95).setDepth(11);
+                    const tagY = y - 46;
+                    const leader = this.add.graphics().setDepth(11);
+                    leader.lineStyle(4, 0x000000, 0.9);
+                    leader.lineBetween(x, y - 22, x, tagY + 13);
+                    leader.lineStyle(2, 0xffffff, 1);
+                    leader.lineBetween(x, y - 22, x, tagY + 13);
+                    const tag = this.add.circle(x, tagY, 14, color, 1).setStrokeStyle(3, 0x000000).setDepth(12);
+                    const num = this.add.text(x, tagY, `${idx + 1}`, {
+                        fontFamily: FONT_NUM,
+                        fontSize: '19px',
+                        fontStyle: '900',
+                        color: '#ffffff',
+                        stroke: '#000000',
+                        strokeThickness: 4
+                    }).setOrigin(0.5).setDepth(13);
+
+                    const hit = this.add.circle(x, y, 32, 0x000000, 0).setInteractive({ useHandCursor: true }).setDepth(14);
+                    hit.on('pointerover', () => this.highlight(idx, true));
+                    hit.on('pointerout', () => this.highlight(idx, false));
+                    hit.on('pointerdown', () => this.selectAndPickupButt(butt));
+
+                    this.tweens.add({ targets: ring, scale: 1.3, alpha: 0.45, duration: 700, yoyo: true, repeat: -1 });
+                    this.tweens.add({ targets: glow, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
+                    return { glow, tag, num, cardHi: null };
+                });
+
+                // Selection Cards Panel（縮矮一些，讓鐵盤露出更多）
+                const cardH = 74;
+                const gap = 8;
+                const startY = H - 14 - (cardH * 4 + gap * 3) + cardH / 2;
+
+                CIGARETTE_BUTTS.forEach((butt, idx) => {
+                    const cy = startY + idx * (cardH + gap);
+                    const color = hexColor(butt.badgeColor);
+                    drawComicPanel(this, 14, cy - cardH / 2, W - 28, cardH, { fill: 0x0e1218, alpha: 0.93, shadow: 5, depth: 20 });
+                    this.add.rectangle(14, cy, 9, cardH, color, 1).setOrigin(0, 0.5).setDepth(21);
+                    const cardHi = this.add.rectangle(W / 2, cy, W - 28, cardH, 0xffffff, 1).setAlpha(0).setDepth(21);
+                    this.hotspots[idx].cardHi = cardHi;
+
+                    this.add.text(34, cy - 25, `${idx + 1}. ${butt.name}`, {
+                        fontFamily: FONT_UI,
+                        fontSize: '17px',
+                        fontStyle: '900',
+                        color: '#ffffff'
+                    }).setDepth(22);
+
+                    // Difficulty & Stars
+                    this.add.text(W - 28, cy - 23, `${butt.difficultyLabel} ${butt.stars} | 倍率 x${butt.scoreMultiplier.toFixed(1)}`, {
+                        fontFamily: FONT_UI,
+                        fontSize: '13px',
+                        fontStyle: 'bold',
+                        color: butt.badgeColor
+                    }).setOrigin(1, 0).setDepth(22);
+
+                    // Description
+                    this.add.text(34, cy + 7, butt.desc, {
+                        fontFamily: FONT_UI,
+                        fontSize: '12px',
+                        color: '#a8a29e'
+                    }).setDepth(22);
+
+                    const hit = this.add.rectangle(W / 2, cy, W - 28, cardH, 0x000000, 0).setInteractive({ useHandCursor: true }).setDepth(23);
+                    hit.on('pointerover', () => this.highlight(idx, true));
+                    hit.on('pointerout', () => this.highlight(idx, false));
+                    hit.on('pointerdown', () => this.selectAndPickupButt(butt));
+                });
+            }
+
+            // 卡片與鐵盤熱點互相連動高亮
+            highlight(idx, on) {
+                const h = this.hotspots[idx];
+                h.cardHi.setAlpha(on ? 0.08 : 0);
+                h.tag.setScale(on ? 1.25 : 1);
+                h.num.setScale(on ? 1.25 : 1);
+                h.glow.setScale(on ? 1.05 : 0.75);
+            }
+
+            selectAndPickupButt(butt) {
+                if (this.pickingUp) return;
+                this.pickingUp = true;
+                GAME_STATE.selectedButt = butt;
+                audioEngine.playLighterFlick();
+
+                const W = GAME_W;
+                const H = GAME_H;
+
+                // Transition to 4.jpg：阿睿的髒手從鐵盤捏起菸蒂，鏡頭推近手指
+                this.cameras.main.flash(160, 255, 236, 200);
+                const handOverlay = addArtImage(this, 'img4', 50).setAlpha(0);
+                kenBurns(this, handOverlay, ART_FX.img4.pinch, 1.1, 1700);
+
+                const captionTop = H - 176;
+                const caption = [
+                    ...drawComicPanel(this, 22, captionTop, W - 44, 120, { fill: PAPER, alpha: 0.97, shadow: 7, halftone: true, depth: 60 }),
+                    this.add.text(W / 2, captionTop + 60, `✋ 阿睿撿起了【${butt.name}】\n點火準備開抽！(限時 60 秒)`, {
+                        fontFamily: FONT_UI,
+                        fontSize: '21px',
+                        fontStyle: '900',
+                        color: INK,
+                        align: 'center',
+                        lineSpacing: 10
+                    }).setOrigin(0.5).setDepth(61)
+                ];
+                caption.forEach(o => o.setAlpha(0));
+
+                this.tweens.add({ targets: handOverlay, alpha: 1, duration: 320 });
+                this.tweens.add({
+                    targets: caption,
+                    alpha: 1,
+                    delay: 200,
+                    duration: 260,
+                    onComplete: () => {
+                        this.time.delayedCall(1050, () => {
+                            this.cameras.main.fadeOut(260, 0, 0, 0);
+                            this.time.delayedCall(270, () => this.scene.start('PlayScene'));
+                        });
+                    }
+                });
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // SCENE E: MAIN GAMEPLAY SCENE (5.jpg & 6.jpg - 60秒壓住同位置抽煙屁股控溫戰)
+        // ----------------------------------------------------------------------------
+        class PlayScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'PlayScene' });
+            }
+
+            create() {
+                setupView(this);
+                const W = GAME_W;
+                const H = GAME_H;
+                const butt = GAME_STATE.selectedButt;
+                this.cameras.main.fadeIn(300, 0, 0, 0);
+
+                // Gameplay State Variables
+                this.timeLeft = 60.0;
+                this.score = 0;
+                this.heat = 15;             // 0 ~ 100%
+                this.idleTime = 0;          // Seconds since last inhale
+                this.isInhaling = false;
+                this.inhaleDuration = 0;    // 這一口吸了多久（放開時決定吐煙量）
+                this.isBurnStunned = false; // Brief cooldown when burned at 100%
+                this.burnCount = 0;
+                this.depriveTicks = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.goldenTime = 0;
+                this.isGameOver = false;
+                this.holdRingColor = null;
+
+                // 1. 原圖：img5 待機（菸頭熄暗）與 img6 吸菸（菸頭發紅）交叉淡入
+                this.imgIdle = addArtImage(this, 'img5', 0);
+                this.imgInhale = addArtImage(this, 'img6', 1).setAlpha(0);
+                // 燙到時的反應圖（瞪眼、冒汗、口鼻噴煙）；沒有這張圖時只保留閃紅與對話框
+                this.imgBurn = this.textures.exists('img7') ? addArtImage(this, 'img7', 1.5).setAlpha(0) : null;
+                const fx = ART_FX.img5;
+                addNeonGlow(this, fx.neon, 2);
+                addLampGlow(this, fx.lamp, 2);
+
+                this.emberX = fx.ember.x;
+                this.emberY = fx.ember.y;
+                this.mouthX = fx.mouth.x;
+                this.mouthY = fx.mouth.y;
+
+                // 菸頭火光（光暈 + 白熱核心）
+                this.emberHalo = this.add.image(this.emberX, this.emberY, 'fx-glow').setTint(0xff4400).setBlendMode(ADD).setAlpha(0).setDepth(5);
+                this.emberCore = this.add.image(this.emberX, this.emberY, 'fx-glow').setTint(0xffc46b).setBlendMode(ADD).setAlpha(0).setDepth(5);
+
+                // 煙：平常細細一縷，吸的時候濃煙 + 火星，放開時從嘴角吐出一大口
+                this.wispSmoke = this.add.particles(this.emberX + 4, this.emberY - 6, 'fx-smoke', {
+                    speedX: { min: -6, max: 14 },
+                    speedY: { min: -55, max: -35 },
+                    accelerationX: 6,
+                    scale: { start: 0.1, end: 0.55 },
+                    alpha: { start: 0.22, end: 0 },
+                    rotate: { min: 0, max: 360 },
+                    lifespan: 2800,
+                    frequency: 200,
+                    tint: 0xdfe7ee
+                }).setDepth(6);
+                this.inhaleSmoke = this.add.particles(this.emberX + 6, this.emberY - 8, 'fx-smoke', {
+                    speedX: { min: -10, max: 30 },
+                    speedY: { min: -110, max: -60 },
+                    accelerationX: 10,
+                    scale: { start: 0.2, end: 1.2 },
+                    alpha: { start: 0.5, end: 0 },
+                    rotate: { min: 0, max: 360 },
+                    lifespan: 2200,
+                    frequency: 70,
+                    emitting: false,
+                    tint: 0xe6edf3
+                }).setDepth(6);
+                this.sparks = this.add.particles(this.emberX, this.emberY, 'fx-spark', {
+                    speedX: { min: -40, max: 50 },
+                    speedY: { min: -120, max: -40 },
+                    gravityY: 60,
+                    scale: { start: 0.55, end: 0 },
+                    alpha: { start: 1, end: 0 },
+                    lifespan: { min: 300, max: 650 },
+                    frequency: 90,
+                    emitting: false,
+                    blendMode: ADD
+                }).setDepth(7);
+                this.exhaleSmoke = this.add.particles(this.mouthX + 6, this.mouthY + 4, 'fx-smoke', {
+                    speedX: { min: 40, max: 150 },
+                    speedY: { min: -40, max: 25 },
+                    accelerationY: -12,
+                    scale: { start: 0.25, end: 1.7 },
+                    alpha: { start: 0.4, end: 0 },
+                    rotate: { min: 0, max: 360 },
+                    lifespan: { min: 1400, max: 2200 },
+                    emitting: false,
+                    tint: 0xe8eef3
+                }).setDepth(6);
+
+                addRain(this, { density: 0.8 });
+                addFilmFinish(this, { vignette: 0.5 });
+
+                // 燙傷閃紅、菸癮發作的紅色暗角
+                this.damageFlash = this.add.rectangle(W / 2, H / 2, W, H, 0xff0000, 1).setAlpha(0).setDepth(30);
+                this.redVignette = this.add.image(W / 2, H / 2, 'fx-vignette-red').setDisplaySize(W, H).setAlpha(0).setDepth(30);
+                this.craveVignette = this.add.image(W / 2, H / 2, 'fx-vignette-red').setDisplaySize(W, H).setAlpha(0).setDepth(12);
+
+                // 2. Interactive "PRESS & HOLD SAME SPOT" Target Zone (壓住同一個位置抽煙屁股)
+                // Positioned over Ah-Rui's hand & cigarette butt area
+                this.holdCenterX = W * 0.54;
+                this.holdCenterY = H * 0.58;
+                this.holdRadius = Math.min(W, H) * 0.19; // Generous enough for thumb/mouse, strict enough that dragging away releases
+
+                this.holdZone = this.add.container(this.holdCenterX, this.holdCenterY).setDepth(15);
+                this.holdRing = this.add.graphics();
+                this.holdCore = this.add.image(0, 0, 'fx-glow').setTint(0xff7a1a).setBlendMode(ADD).setScale(0.55).setAlpha(0.55);
+                const holdDot = this.add.circle(0, 0, 9, 0xfff3c4, 0.95).setStrokeStyle(3, 0x000000, 0.9);
+                this.holdZone.add([this.add.circle(0, 0, this.holdRadius, 0xffffff, 0.05), this.holdRing, this.holdCore, holdDot]);
+                this.drawHoldRing(0xfbbf24);
+                this.tweens.add({ targets: this.holdRing, angle: 360, duration: 9000, repeat: -1 });
+                this.tweens.add({ targets: this.holdCore, scale: 0.8, alpha: 0.3, duration: 650, yoyo: true, repeat: -1 });
+
+                this.holdLabel = this.add.text(this.holdCenterX, this.holdCenterY + this.holdRadius + 26, '👆 壓住此處不放 = 抽煙屁股\n(太燙前要適時放開！)', {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    fontStyle: '900',
+                    color: '#fef08a',
+                    align: 'center',
+                    stroke: '#000000',
+                    strokeThickness: 5
+                }).setOrigin(0.5).setDepth(16);
+
+                // Unified Pointer Input (Supports Mobile Touch & Desktop Mouse)
+                this.input.on('pointerdown', (pointer) => {
+                    this.checkPointerHold(pointer, true);
+                });
+                this.input.on('pointermove', (pointer) => {
+                    if (pointer.isDown) {
+                        this.checkPointerHold(pointer, false);
+                    }
+                });
+                this.input.on('pointerup', () => {
+                    this.stopInhaling();
+                });
+                this.input.on('pointerupoutside', () => {
+                    this.stopInhaling();
+                });
+
+                // 3. TOP HUD (Timer, Score, Selected Cigarette Butt Info, Visual Cigarette Length Bar)
+                this.createHUD(W, H, butt);
+
+                // 4. RIGHT VERTICAL HEAT GAUGE (燙度計 + 黃金過癮區) & BOTTOM CRAVING METER (菸癮空虛計)
+                this.createGauges(W, H, butt);
+
+                // 5. 燙到時的漫畫爆炸對話框（台語罵聲）：放在右上方巷子上空，不擋住瞪大的眼睛
+                const burstX = 384;
+                const burstY = 264;
+                this.burst = this.add.container(burstX, burstY).setDepth(40).setAlpha(0);
+                const burstGfx = this.add.graphics();
+                drawShoutBurst(burstGfx, 280, 190, {
+                    baseX: -60,
+                    baseY: 75,
+                    x: 262 - burstX,
+                    y: 420 - burstY
+                });
+                this.sbText = this.add.text(0, -16, '', {
+                    fontFamily: FONT_UI,
+                    fontSize: '19px',
+                    fontStyle: '900',
+                    color: '#c81e1e',
+                    align: 'center',
+                    lineSpacing: 2
+                }).setOrigin(0.5);
+                this.sbSub = this.add.text(0, 36, '', {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    fontStyle: '900',
+                    color: INK
+                }).setOrigin(0.5);
+                this.burst.add([burstGfx, this.sbText, this.sbSub]);
+            }
+
+            drawHoldRing(color) {
+                const g = this.holdRing;
+                const r = this.holdRadius;
+                const seg = 16;
+                g.clear();
+                // 黑邊 + 彩色虛線圈，像漫畫分鏡的對焦框
+                for (let i = 0; i < seg; i++) {
+                    const a0 = (i / seg) * Math.PI * 2;
+                    const a1 = a0 + (Math.PI * 2 / seg) * 0.6;
+                    g.lineStyle(8, 0x000000, 0.7);
+                    g.beginPath();
+                    g.arc(0, 0, r, a0, a1);
+                    g.strokePath();
+                    g.lineStyle(4, color, 0.95);
+                    g.beginPath();
+                    g.arc(0, 0, r, a0, a1);
+                    g.strokePath();
+                }
+                this.holdRingColor = color;
+            }
+
+            createHUD(W, H, butt) {
+                // 上緣留空給右上角的 HTML 按鈕
+                const top = 44;
+                drawComicPanel(this, 10, top, W - 20, 116, { fill: 0x0b0e14, alpha: 0.88, accent: 0xf59e0b, accentAlpha: 0.45, shadow: 5, depth: 20 });
+
+                // Countdown Timer (Left)
+                this.add.text(26, top + 12, '⏱ 剩餘時間', {
+                    fontFamily: FONT_UI, fontSize: '12px', fontStyle: 'bold', color: '#9ca3af'
+                }).setDepth(21);
+                this.timerTxt = this.add.text(24, top + 26, '60.0s', {
+                    fontFamily: FONT_NUM, fontSize: '38px', fontStyle: '900', color: '#fbbf24', stroke: '#000000', strokeThickness: 5
+                }).setDepth(21);
+
+                // Score & Combo (Right)
+                this.add.text(W - 26, top + 12, `🏆 總分 (${butt.name} x${butt.scoreMultiplier})`, {
+                    fontFamily: FONT_UI, fontSize: '12px', fontStyle: 'bold', color: '#9ca3af'
+                }).setOrigin(1, 0).setDepth(21);
+                this.scoreTxt = this.add.text(W - 24, top + 23, '0', {
+                    fontFamily: FONT_NUM, fontSize: '42px', fontStyle: '900', color: '#4ade80', stroke: '#000000', strokeThickness: 5
+                }).setOrigin(1, 0).setDepth(21);
+
+                this.comboTxt = this.add.text(W - 26, top + 78, '', {
+                    fontFamily: FONT_UI, fontSize: '13px', fontStyle: '900', color: '#f59e0b', stroke: '#000000', strokeThickness: 3
+                }).setOrigin(1, 0).setDepth(21);
+
+                // 菸蒂長度：迷你香菸（濾嘴 + 菸紙 + 火頭），菸紙隨 60 秒燒短
+                this.add.text(26, top + 82, '菸蒂長度', {
+                    fontFamily: FONT_UI, fontSize: '12px', fontStyle: 'bold', color: '#d6d3d1'
+                }).setDepth(21);
+                const barY = top + 91;
+                this.cigBarX = 132;
+                this.add.rectangle(90, barY, 42, 14, 0xd9893a).setOrigin(0, 0.5).setStrokeStyle(2, 0x000000).setDepth(21);
+                const dots = this.add.graphics().setDepth(21);
+                dots.fillStyle(0xf6c27a, 0.9);
+                for (let i = 0; i < 6; i++) dots.fillCircle(96 + i * 6, barY + (i % 2 ? 3 : -3), 1.2);
+                this.cigBarPaper = this.add.rectangle(this.cigBarX, barY, 150, 14, 0xeef0f2).setOrigin(0, 0.5).setStrokeStyle(2, 0x000000).setDepth(21);
+                this.cigBarGlow = this.add.image(this.cigBarX + 150, barY, 'fx-glow').setTint(0xff5a00).setBlendMode(ADD).setScale(0.35).setDepth(22);
+                this.cigBarEmber = this.add.circle(this.cigBarX + 150, barY, 7, 0xff3b00).setStrokeStyle(2, 0x000000).setDepth(22);
+                this.tweens.add({ targets: this.cigBarGlow, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
+            }
+
+            createGauges(W, H, butt) {
+                // RIGHT GAUGE: Heat Meter (燙度計 0~100%)
+                const gx = W - 36;
+                const gy = H * 0.54;
+                const gh = 300;
+                const gw = 22;
+                const top = gy - gh / 2;
+                const bottom = gy + gh / 2;
+
+                this.gaugeX = gx;
+                this.gaugeY = gy;
+                this.gaugeH = gh;
+
+                this.gaugeDanger = this.add.image(gx, gy, 'fx-glow').setTint(0xff2200).setBlendMode(ADD).setDisplaySize(gw * 5, gh * 1.3).setAlpha(0).setDepth(19);
+
+                const frame = this.add.graphics().setDepth(20);
+                frame.fillStyle(0x000000, 0.85);
+                frame.fillRoundedRect(gx - gw / 2 - 6 + 4, top - 6 + 4, gw + 12, gh + 12, 10);
+                frame.fillStyle(0x0b0e14, 0.94);
+                frame.fillRoundedRect(gx - gw / 2 - 6, top - 6, gw + 12, gh + 12, 10);
+                frame.lineStyle(3, 0x000000, 1);
+                frame.strokeRoundedRect(gx - gw / 2 - 6, top - 6, gw + 12, gh + 12, 10);
+
+                // Dynamic Heat Fill Bar（漸層依黃金區間繪製，用 crop 顯示目前高度）
+                this.heatFill = this.add.image(gx, bottom, ensureHeatTexture(this, butt))
+                    .setOrigin(0.5, 1)
+                    .setDisplaySize(gw, gh)
+                    .setDepth(21);
+
+                const overlay = this.add.graphics().setDepth(22);
+                overlay.lineStyle(1, 0xffffff, 0.16);
+                for (let i = 1; i < 10; i++) {
+                    const ty = bottom - (gh * i) / 10;
+                    overlay.lineBetween(gx - gw / 2, ty, gx + gw / 2, ty);
+                }
+
+                // Golden Sweet Spot Zone highlight on Heat Gauge
+                const sweetTopY = bottom - (butt.sweetMax / 100) * gh;
+                const sweetBotY = bottom - (butt.sweetMin / 100) * gh;
+                overlay.fillStyle(0xfde047, 0.12);
+                overlay.fillRect(gx - gw / 2, sweetTopY, gw, sweetBotY - sweetTopY);
+                overlay.lineStyle(2, 0xfde047, 0.95);
+                overlay.lineBetween(gx - gw / 2, sweetTopY, gx + gw / 2, sweetTopY);
+                overlay.lineBetween(gx - gw / 2, sweetBotY, gx + gw / 2, sweetBotY);
+                const bx = gx - gw / 2 - 11;
+                overlay.lineStyle(5, 0x000000, 0.8);
+                overlay.strokePoints([{ x: bx + 5, y: sweetTopY }, { x: bx, y: sweetTopY }, { x: bx, y: sweetBotY }, { x: bx + 5, y: sweetBotY }]);
+                overlay.lineStyle(2.5, 0xfde047, 1);
+                overlay.strokePoints([{ x: bx + 5, y: sweetTopY }, { x: bx, y: sweetTopY }, { x: bx, y: sweetBotY }, { x: bx + 5, y: sweetBotY }]);
+
+                this.add.text(bx - 6, (sweetTopY + sweetBotY) / 2, '黃金\n過癮區\nx2.5', {
+                    fontFamily: FONT_UI,
+                    fontSize: '10px',
+                    fontStyle: '900',
+                    color: '#fde047',
+                    align: 'right',
+                    stroke: '#000',
+                    strokeThickness: 3
+                }).setOrigin(1, 0.5).setDepth(22);
+
+                // 目前溫度刻度線
+                this.heatMarker = this.add.rectangle(gx, bottom, gw + 10, 4, 0xffffff, 1).setStrokeStyle(1.5, 0x000000).setDepth(23);
+
+                this.add.text(gx, top - 24, '🔥 燙度', {
+                    fontFamily: FONT_UI, fontSize: '12px', fontStyle: '900', color: '#f87171', stroke: '#000', strokeThickness: 4
+                }).setOrigin(0.5).setDepth(22);
+
+                this.heatPctTxt = this.add.text(gx, bottom + 22, '15%', {
+                    fontFamily: FONT_NUM, fontSize: '18px', fontStyle: '900', color: '#ffffff', stroke: '#000', strokeThickness: 4
+                }).setOrigin(0.5).setDepth(22);
+
+                // Bottom Status Bar: Nicotine Deprivation (太久沒吸到煙焦慮計)
+                drawComicPanel(this, 18, H - 58, W - 36, 40, { fill: 0x0b0e14, alpha: 0.9, shadow: 4, depth: 20 });
+
+                this.cravingBar = this.add.rectangle(22, H - 38, 0, 32, 0xef4444, 0.6)
+                    .setOrigin(0, 0.5)
+                    .setDepth(21);
+
+                this.statusTxt = this.add.text(W / 2, H - 38, '💡 壓住畫面中央的菸蒂不放開始抽菸！', {
+                    fontFamily: FONT_UI,
+                    fontSize: '13px',
+                    fontStyle: 'bold',
+                    color: '#e7e5e4'
+                }).setOrigin(0.5).setDepth(22);
+            }
+
+            checkPointerHold(pointer, isInitialDown) {
+                if (this.isGameOver || this.isBurnStunned) return;
+
+                // 攝影機有放大，要換算回 540x960 的世界座標
+                const p = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+                const dist = Phaser.Math.Distance.Between(p.x, p.y, this.holdCenterX, this.holdCenterY);
+                if (dist <= this.holdRadius * 1.15) {
+                    if (!this.isInhaling) {
+                        this.isInhaling = true;
+                        if (isInitialDown) {
+                            audioEngine.init();
+                        }
+                    }
+                } else {
+                    // Dragged finger/cursor outside the same position -> stop inhaling
+                    this.stopInhaling();
+                }
+            }
+
+            stopInhaling() {
+                if (this.isInhaling && this.inhaleDuration > 0.35 && !this.isGameOver) {
+                    // 放開時從嘴角吐出一口煙，吸越久煙越多
+                    this.exhaleSmoke.explode(Math.min(24, Math.round(8 + this.inhaleDuration * 6)));
+                }
+                this.isInhaling = false;
+                this.inhaleDuration = 0;
+                audioEngine.setInhaleSound(false);
+            }
+
+            triggerBurnPenalty() {
+                const butt = GAME_STATE.selectedButt;
+                this.isInhaling = false;
+                this.inhaleDuration = 0;
+                this.isBurnStunned = true;
+                this.burnCount++;
+                this.combo = 0;
+                this.score = Math.max(0, this.score - butt.burnPenalty);
+                audioEngine.setInhaleSound(false);
+
+                // Play authentic Taiwanese Hokkien burn voice ("啊娘喂！燒啦！")
+                const spokenLine = audioEngine.playTaiwaneseBurnVoice();
+
+                // Screen shake、紅色閃光、火星四濺、嗆出一口煙
+                this.cameras.main.shake(380, 0.024);
+                this.damageFlash.setAlpha(0.3);
+                this.redVignette.setAlpha(1);
+                this.tweens.add({ targets: this.damageFlash, alpha: 0, duration: 380 });
+                this.tweens.add({ targets: this.redVignette, alpha: 0, duration: 900, ease: 'Quad.easeIn' });
+                this.sparks.explode(26);
+                this.exhaleSmoke.explode(10);
+
+                // 硬切到燙傷反應圖，帶一點放大的衝擊感
+                if (this.imgBurn) {
+                    const s = this.imgBurn.baseScale;
+                    this.tweens.killTweensOf(this.imgBurn);
+                    this.imgBurn.setAlpha(1).setScale(s * 1.06);
+                    this.tweens.add({ targets: this.imgBurn, scale: s, duration: 260, ease: 'Back.easeOut' });
+                    // 冷卻 1.25 秒結束前淡回原圖
+                    this.time.delayedCall(980, () => {
+                        this.tweens.add({ targets: this.imgBurn, alpha: 0, duration: 240 });
+                    });
+                }
+
+                // 爆炸對話框
+                this.sbText.setText(`🔥 ${splitShout(spokenLine)}`);
+                this.sbSub.setText(`（燙到手跟嘴唇 -${butt.burnPenalty} 分）`);
+                this.tweens.killTweensOf(this.burst);
+                this.burst.setAlpha(1).setScale(0.5).setAngle(-8);
+                this.tweens.add({
+                    targets: this.burst,
+                    scale: 1,
+                    angle: 0,
+                    duration: 220,
+                    ease: 'Back.easeOut',
+                    onComplete: () => {
+                        this.tweens.add({
+                            targets: this.burst,
+                            alpha: 0,
+                            delay: 1150,
+                            duration: 300
+                        });
+                    }
+                });
+
+                this.spawnFloatingText(this.holdCenterX, this.holdCenterY - 50, `💥 燒燙燙！-${butt.burnPenalty}`, '#ef4444');
+
+                // Force 1.25s cooldown where Ah-Rui shakes his burned hand
+                this.time.delayedCall(1250, () => {
+                    this.isBurnStunned = false;
+                    this.heat = Math.min(this.heat, 55);
+                });
+            }
+
+            spawnFloatingText(x, y, msg, color = '#fde047') {
+                const txt = this.add.text(x, y, msg, {
+                    fontFamily: FONT_UI,
+                    fontSize: '19px',
+                    fontStyle: '900',
+                    color: color,
+                    stroke: '#000000',
+                    strokeThickness: 5
+                }).setOrigin(0.5).setDepth(35).setScale(0.7);
+
+                this.tweens.add({ targets: txt, scale: 1, duration: 120, ease: 'Back.easeOut' });
+                this.tweens.add({
+                    targets: txt,
+                    y: y - 55,
+                    alpha: 0,
+                    duration: 750,
+                    onComplete: () => txt.destroy()
+                });
+            }
+
+            update(time, delta) {
+                if (this.isGameOver) return;
+                const dt = delta / 1000;
+                const butt = GAME_STATE.selectedButt;
+                const W = GAME_W;
+
+                // 1. Update 60-Second Countdown
+                this.timeLeft = Math.max(0, this.timeLeft - dt);
+                this.timerTxt.setText(`${this.timeLeft.toFixed(1)}s`);
+                if (this.timeLeft <= 10) {
+                    this.timerTxt.setColor('#ef4444');
+                }
+
+                // Shrink visual cigarette butt paper over the 60 seconds
+                const paperW = Math.max(8, (this.timeLeft / 60) * 150);
+                this.cigBarPaper.width = paperW;
+                this.cigBarEmber.x = this.cigBarX + paperW;
+                this.cigBarGlow.x = this.cigBarEmber.x;
+
+                if (this.timeLeft <= 0) {
+                    this.finishGame();
+                    return;
+                }
+
+                // 2. Handle Inhaling vs Releasing Physics
+                const inhalingNow = this.isInhaling && !this.isBurnStunned;
+                let deprived = false;
+                if (inhalingNow) {
+                    this.idleTime = 0;
+                    this.inhaleDuration += dt;
+
+                    // Increase heat (higher quality butts heat up faster + slight ember turbulence)
+                    const jitter = 1 + Math.sin(time * 0.015) * 0.15;
+                    this.heat = Math.min(100, this.heat + butt.heatRate * jitter * dt);
+
+                    // Switch visual to 6.jpg (glowing ember)
+                    this.imgInhale.setAlpha(Phaser.Math.Linear(this.imgInhale.alpha, 1, 0.22));
+                    const heatRatio = this.heat / 100;
+                    const flick = 0.85 + Math.random() * 0.15;
+                    this.emberCore.setAlpha((0.55 + heatRatio * 0.45) * flick).setScale(0.2 + heatRatio * 0.12);
+                    this.emberHalo.setAlpha((0.35 + heatRatio * 0.4) * flick).setScale(0.6 + heatRatio * 0.7);
+                    setEmitting(this.inhaleSmoke, true);
+                    setEmitting(this.sparks, true);
+
+                    audioEngine.setInhaleSound(true, heatRatio);
+
+                    // Continuous Carrying / Inhaling Score Gain (一直有攜帶/吸食就會加分)
+                    const inSweetSpot = (this.heat >= butt.sweetMin && this.heat <= butt.sweetMax);
+                    const zoneBonus = inSweetSpot ? 2.5 : 1.0;
+                    if (inSweetSpot) {
+                        this.goldenTime += dt;
+                    }
+
+                    this.combo += dt * 4;
+                    if (Math.floor(this.combo) > this.maxCombo) {
+                        this.maxCombo = Math.floor(this.combo);
+                    }
+                    const comboMult = 1 + Math.min(2.0, Math.floor(this.combo) * 0.05);
+                    const pointsEarned = 42 * butt.scoreMultiplier * zoneBonus * comboMult * dt;
+                    this.score += pointsEarned;
+
+                    // Occasional floating feedback in Golden Sweet Spot
+                    if (inSweetSpot && Math.random() < 0.08) {
+                        this.spawnFloatingText(
+                            this.emberX + Phaser.Math.Between(-30, 30),
+                            this.emberY - 30,
+                            `過癮！+${Math.round(pointsEarned * 8)}`,
+                            '#fbbf24'
+                        );
+                    }
+
+                    this.statusTxt.setText(
+                        inSweetSpot
+                            ? '🔥 黃金過癮區！分數 2.5 倍狂飆中！(注意別破百燙傷)'
+                            : '💨 正在猛吸菸屁股… 持續加分中！'
+                    );
+                    this.statusTxt.setColor(inSweetSpot ? '#fde047' : '#86efac');
+
+                    // Check if Heat hit 100% -> BURN!
+                    if (this.heat >= 100) {
+                        this.triggerBurnPenalty();
+                    }
+                } else {
+                    // Not Inhaling -> Cool down ember & switch back to 5.jpg
+                    this.heat = Math.max(0, this.heat - butt.coolRate * dt);
+                    this.imgInhale.setAlpha(Phaser.Math.Linear(this.imgInhale.alpha, 0, 0.18));
+                    // 沒在吸：菸頭只剩微弱餘燼
+                    this.emberCore.setAlpha(0);
+                    this.emberHalo.setAlpha(0.1 + Math.sin(time * 0.004) * 0.04).setScale(0.45);
+                    setEmitting(this.inhaleSmoke, false);
+                    setEmitting(this.sparks, false);
+
+                    if (!this.isBurnStunned) {
+                        this.idleTime += dt;
+                        // Nicotine Deprivation Penalty (太久沒吸到煙也會扣分: threshold 2.0 seconds)
+                        const maxSafeIdle = 2.0;
+                        const craveRatio = Math.min(1, this.idleTime / maxSafeIdle);
+                        this.cravingBar.width = craveRatio * (W - 44);
+
+                        if (this.idleTime >= maxSafeIdle) {
+                            deprived = true;
+                            this.combo = 0;
+                            const penaltyRate = 35 * butt.scoreMultiplier;
+                            this.score = Math.max(0, this.score - penaltyRate * dt);
+                            this.statusTxt.setText('⚠️ 太久沒吸到煙！菸癮發作空虛扣分中！快壓住抽菸！');
+                            this.statusTxt.setColor('#fca5a5');
+
+                            this.depriveTicks += dt;
+                            if (this.depriveTicks >= 0.9) {
+                                this.depriveTicks = 0;
+                                audioEngine.playCoughWarning();
+                                this.spawnFloatingText(this.holdCenterX, this.holdCenterY, '💨 太久沒吸扣分！', '#f87171');
+                            }
+                        } else {
+                            this.statusTxt.setText('👆 壓住中央圈圈不放抽煙屁股 (超過 2 秒沒吸會扣分)');
+                            this.statusTxt.setColor('#e7e5e4');
+                        }
+                    } else {
+                        this.statusTxt.setText('🥵 燙傷甩手冷卻中… 啊娘喂好燙！');
+                        this.statusTxt.setColor('#f87171');
+                    }
+                }
+
+                if (this.isInhaling) {
+                    this.cravingBar.width = 0;
+                }
+                this.craveVignette.setAlpha(deprived
+                    ? 0.24 + Math.sin(time * 0.008) * 0.1
+                    : Phaser.Math.Linear(this.craveVignette.alpha, 0, 0.1));
+
+                // 壓按圈顏色跟著溫度區間變化
+                let ringColor = 0xfbbf24;
+                if (this.isBurnStunned) {
+                    ringColor = 0xef4444;
+                } else if (inhalingNow) {
+                    ringColor = this.heat >= 88 ? 0xef4444 : (this.heat >= butt.sweetMin ? 0xfde047 : 0x4ade80);
+                }
+                if (ringColor !== this.holdRingColor) this.drawHoldRing(ringColor);
+                this.holdZone.setScale(Phaser.Math.Linear(this.holdZone.scaleX, inhalingNow ? 0.93 : 1, 0.2));
+                this.holdLabel.setAlpha(Phaser.Math.Linear(this.holdLabel.alpha, inhalingNow ? 0.35 : 1, 0.15));
+
+                // 3. Update Right Heat Gauge Visuals
+                const fillH = Math.max(2, (this.heat / 100) * this.gaugeH);
+                const texW = this.heatFill.frame.width;
+                const texH = this.heatFill.frame.height;
+                const cropH = (texH * fillH) / this.gaugeH;
+                this.heatFill.setCrop(0, texH - cropH, texW, cropH);
+                this.heatMarker.y = this.gaugeY + this.gaugeH / 2 - fillH;
+                this.heatPctTxt.setText(`${Math.round(this.heat)}%`);
+                this.heatPctTxt.setColor(this.heat >= 88 ? '#f87171' : '#ffffff');
+                this.gaugeDanger.setAlpha(this.heat >= 88 ? 0.4 + Math.sin(time * 0.025) * 0.25 : 0);
+
+                // 4. Update Score & Combo Text
+                this.scoreTxt.setText(`${Math.floor(this.score)}`);
+                this.comboTxt.setText(this.combo >= 2 ? `🔥 連吸 Combo x${Math.floor(this.combo)}` : '');
+            }
+
+            finishGame() {
+                this.isGameOver = true;
+                audioEngine.setInhaleSound(false);
+
+                GAME_STATE.lastResult = {
+                    score: Math.floor(this.score),
+                    butt: GAME_STATE.selectedButt,
+                    burnCount: this.burnCount,
+                    maxCombo: this.maxCombo,
+                    goldenTime: this.goldenTime.toFixed(1)
+                };
+
+                this.cameras.main.fadeOut(500, 0, 0, 0);
+                this.time.delayedCall(520, () => {
+                    this.scene.start('ResultScene');
+                });
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // SCENE F: SETTLEMENT SCREEN (60秒結算遊戲總分)
+        // ----------------------------------------------------------------------------
+        class ResultScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'ResultScene' });
+            }
+
+            create() {
+                setupView(this);
+                const W = GAME_W;
+                const H = GAME_H;
+                const res = GAME_STATE.lastResult || {
+                    score: 0,
+                    butt: CIGARETTE_BUTTS[0],
+                    burnCount: 0,
+                    maxCombo: 0,
+                    goldenTime: '0.0'
+                };
+
+                this.cameras.main.fadeIn(400, 0, 0, 0);
+
+                // Background：阿睿抽著菸的側臉，壓暗當結算底圖
+                const bg = addArtImage(this, 'img6');
+                kenBurns(this, bg, ART_FX.img6.ember, 1.06, 10000, true);
+                addRain(this, { density: 0.7 });
+                addFilmFinish(this, { vignette: 0.7 });
+                this.add.rectangle(W / 2, H / 2, W, H, 0x05060a, 0.5).setDepth(10);
+
+                // Rank Evaluation
+                let rankTitle = '【滿嘴水泡的街頭菜鳥】';
+                let rankQuote = '「阿睿嘴唇腫得像香腸，下次記得別吸太猛啊！」';
+                let rankColor = '#9ca3af';
+
+                if (res.score >= 8500) {
+                    rankTitle = '【傳說巷弄菸神・街友本色】';
+                    rankQuote = '「連剩 3mm 的菸屁股都能抽得行雲流水，整條巷子都尊稱阿睿一聲哥！」';
+                    rankColor = '#fbbf24';
+                } else if (res.score >= 4500) {
+                    rankTitle = '【老練控溫撿菸客】';
+                    rankQuote = '「收放自如、深諳菸蒂燃燒物理學，這口煙抽出了人生哲學！」';
+                    rankColor = '#4ade80';
+                } else if (res.score >= 1800) {
+                    rankTitle = '【巷口資深吞雲者】';
+                    rankQuote = '「雖然偶爾被燙到罵幾句台語，但總算過足了菸癮！」';
+                    rankColor = '#38bdf8';
+                }
+
+                // Settlement Card
+                drawComicPanel(this, 18, 90, W - 36, 760, { fill: 0x0b0e14, alpha: 0.92, accent: 0xd97706, accentAlpha: 0.8, shadow: 8, depth: 20 });
+
+                this.add.text(W / 2, 140, '⏱ 60 秒時間到・街頭結算', {
+                    fontFamily: FONT_UI,
+                    fontSize: '16px',
+                    fontStyle: 'bold',
+                    color: '#f59e0b'
+                }).setOrigin(0.5).setDepth(21);
+
+                const rankTxt = this.add.text(W / 2, 186, rankTitle, {
+                    fontFamily: FONT_UI,
+                    fontSize: '26px',
+                    fontStyle: '900',
+                    color: rankColor,
+                    stroke: '#000',
+                    strokeThickness: 6
+                }).setOrigin(0.5).setDepth(21).setShadow(4, 4, '#000', 0, true, false);
+
+                // Total Score Display
+                this.add.text(W / 2, 240, '最終總得分', {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    color: '#a8a29e'
+                }).setOrigin(0.5).setDepth(21);
+
+                const scoreNum = this.add.text(W / 2, 296, '0', {
+                    fontFamily: FONT_NUM,
+                    fontSize: '72px',
+                    fontStyle: '900',
+                    color: '#fef08a',
+                    stroke: '#000',
+                    strokeThickness: 7
+                }).setOrigin(0.5).setDepth(21).setShadow(5, 5, '#000', 0, true, false);
+
+                // Stats Breakdown Box
+                const statY = 392;
+                const stats = [
+                    { label: '🚬 挑選菸屁股', val: `${res.butt.name} (x${res.butt.scoreMultiplier})` },
+                    { label: '🔥 黃金過癮區停留', val: `${res.goldenTime} 秒` },
+                    { label: '⚡ 最高連吸 Combo', val: `${res.maxCombo} 連段` },
+                    { label: '🥵 燙到手嘴罵台語次數', val: `${res.burnCount} 次` }
+                ];
+
+                const statRows = stats.map((st, i) => {
+                    const y = statY + i * 48;
+                    return [
+                        this.add.rectangle(W / 2, y, W - 84, 38, 0x161b26, 0.92).setStrokeStyle(2, 0x000000).setDepth(21),
+                        this.add.text(56, y, st.label, {
+                            fontFamily: FONT_UI, fontSize: '14px', color: '#d6d3d1'
+                        }).setOrigin(0, 0.5).setDepth(22),
+                        this.add.text(W - 56, y, st.val, {
+                            fontFamily: FONT_UI, fontSize: '15px', fontStyle: 'bold', color: '#fbbf24'
+                        }).setOrigin(1, 0.5).setDepth(22)
+                    ];
+                });
+
+                // 評語放在漫畫旁白框
+                const quoteFont = `italic bold 14px ${FONT_UI}`;
+                drawComicPanel(this, 42, 575, W - 84, 70, { fill: PAPER, alpha: 0.97, shadow: 5, halftone: true, depth: 21 });
+                this.add.text(W / 2, 610, wrapCJK(rankQuote, quoteFont, W - 116), {
+                    fontFamily: FONT_UI,
+                    fontSize: '14px',
+                    fontStyle: 'italic bold',
+                    color: INK,
+                    align: 'center',
+                    lineSpacing: 4
+                }).setOrigin(0.5).setDepth(22);
+
+                // Action Buttons
+                const btnRetry = createComicButton(this, W / 2, 720, W - 84, 56, '🚬 再撿一根 (重選菸屁股挑戰)', { fontSize: '19px' });
+                btnRetry.on('pointerdown', () => {
+                    audioEngine.playLighterFlick();
+                    this.scene.start('SelectButtScene');
+                });
+
+                const btnHome = createComicButton(this, W / 2, 790, W - 84, 48, '🎬 回到遊戲封面', {
+                    fill: 0x1f2937,
+                    color: '#e5e7eb',
+                    fontSize: '16px',
+                    shadow: 5,
+                    shine: 0.06
+                });
+                btnHome.on('pointerdown', () => {
+                    this.scene.start('CoverScene');
+                });
+
+                // 進場動畫：評等蓋章、分數跳動、統計逐列滑入
+                rankTxt.setScale(2.2).setAlpha(0);
+                this.tweens.add({
+                    targets: rankTxt,
+                    scale: 1,
+                    alpha: 1,
+                    delay: 250,
+                    duration: 380,
+                    ease: 'Back.easeOut',
+                    onComplete: () => this.cameras.main.shake(140, 0.006)
+                });
+                this.tweens.addCounter({
+                    from: 0,
+                    to: res.score,
+                    delay: 300,
+                    duration: 1200,
+                    ease: 'Cubic.easeOut',
+                    onUpdate: (tween) => scoreNum.setText(`${Math.floor(tween.getValue())}`)
+                });
+                statRows.forEach((row, i) => {
+                    row.forEach(o => {
+                        const targetX = o.x;
+                        o.setAlpha(0).setX(targetX + 40);
+                        this.tweens.add({ targets: o, alpha: 1, x: targetX, delay: 500 + i * 110, duration: 280, ease: 'Quad.easeOut' });
+                    });
+                });
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 7. INITIALIZE PHASER 3 GAME & UI BINDINGS
+         * ============================================================================
+         */
+        let phaserGame = null;
+
+        window.onload = function () {
+            const config = {
+                type: Phaser.AUTO,
+                parent: 'phaser-container',
+                width: GAME_W * RENDER_SCALE,
+                height: GAME_H * RENDER_SCALE,
+                backgroundColor: '#080a0f',
+                // 手機長壓抽菸時不要跳出系統長按選單（電腦版右鍵也一併關閉）
+                disableContextMenu: true,
+                scale: {
+                    mode: Phaser.Scale.FIT,
+                    autoCenter: Phaser.Scale.CENTER_BOTH
+                },
+                scene: [BootScene, CoverScene, StoryScene, SelectButtScene, PlayScene, ResultScene]
+            };
+
+            phaserGame = new Phaser.Game(config);
+
+            // Bind Mute / Unmute Button
+            const btnMute = document.getElementById('btn-mute');
+            const muteIcon = document.getElementById('mute-icon');
+            btnMute.addEventListener('click', () => {
+                audioEngine.startContinuousBGM();
+                const muted = audioEngine.toggleMute();
+                muteIcon.textContent = muted ? '🔇' : '🔊';
+            });
+
+            // Bind Custom Asset Loader Modal (Allows user to drop their 0.jpg~6.jpg & video file directly)
+            const modal = document.getElementById('asset-modal');
+            const btnOpenAssets = document.getElementById('btn-open-assets');
+            const btnCloseAssets = document.getElementById('btn-close-assets');
+            const btnConfirmAssets = document.getElementById('btn-confirm-assets');
+            const fileInput = document.getElementById('file-input-assets');
+            const statusList = document.getElementById('asset-status-list');
+
+            // 「載入原圖/影片」按鈕與彈窗已從頁面移除時，就不綁定以下功能
+            if (!modal || !btnOpenAssets) return;
+
+            btnOpenAssets.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            const closeModal = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+            btnCloseAssets.addEventListener('click', closeModal);
+            btnConfirmAssets.addEventListener('click', closeModal);
+
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+
+                statusList.innerHTML = '';
+                files.forEach((file) => {
+                    const url = URL.createObjectURL(file);
+                    const nameLower = file.name.toLowerCase();
+
+                    if (file.type.startsWith('video/') || nameLower.endsWith('.mp4') || nameLower.endsWith('.webm')) {
+                        const videoEl = document.getElementById('cover-video-layer');
+                        videoEl.src = url;
+                        videoEl.muted = audioEngine.isMuted;
+                        videoEl.play().catch(() => { });
+                        GAME_STATE.customVideoLoaded = true;
+                        audioEngine.hasCustomVideoAudio = true;
+
+                        // If currently on CoverScene, show the video overlay immediately
+                        const coverScene = phaserGame.scene.getScene('CoverScene');
+                        if (coverScene && coverScene.scene.isActive()) {
+                            coverScene.syncVideoOverlay(true);
+                        }
+                        const log = document.createElement('div');
+                        log.className = 'text-amber-300 font-bold';
+                        log.textContent = `🎬 已載入封面影片與持續音樂：${file.name}`;
+                        statusList.appendChild(log);
+                    } else if (file.type.startsWith('image/')) {
+                        // Match 0.jpg ~ 7.jpg by digit in filename（7 = 燙到的反應圖）
+                        const match = nameLower.match(/([0-7])/);
+                        if (match) {
+                            const idx = match[1];
+                            const texKey = `img${idx}`;
+                            const img = new Image();
+                            img.onload = () => {
+                                if (phaserGame.textures.exists(texKey)) {
+                                    phaserGame.textures.remove(texKey);
+                                }
+                                phaserGame.textures.addImage(texKey, img);
+                            };
+                            img.src = url;
+                            const log = document.createElement('div');
+                            log.className = 'text-emerald-400';
+                            log.textContent = `🖼️ 已替換場景圖片 ${idx}.jpg ➔ ${file.name}`;
+                            statusList.appendChild(log);
+                        }
+                    }
+                });
+            });
+        };
+    </script>
+
+    <!-- game：底部小橫幅廣告（320×50）。寬螢幕放左下角、窄螢幕放正下方並讓出空間，都與遊戲保持 150px 以上距離；沒有廣告可放時自動收起 -->
+    <div id="ad-bar">
+        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px"
+            data-ad-client="ca-pub-9815906908978353" data-ad-slot="6817299480"></ins>
+    </div>
+    <script>
+        // Google 強烈建議遊戲頁的廣告離遊戲至少 150px，避免誤觸被判定為無效流量
+        const AD_W = 320;
+        const AD_H = 50;
+        const AD_MARGIN = 8;
+        const AD_GAP = 150;
+
+        function layoutAdBar() {
+            const body = document.body;
+            let reserve = 0;
+            if (!body.classList.contains('ad-hidden')) {
+                // 遊戲全高顯示時的畫布寬度（9:16）；兩側空白放得下廣告 + 150px 就移到左下角，遊戲不用縮小
+                const canvasW = Math.min(window.innerWidth, window.innerHeight * 9 / 16);
+                const corner = (window.innerWidth - canvasW) / 2 >= 16 + AD_W + AD_GAP;
+                body.classList.toggle('ad-corner', corner);
+                if (!corner) reserve = AD_H + AD_MARGIN + AD_GAP;
+            }
+            document.documentElement.style.setProperty('--ad-reserve', `${reserve}px`);
+            if (phaserGame) {
+                phaserGame.scale.getParentBounds();
+                phaserGame.scale.refresh();
+            }
+        }
+
+        function hideAdBar() {
+            document.body.classList.add('ad-hidden');
+            layoutAdBar();
+        }
+
+        layoutAdBar();
+        window.addEventListener('resize', layoutAdBar);
+
+        // 沒有廣告可投放（例如網站尚未通過 AdSense 審核）時收起，把空間還給遊戲
+        const adSlot = document.querySelector('#ad-bar .adsbygoogle');
+        new MutationObserver(() => {
+            if (adSlot.getAttribute('data-ad-status') === 'unfilled') hideAdBar();
+        }).observe(adSlot, { attributes: true, attributeFilter: ['data-ad-status'] });
+    </script>
+    <!-- 廣告腳本被擋（例如裝了擋廣告外掛）時也收起 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9815906908978353"
+        crossorigin="anonymous" onerror="hideAdBar()"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</body>
+
+</html>
