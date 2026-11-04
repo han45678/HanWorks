@@ -185,12 +185,14 @@
                 this.rainGain = null;
 
                 // Taiwanese Hokkien Burn Lines (台式閩南語燙傷語音台詞)
+                // audio：真人配音檔（放在根目錄，念的內容要跟 text 一樣；text 是畫面上的字幕）；
+                // 有任何一個音檔載得到，就只從有音檔的台詞裡挑；全部沒有才用瀏覽器男聲念 tts（華語諧音），pitch 壓低讓聲音粗一點
                 this.taiwaneseBurnLines = [
-                    { text: "啊娘喂！燒啦！燙死林北啦！", tts: "啊娘喂！休啦！燙死林北啦！", pitch: 1.15, rate: 1.25 },
-                    { text: "靠北喔！燒燙燙！嘴唇起水泡啦！", tts: "靠北喔！休燙燙！嘴唇起水泡啦！", pitch: 1.05, rate: 1.3 },
-                    { text: "夭壽骨喔！燒到手指頭啦！痛死！", tts: "夭壽骨喔！休到手指頭啦！痛死！", pitch: 1.2, rate: 1.28 },
-                    { text: "林老師咧！這支菸頭有夠燒！", tts: "林老師咧！這支菸頭有夠休！", pitch: 0.95, rate: 1.25 },
-                    { text: "哎喲喂呀！燒到嘴角臭火乾啦！", tts: "哎喲喂呀！休到嘴角臭火搭啦！", pitch: 1.1, rate: 1.22 }
+                    { text: "啊娘喂！燒啦！燙死林北啦！", tts: "啊娘喂！休啦！燙死林北啦！", pitch: 0.8, rate: 1.25, audio: './audio01.mp3' },
+                    { text: "靠北喔！燒燙燙！嘴唇起水泡啦！", tts: "靠北喔！休燙燙！嘴唇起水泡啦！", pitch: 0.75, rate: 1.3, audio: './audio02.mp3' },
+                    { text: "夭壽骨喔！燒到手指頭啦！痛死！", tts: "夭壽骨喔！休到手指頭啦！痛死！", pitch: 0.85, rate: 1.28, audio: './audio03.mp3' },
+                    { text: "林老師咧！這支菸頭有夠燒！", tts: "林老師咧！這支菸頭有夠休！", pitch: 0.7, rate: 1.25 },
+                    { text: "哎喲喂呀！燒到嘴角臭火乾啦！", tts: "哎喲喂呀！休到嘴角臭火搭啦！", pitch: 0.78, rate: 1.22 }
                 ];
             }
 
@@ -198,10 +200,26 @@
                 if (!this.ctx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
                     this.ctx = new AudioCtx();
+                    // 配音檔要有 AudioContext 才能解碼
+                    VoiceClips.decodeAll();
+                    // 先叫一次讓 Chrome 開始載入語音清單（第一次常回空陣列，第一次燙嘴就挑不到男聲）
+                    if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
                 }
                 if (this.ctx && this.ctx.state === 'suspended') {
                     this.ctx.resume();
                 }
+            }
+
+            // 燙嘴台詞的瀏覽器語音：男聲由低沉到一般排序，Apple 的 Rocko → Grandpa → Reed → Eddy（Mac、iPhone），
+            // 微軟的 YunJhe、Zhiwei（Windows）；都沒有才退回其他台灣中文語音（多半是女聲，例如 Chrome 的 Google 國語、Mac 的美佳）
+            pickBurnVoice() {
+                const voices = window.speechSynthesis.getVoices();
+                const twVoices = voices.filter(v => /^zh[-_]TW$/i.test(v.lang));
+                for (const name of ['Rocko', 'Grandpa', 'Reed', 'Eddy', 'YunJhe', 'Zhiwei']) {
+                    const male = twVoices.find(v => v.name.includes(name));
+                    if (male) return male;
+                }
+                return voices.find(v => v.lang.includes('TW') || v.name.includes('Taiwan') || v.name.includes('Meijia') || v.name.includes('Hsiao')) || null;
             }
 
             startContinuousBGM() {
@@ -427,7 +445,11 @@
             // Trigger Taiwanese Hokkien Burn Voice + Sizzle Sound!
             playTaiwaneseBurnVoice() {
                 this.init();
-                const line = this.taiwaneseBurnLines[Math.floor(Math.random() * this.taiwaneseBurnLines.length)];
+                // 有真人配音就只挑有音檔的台詞，免得一下真人一下機器聲
+                const recorded = this.taiwaneseBurnLines.filter(l => l.audio && VoiceClips.has(l.audio));
+                const pool = recorded.length ? recorded : this.taiwaneseBurnLines;
+                const line = pool[Math.floor(Math.random() * pool.length)];
+                const playedClip = !this.isMuted && !!line.audio && VoiceClips.play(line.audio);
 
                 if (!this.isMuted && this.ctx) {
                     const now = this.ctx.currentTime;
@@ -448,35 +470,37 @@
                     sizzleGain.connect(this.ctx.destination);
                     sizzleSrc.start(now);
 
-                    // 2. Synthesized vocal pain grunt/cry fallback ("Ah-niang-wei! Sio-lah!")
-                    const vOsc = this.ctx.createOscillator();
-                    const vGain = this.ctx.createGain();
-                    vOsc.type = 'sawtooth';
-                    // Taiwanese exclamation pitch contour
-                    vOsc.frequency.setValueAtTime(290, now + 0.05);
-                    vOsc.frequency.linearRampToValueAtTime(420, now + 0.18); // "啊娘~"
-                    vOsc.frequency.linearRampToValueAtTime(240, now + 0.34); // "喂~"
-                    vOsc.frequency.setValueAtTime(380, now + 0.38);          // "燒(Sio)!"
-                    vOsc.frequency.exponentialRampToValueAtTime(170, now + 0.68); // "啦!"
+                    // 2. Synthesized vocal pain grunt/cry fallback ("Ah-niang-wei! Sio-lah!")（有真人配音就不用）
+                    if (!playedClip) {
+                        const vOsc = this.ctx.createOscillator();
+                        const vGain = this.ctx.createGain();
+                        vOsc.type = 'sawtooth';
+                        // Taiwanese exclamation pitch contour
+                        vOsc.frequency.setValueAtTime(290, now + 0.05);
+                        vOsc.frequency.linearRampToValueAtTime(420, now + 0.18); // "啊娘~"
+                        vOsc.frequency.linearRampToValueAtTime(240, now + 0.34); // "喂~"
+                        vOsc.frequency.setValueAtTime(380, now + 0.38);          // "燒(Sio)!"
+                        vOsc.frequency.exponentialRampToValueAtTime(170, now + 0.68); // "啦!"
 
-                    const formant = this.ctx.createBiquadFilter();
-                    formant.type = 'bandpass';
-                    formant.frequency.setValueAtTime(850, now);
-                    formant.Q.value = 3.5;
+                        const formant = this.ctx.createBiquadFilter();
+                        formant.type = 'bandpass';
+                        formant.frequency.setValueAtTime(850, now);
+                        formant.Q.value = 3.5;
 
-                    vGain.gain.setValueAtTime(0.001, now);
-                    vGain.gain.linearRampToValueAtTime(0.28, now + 0.06);
-                    vGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                        vGain.gain.setValueAtTime(0.001, now);
+                        vGain.gain.linearRampToValueAtTime(0.28, now + 0.06);
+                        vGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
 
-                    vOsc.connect(formant);
-                    formant.connect(vGain);
-                    vGain.connect(this.ctx.destination);
-                    vOsc.start(now + 0.05);
-                    vOsc.stop(now + 0.72);
+                        vOsc.connect(formant);
+                        formant.connect(vGain);
+                        vGain.connect(this.ctx.destination);
+                        vOsc.start(now + 0.05);
+                        vOsc.stop(now + 0.72);
+                    }
                 }
 
-                // 3. Web Speech API with Taiwanese Mandarin/Hokkien phonetic inflection
-                if (!this.isMuted && 'speechSynthesis' in window) {
+                // 3. Web Speech API with Taiwanese Mandarin/Hokkien phonetic inflection（沒有真人配音時才念）
+                if (!playedClip && !this.isMuted && 'speechSynthesis' in window) {
                     try {
                         window.speechSynthesis.cancel();
                         const utter = new SpeechSynthesisUtterance(line.tts);
@@ -484,9 +508,8 @@
                         utter.pitch = line.pitch;
                         utter.rate = line.rate;
                         utter.volume = 1.0;
-                        const voices = window.speechSynthesis.getVoices();
-                        const twVoice = voices.find(v => v.lang.includes('TW') || v.name.includes('Taiwan') || v.name.includes('Meijia') || v.name.includes('Hsiao'));
-                        if (twVoice) utter.voice = twVoice;
+                        const voice = this.pickBurnVoice();
+                        if (voice) utter.voice = voice;
                         window.speechSynthesis.speak(utter);
                     } catch (e) { }
                 }
@@ -569,6 +592,67 @@
 
             setMuted(muted) {
                 if (this.el) this.el.muted = muted;
+            }
+        };
+
+        /**
+         * 燙嘴台詞的真人配音（audio01.mp3～audio03.mp3，見 taiwaneseBurnLines 的 audio）：放了就播，沒放就退回瀏覽器語音。
+         * 上線時下載後交給 Web Audio 播（燙嘴發生在遊戲中途，不是點擊當下，手機上 <audio> 會被擋）；
+         * 雙擊開檔（file://）讀不到檔案內容，改用 <audio> 播。
+         */
+        const VoiceClips = {
+            clips: {},
+
+            load(srcs) {
+                srcs.forEach(src => {
+                    if (this.clips[src]) return;
+                    const clip = this.clips[src] = { ready: false };
+                    if (IS_LOCAL_FILE) {
+                        const a = new Audio();
+                        a.preload = 'auto';
+                        a.addEventListener('canplaythrough', () => { clip.ready = true; }, { once: true });
+                        a.src = src;
+                        clip.el = a;
+                    } else {
+                        // 沒放檔案會 404：當作沒有配音
+                        fetch(src)
+                            .then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+                            .then(data => { clip.data = data; this.decode(clip); })
+                            .catch(() => { });
+                    }
+                });
+            },
+
+            // AudioContext 要等玩家點「開始」才建立，下載先完成的等建好再解碼
+            decode(clip) {
+                const ctx = audioEngine.ctx;
+                if (!ctx || !clip.data) return;
+                const data = clip.data;
+                clip.data = null;
+                ctx.decodeAudioData(data, buf => { clip.buffer = buf; clip.ready = true; }, () => { });
+            },
+
+            decodeAll() {
+                Object.values(this.clips).forEach(clip => this.decode(clip));
+            },
+
+            has(src) {
+                return !!(this.clips[src] && this.clips[src].ready);
+            },
+
+            play(src) {
+                const clip = this.clips[src];
+                if (!clip || !clip.ready) return false;
+                if (clip.el) {
+                    clip.el.currentTime = 0;
+                    clip.el.play().catch(() => { });
+                } else {
+                    const node = audioEngine.ctx.createBufferSource();
+                    node.buffer = clip.buffer;
+                    node.connect(audioEngine.ctx.destination);
+                    node.start();
+                }
+                return true;
             }
         };
 
@@ -1878,6 +1962,7 @@
                 }).setOrigin(0.5);
 
                 CoverVideo.load();
+                VoiceClips.load(audioEngine.taiwaneseBurnLines.filter(l => l.audio).map(l => l.audio));
                 for (let i = 0; i <= 7; i++) this.load.image(`img${i}`, `./${i}.webp`);
                 this.load.on('progress', p => this.loadingTxt.setText(`正在載入巷弄街景與音效... ${Math.round(p * 100)}%`));
             }
