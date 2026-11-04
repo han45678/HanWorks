@@ -5,14 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl</title>
-    <meta name="description" content="街友本色 I - 煙屁股大作戰（True Hobo I: Butt Brawl）：在台灣霓虹暗巷裡挑一根菸屁股，壓住猛吸、適時放開控溫，60 秒內抽出最高分的黑色幽默網頁小遊戲。">
+    <meta name="description"
+        content="街友本色 I - 煙屁股大作戰（True Hobo I: Butt Brawl）：在台灣霓虹暗巷裡挑一根菸屁股，壓住猛吸、適時放開控溫，60 秒內抽出最高分的黑色幽默網頁小遊戲。">
     <!-- AdSense 網站驗證（meta 標記 + 程式碼片段都放在 head，Google 只認 head 裡的） -->
     <meta name="google-adsense-account" content="ca-pub-9815906908978353">
     <!-- 廣告腳本被擋（例如裝了擋廣告外掛）時記下來，等廣告列建好再收起 -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9815906908978353"
         crossorigin="anonymous" onerror="window.adScriptBlocked = true; if (window.hideAdBar) hideAdBar();"></script>
     <!-- 分頁小圖示：撿來的菸屁股（濾嘴 + 一小截皺菸紙 + 燒焦的頭）；內嵌，免得瀏覽器去抓不存在的 favicon.ico -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
     <!-- Phaser 3 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <!-- Google Fonts：中文 Noto Serif TC、英文 Noto Serif（全站統一） -->
@@ -153,12 +155,11 @@
         <div id="phaser-container"></div>
 
         <!-- 右上角音樂開關 -->
-        <div id="top-bar">
+        <!-- <div id="top-bar">
             <button id="btn-mute">
                 <span id="mute-icon">🔊</span> <span id="mute-text">街頭搖滾 BGM</span>
             </button>
-
-        </div>
+        </div> -->
 
     </div>
 
@@ -188,11 +189,15 @@
                 // audio：真人配音檔（放在根目錄，念的內容要跟 text 一樣；text 是畫面上的字幕）；
                 // 有任何一個音檔載得到，就只從有音檔的台詞裡挑；全部沒有才用瀏覽器男聲念 tts（華語諧音），pitch 壓低讓聲音粗一點
                 this.taiwaneseBurnLines = [
-                    { text: "啊娘喂！燒啦！燙死林北啦！", tts: "啊娘喂！休啦！燙死林北啦！", pitch: 0.8, rate: 1.25, audio: './audio01.mp3' },
-                    { text: "靠北喔！燒燙燙！嘴唇起水泡啦！", tts: "靠北喔！休燙燙！嘴唇起水泡啦！", pitch: 0.75, rate: 1.3, audio: './audio02.mp3' },
-                    { text: "夭壽骨喔！燒到手指頭啦！痛死！", tts: "夭壽骨喔！休到手指頭啦！痛死！", pitch: 0.85, rate: 1.28, audio: './audio03.mp3' },
-                    { text: "林老師咧！這支菸頭有夠燒！", tts: "林老師咧！這支菸頭有夠休！", pitch: 0.7, rate: 1.25 },
-                    { text: "哎喲喂呀！燒到嘴角臭火乾啦！", tts: "哎喲喂呀！休到嘴角臭火搭啦！", pitch: 0.78, rate: 1.22 }
+                    { text: "幹！燙著恁爸", tts: "幹！燙著恁爸", pitch: 0, rate: 1, audio: './audio01.mp3' },
+                    { text: "啊！幹", tts: "啊！幹", pitch: 0, rate: 1, audio: './audio02.mp3' },
+                    { text: "阿娘喂！", tts: "阿娘喂！", pitch: 0, rate: 1., audio: './audio03.mp3' },
+                    { text: "唉！機掰", tts: "唉！機掰", pitch: 0, rate: 1, audio: './audio04.mp3' },
+                    { text: "哭爸！燙啦", tts: "哭爸！燙啦", pitch: 0, rate: 1, audio: './audio05.mp3' },
+                    { text: "哭爸", tts: "哭爸", pitch: 0, rate: 1, audio: './audio06.mp3' },
+                    { text: "幹", tts: "幹", pitch: 0, rate: 1, audio: './audio07.mp3' },
+                    { text: "恁老師咧", tts: "恁老師咧", pitch: 0, rate: 1, audio: './audio08.mp3' },
+                    { text: "燙", tts: "燙", pitch: 0, rate: 1, audio: './audio09.mp3' }
                 ];
             }
 
