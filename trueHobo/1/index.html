@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl</title>
+    <meta name="description" content="街友本色 I - 煙屁股大作戰（True Hobo I: Butt Brawl）：在台灣霓虹暗巷裡挑一根菸屁股，壓住猛吸、適時放開控溫，60 秒內抽出最高分的黑色幽默網頁小遊戲。">
+    <!-- AdSense 網站驗證（meta 標記 + 程式碼片段都放在 head，Google 只認 head 裡的） -->
+    <meta name="google-adsense-account" content="ca-pub-9815906908978353">
+    <!-- 廣告腳本被擋（例如裝了擋廣告外掛）時記下來，等廣告列建好再收起 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9815906908978353"
+        crossorigin="anonymous" onerror="window.adScriptBlocked = true; if (window.hideAdBar) hideAdBar();"></script>
     <!-- 分頁小圖示：撿來的菸屁股（濾嘴 + 一小截皺菸紙 + 燒焦的頭）；內嵌，免得瀏覽器去抓不存在的 favicon.ico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
     <!-- Phaser 3 -->
@@ -3428,6 +3434,7 @@
 
         layoutAdBar();
         window.addEventListener('resize', layoutAdBar);
+        if (window.adScriptBlocked) hideAdBar();
 
         // 沒有廣告可投放（例如網站尚未通過 AdSense 審核）時收起，把空間還給遊戲
         if (adSlot) {
@@ -3436,9 +3443,6 @@
             }).observe(adSlot, { attributes: true, attributeFilter: ['data-ad-status'] });
         }
     </script>
-    <!-- 廣告腳本被擋（例如裝了擋廣告外掛）時也收起 -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9815906908978353"
-        crossorigin="anonymous" onerror="hideAdBar()"></script>
     <script>
         if (adSlot) (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
