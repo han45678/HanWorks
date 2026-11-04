@@ -5,12 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl</title>
-    <!-- 分頁小圖示（內嵌，免得瀏覽器去抓不存在的 favicon.ico） -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚬</text></svg>">
+    <!-- 分頁小圖示：撿來的菸屁股（濾嘴 + 一小截皺菸紙 + 燒焦的頭）；內嵌，免得瀏覽器去抓不存在的 favicon.ico -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
     <!-- Phaser 3 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <!-- 內建漫畫原圖（與本檔放在同一個資料夾；缺少時自動改用程式繪製的備援美術） -->
-    <script src="phaser_2d_art.js"></script>
     <!-- Google Fonts：中文 Noto Serif TC、英文 Noto Serif（全站統一） -->
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Serif:wght@400;700;900&display=swap"
@@ -57,13 +55,11 @@
             z-index: 10;
         }
 
-        /* 底部小橫幅廣告（320×50）：不疊在遊戲上，並與遊戲保持 Google 建議的 150px 以上距離 */
+        /* 底部橫幅廣告（尺寸由底部的廣告設定決定）：不疊在遊戲上，並與遊戲保持 Google 建議的 150px 以上距離 */
         #ad-bar {
             position: fixed;
             bottom: 8px;
             left: 50%;
-            width: 320px;
-            height: 50px;
             transform: translateX(-50%);
             z-index: 20;
         }
@@ -73,7 +69,8 @@
             transform: none;
         }
 
-        body.ad-hidden #ad-bar {
+        body.ad-hidden #ad-bar,
+        body.ad-narrow #ad-bar {
             display: none;
         }
 
@@ -128,20 +125,6 @@
             border-radius: 6px;
         }
 
-        /* Persistent Cover Video Layer */
-        #cover-video-layer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 12;
-            object-fit: cover;
-            border-radius: 6px;
-            transition: opacity 0.6s ease;
-            opacity: 0;
-        }
-
         .comic-stroke {
             text-shadow:
                 -2px -2px 0 #000,
@@ -154,29 +137,12 @@
         .neon-glow-red {
             text-shadow: 0 0 10px #ff3b1f, 0 0 22px #ff1100, 2px 2px 0 #000;
         }
-
-        /* Custom scrollbar for modal */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #111827;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 3px;
-        }
     </style>
 </head>
 
 <body>
 
     <div id="game-wrapper">
-        <!-- Persistent Video Element (plays cover video visually on CoverScene, stays alive for continuous music when entering game) -->
-        <video id="cover-video-layer" playsinline loop preload="auto"></video>
-
         <!-- Phaser Game Canvas Mount -->
         <div id="phaser-container"></div>
 
@@ -204,7 +170,8 @@
                 this.ctx = null;
                 this.isMuted = false;
                 this.isPlayingBGM = false;
-                this.hasCustomVideoAudio = false;
+                // 封面影片自帶點菸聲 + 搖滾樂，封面期間先讓合成搖滾停下，離開封面再接手
+                this.duckBGM = false;
                 this.bgmStep = 0;
                 this.bgmTimer = null;
                 this.inhaleNode = null;
@@ -233,14 +200,6 @@
 
             startContinuousBGM() {
                 this.init();
-                // Also ensure cover video plays unmuted if user uploaded/loaded a video with sound
-                const videoEl = document.getElementById('cover-video-layer');
-                if (videoEl && videoEl.src && this.hasCustomVideoAudio) {
-                    videoEl.muted = this.isMuted;
-                    videoEl.volume = 0.85;
-                    videoEl.play().catch(() => { });
-                }
-
                 if (this.isPlayingBGM) return;
                 this.isPlayingBGM = true;
 
@@ -270,11 +229,8 @@
 
                 const stepIntervalMs = 240; // 125 BPM eighth-note rock groove
                 this.bgmTimer = setInterval(() => {
-                    if (this.isMuted || !this.ctx) return;
-                    // If user loaded a custom video with its own audio track and it's actively playing, lower synth volume so video BGM shines
-                    const videoEl = document.getElementById('cover-video-layer');
-                    const videoAudioActive = (this.hasCustomVideoAudio && videoEl && !videoEl.paused && !videoEl.muted);
-                    const masterVol = videoAudioActive ? 0.04 : 0.18;
+                    if (this.isMuted || !this.ctx || this.duckBGM) return;
+                    const masterVol = 0.18;
 
                     const step = riffNotes[this.bgmStep % riffNotes.length];
                     this.playGrungeGuitarNote(step.freq, step.dur, step.accent, masterVol);
@@ -553,15 +509,62 @@
                 if (this.rainGain && this.ctx) {
                     this.rainGain.gain.setValueAtTime(this.isMuted ? 0 : 0.025, this.ctx.currentTime);
                 }
-                const videoEl = document.getElementById('cover-video-layer');
-                if (videoEl) {
-                    videoEl.muted = this.isMuted;
-                }
+                CoverVideo.setMuted(this.isMuted);
                 return this.isMuted;
             }
         }
 
         const audioEngine = new StreetAudioEngine();
+
+        // 雙擊開檔（file://）時瀏覽器不准 WebGL 讀本機的圖檔和影片，改用 Canvas 繪圖 + <img> 載入（上線後照常用 WebGL）
+        const IS_LOCAL_FILE = location.protocol === 'file:';
+
+        /**
+         * 封面影片 video.mp4（點菸 + 搖滾樂）：自己建 <video> 再交給 Phaser 當貼圖，
+         * 播放、靜音、切場景都由這裡控制。
+         */
+        const CoverVideo = {
+            el: null,
+
+            load() {
+                if (this.el) return;
+                const v = document.createElement('video');
+                v.loop = true;
+                v.playsInline = true;
+                v.setAttribute('playsinline', '');
+                v.preload = 'auto';
+                // 找不到或格式不支援：當作沒有影片，封面改用原圖
+                v.addEventListener('error', () => { if (this.el === v) this.el = null; });
+                v.src = './video.mp4';
+                this.el = v;
+                // 先靜音播著，讓手機先把影片載下來（iOS 不播放就不會下載）；有聲播放留給玩家點「開始」的當下
+                v.muted = true;
+                v.play().catch(() => { });
+            },
+
+            // 從頭播放（依目前的靜音設定）；必須在玩家點擊的當下呼叫才能有聲音
+            // （不要用「音量 0 試播」偵測能否有聲自動播放：Chrome 把音量 0 當成靜音，會誤判成允許）
+            start() {
+                const v = this.el;
+                if (!v) return false;
+                v.currentTime = 0;
+                v.volume = 1;
+                v.muted = audioEngine.isMuted;
+                v.play().catch(() => {
+                    v.muted = true;
+                    v.play().catch(() => { });
+                });
+                return true;
+            },
+
+            stop() {
+                if (this.el) this.el.pause();
+            },
+
+            setMuted(muted) {
+                if (this.el) this.el.muted = muted;
+            }
+        };
 
         /**
          * ============================================================================
@@ -1165,6 +1168,7 @@
                 scoreMultiplier: 1.0,
                 burnPenalty: 120,
                 trayPos: { x: 84, y: 367 }, // 鐵盤原圖上實際菸蒂的位置（540x960 遊戲座標）
+                stubLen: 46,           // HUD 上濾嘴後面還剩多長的菸紙（px，濾嘴固定 36px）
                 desc: '菸身較長且微濕，升溫慢、容錯率高，適合剛入巷弄的新手。'
             },
             {
@@ -1181,6 +1185,7 @@
                 scoreMultiplier: 1.8,
                 burnPenalty: 180,
                 trayPos: { x: 292, y: 467 },
+                stubLen: 30,
                 desc: '菸草乾燥紮實、吸起來濃郁過癮，但火頭推進速度明顯加快！'
             },
             {
@@ -1197,6 +1202,7 @@
                 scoreMultiplier: 3.0,
                 burnPenalty: 260,
                 trayPos: { x: 134, y: 496 },
+                stubLen: 15,
                 desc: '火源已經貼近濾嘴邊緣！稍微貪吸半秒就會直接燙爆嘴唇！'
             },
             {
@@ -1213,6 +1219,7 @@
                 scoreMultiplier: 5.0,
                 burnPenalty: 400,
                 trayPos: { x: 489, y: 328 },
+                stubLen: 7,
                 desc: '街友界傳說極品！每一口都是五倍暴利積分，但需要毫秒級放開控溫！'
             }
         ];
@@ -1220,8 +1227,7 @@
         // Shared Game State
         const GAME_STATE = {
             selectedButt: CIGARETTE_BUTTS[1],
-            lastResult: null,
-            customVideoLoaded: false
+            lastResult: null
         };
 
         /**
@@ -1245,11 +1251,12 @@
         const PAPER = 0xf2e8cf;
 
         // 所有 Text 都以 RENDER_SCALE 解析度繪製，配合攝影機放大後才不會糊
+        // 要在建立時就帶進 style：事後 setResolution() 不會更新貼圖的解析度，Canvas 模式（本機開檔）會把字畫成兩倍大
         (function patchTextResolution() {
             const factory = Phaser.GameObjects.GameObjectFactory.prototype;
             const createText = factory.text;
-            factory.text = function (...args) {
-                return createText.apply(this, args).setResolution(RENDER_SCALE);
+            factory.text = function (x, y, text, style) {
+                return createText.call(this, x, y, text, { ...style, resolution: RENDER_SCALE });
             };
         })();
 
@@ -1376,8 +1383,92 @@
                     ctx.arc(5, 5, 1.8, 0, Math.PI * 2);
                     ctx.fill();
                 });
+
+                // 菸屁股圖示（取代 🚬）：用高解析度畫，顯示時再縮回來才夠銳利
+                make('icon-butt', BUTT_ICON.w * BUTT_ICON.res, BUTT_ICON.h * BUTT_ICON.res, (ctx) => {
+                    ctx.scale(BUTT_ICON.res, BUTT_ICON.res);
+                    drawButtShape(ctx, 19, 10, 10);
+                });
             }
         };
+
+        // 菸屁股：濾嘴 + 一小截皺掉的菸紙 + 捻熄燒焦的頭（🚬 表情符號畫的是整根新菸，不像撿來的菸蒂）
+        // 圖示與 HUD 共用；座標為邏輯像素（ctx 已依解析度縮放），四周留 2px 給描邊；回傳菸紙末端的 x
+        const BUTT_ICON = { w: 39, h: 14, res: 3 };
+        const CIG_BAR = { filterW: 36, h: 14 };
+        function drawButtShape(ctx, filterW, paperW, h) {
+            const x0 = 2;
+            const top = 2;
+            const bottom = top + h;
+            const x1 = x0 + filterW;
+            const x2 = x1 + paperW;
+            const jag = Math.min(4, h * 0.3);
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = '#000';
+
+            // 菸紙：尾端被捻熄壓扁，邊緣參差
+            const paper = new Path2D();
+            paper.moveTo(x1, top + 0.6);
+            paper.lineTo(x2, top + 0.6);
+            paper.lineTo(x2 + jag, top + h * 0.22);
+            paper.lineTo(x2 + jag * 0.25, top + h * 0.45);
+            paper.lineTo(x2 + jag * 0.9, top + h * 0.7);
+            paper.lineTo(x2 + jag * 0.1, bottom - 0.6);
+            paper.lineTo(x1, bottom - 0.6);
+            paper.closePath();
+            ctx.fillStyle = '#e9e2d1';
+            ctx.fill(paper);
+
+            ctx.save();
+            ctx.clip(paper);
+            // 靠濾嘴那段被菸油燻黃
+            const stain = ctx.createLinearGradient(x1, 0, x1 + Math.max(6, paperW * 0.7), 0);
+            stain.addColorStop(0, 'rgba(176,128,52,0.55)');
+            stain.addColorStop(1, 'rgba(176,128,52,0)');
+            ctx.fillStyle = stain;
+            ctx.fillRect(x1, top, paperW + jag, h);
+            // 皺摺
+            if (paperW > 9) {
+                ctx.strokeStyle = 'rgba(60,45,30,0.35)';
+                ctx.lineWidth = 0.8;
+                [0.38, 0.68].forEach((t, i) => {
+                    const cx = x1 + paperW * t;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 1.5, top + (i ? h * 0.55 : 1));
+                    ctx.lineTo(cx + 1.5, top + (i ? h - 1 : h * 0.5));
+                    ctx.stroke();
+                });
+            }
+            // 燒焦的頭 + 灰燼
+            const charW = Math.min(5, paperW * 0.7);
+            ctx.fillStyle = '#2f2723';
+            ctx.fillRect(x2 - charW, top, charW + jag + 1, h);
+            ctx.fillStyle = '#8d8781';
+            [[0.3, 0.3], [0.65, 0.62], [0.2, 0.82]].forEach(([tx, ty]) => {
+                ctx.beginPath();
+                ctx.arc(x2 - charW + (charW + jag) * tx, top + h * ty, h * 0.09, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.restore();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1.6;
+            ctx.stroke(paper);
+
+            // 濾嘴：軟木紋 + 金線
+            ctx.fillStyle = '#d9893a';
+            ctx.fillRect(x0, top, filterW, h);
+            ctx.fillStyle = '#f6c27a';
+            for (let i = 0; i * 5 + 3 < filterW - 3; i++) {
+                ctx.beginPath();
+                ctx.arc(x0 + 3 + i * 5, top + h * (i % 2 ? 0.68 : 0.32), h * 0.09, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#f2d27a';
+            ctx.fillRect(x1 - 2.2, top, 1.2, h);
+            ctx.strokeRect(x0, top, filterW, h);
+            return x2;
+        }
 
         // 燙度計漸層依各菸蒂的黃金區間產生（下綠→黃金區→上紅）
         function ensureHeatTexture(scene, butt) {
@@ -1399,6 +1490,36 @@
             ctx.fillRect(0, 0, w, h);
             ctx.fillStyle = 'rgba(255,255,255,0.25)';
             ctx.fillRect(w * 0.18, 0, w * 0.14, h);
+            canvasTex.refresh();
+            return key;
+        }
+
+        // 帶顏色的柔光圓：直接把顏色畫進貼圖，不用 setTint（Canvas 模式不支援 tint，本機開檔時會用 Canvas）
+        function glowKey(scene, color) {
+            const key = `fx-glow-${color.toString(16)}`;
+            if (scene.textures.exists(key)) return key;
+            const { r, g, b } = Phaser.Display.Color.IntegerToRGB(color);
+            const canvasTex = scene.textures.createCanvas(key, 128, 128);
+            const ctx = canvasTex.getContext();
+            const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            [[0, 1], [0.25, 0.55], [0.6, 0.12], [1, 0]].forEach(([stop, a]) => grad.addColorStop(stop, `rgba(${r},${g},${b},${a})`));
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 128, 128);
+            canvasTex.refresh();
+            return key;
+        }
+
+        // 上下壓暗用的垂直漸層（Graphics 的 fillGradientStyle 只有 WebGL 支援）
+        function shadeKey(scene, rgb, topAlpha, bottomAlpha) {
+            const key = `fx-shade-${rgb}-${topAlpha}-${bottomAlpha}`;
+            if (scene.textures.exists(key)) return key;
+            const canvasTex = scene.textures.createCanvas(key, 4, 256);
+            const ctx = canvasTex.getContext();
+            const grad = ctx.createLinearGradient(0, 0, 0, 256);
+            grad.addColorStop(0, `rgba(${rgb},${topAlpha})`);
+            grad.addColorStop(1, `rgba(${rgb},${bottomAlpha})`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 4, 256);
             canvasTex.refresh();
             return key;
         }
@@ -1463,9 +1584,8 @@
         function addNeonGlow(scene, signs, depth = 3) {
             const objs = [];
             (signs || []).forEach(sign => {
-                const glow = scene.add.image(sign.x, sign.y, 'fx-glow')
+                const glow = scene.add.image(sign.x, sign.y, glowKey(scene, sign.color))
                     .setDisplaySize(sign.w * 2.6 + 30, sign.h * 1.5 + 30)
-                    .setTint(sign.color)
                     .setBlendMode(ADD)
                     .setDepth(depth);
                 const dim = scene.add.rectangle(sign.x, sign.y, sign.w, sign.h, 0x000000, 1)
@@ -1498,8 +1618,7 @@
 
         function addLampGlow(scene, lamp, depth = 3) {
             if (!lamp) return [];
-            const glow = scene.add.image(lamp.x, lamp.y, 'fx-glow')
-                .setTint(0x9fe7ff)
+            const glow = scene.add.image(lamp.x, lamp.y, glowKey(scene, 0x9fe7ff))
                 .setBlendMode(ADD)
                 .setScale(1.1)
                 .setAlpha(0.35)
@@ -1624,9 +1743,23 @@
                 fontStyle: '900',
                 color: opts.color ?? '#0b0b0b'
             }).setOrigin(0.5);
-            const btn = scene.add.container(x, y, [g, text]).setDepth(opts.depth ?? 25);
+            const parts = [g, text];
+            // opts.icon：文字前面的菸屁股圖示，圖示 + 文字整組置中
+            if (opts.icon) parts.push(...placeIconBeforeText(scene, text, 0, 1, 0.5, opts.iconScale));
+            const btn = scene.add.container(x, y, parts).setDepth(opts.depth ?? 25);
             btn.setSize(w, h).setInteractive({ useHandCursor: true });
             return btn;
+        }
+
+        // 在文字前面放菸屁股圖示，originX 決定整組（圖示 + 文字）以 x 為左緣/中心/右緣
+        function placeIconBeforeText(scene, text, x, y, originX = 0.5, iconScale = 1) {
+            const icon = scene.add.image(0, y, 'icon-butt').setScale(iconScale / BUTT_ICON.res);
+            const gap = 6;
+            const left = x - (icon.displayWidth + gap + text.width) * originX;
+            icon.x = left + icon.displayWidth / 2;
+            text.setOrigin(0, 0.5).setPosition(left + icon.displayWidth + gap, y);
+            if (text.depth) icon.setDepth(text.depth);
+            return [icon];
         }
 
         // 中文沒有空白可斷行，依實際字寬手動換行
@@ -1697,20 +1830,6 @@
             g.strokePoints(pts, true, true);
         }
 
-        function loadEmbeddedArt(scene) {
-            const art = window.STREET_COMIC_ART || {};
-            const keys = Object.keys(art).filter(key => !scene.textures.exists(key));
-            return Promise.all(keys.map(key => new Promise(resolve => {
-                const img = new Image();
-                img.onload = () => {
-                    if (!scene.textures.exists(key)) scene.textures.addImage(key, img);
-                    resolve();
-                };
-                img.onerror = () => resolve();
-                img.src = art[key];
-            })));
-        }
-
         // 先載入網頁字型再建立文字，避免 Canvas 文字先用系統字型畫好就定型
         function loadWebFonts() {
             if (!document.fonts || !document.fonts.load) return Promise.resolve();
@@ -1736,7 +1855,7 @@
 
         // ----------------------------------------------------------------------------
         // SCENE A: BOOT & PRELOAD SCENE
-        // 原圖來源：內建原圖 phaser_2d_art.js；缺少時改用程式繪製的備援美術
+        // 原圖：與 index.html 同一層的 0.webp~7.webp；封面影片：video.mp4；缺圖時改用程式繪製的備援美術
         // ----------------------------------------------------------------------------
         class BootScene extends Phaser.Scene {
             constructor() {
@@ -1745,19 +1864,61 @@
 
             preload() {
                 setupView(this);
-                this.add.text(GAME_W / 2, GAME_H / 2, '正在載入巷弄街景與音效...', {
+                this.loadingTxt = this.add.text(GAME_W / 2, GAME_H / 2, '正在載入巷弄街景與音效...', {
                     fontFamily: FONT_UI,
                     fontSize: '20px',
                     color: '#f59e0b',
                     fontStyle: 'bold'
                 }).setOrigin(0.5);
+
+                CoverVideo.load();
+                for (let i = 0; i <= 7; i++) this.load.image(`img${i}`, `./${i}.webp`);
+                this.load.on('progress', p => this.loadingTxt.setText(`正在載入巷弄街景與音效... ${Math.round(p * 100)}%`));
             }
 
             create() {
-                // 原圖全部來自 phaser_2d_art.js，不再另外去抓 0.jpg~7.jpg、cover.mp4（上線後只會產生一堆 404）
-                Promise.all([loadWebFonts(), loadEmbeddedArt(this)]).then(() => {
+                loadWebFonts().then(() => {
                     ComicArtGenerator.generateAllTextures(this);
                     FxTextures.generate(this);
+                    this.showTapToStart();
+                });
+            }
+
+            // 瀏覽器規定玩家點過畫面之前不能播放有聲音的影片和音樂，所以一律先點一下，封面一出來就有聲音
+            showTapToStart() {
+                const W = GAME_W;
+                this.loadingTxt.destroy();
+                addArtImage(this, 'img0').setAlpha(0.3);
+                addFilmFinish(this);
+
+                this.add.text(W / 2, 372, '街友本色 I', {
+                    fontFamily: FONT_TITLE,
+                    fontSize: '46px',
+                    fontStyle: '900',
+                    color: '#f59e0b',
+                    stroke: '#000000',
+                    strokeThickness: 8
+                }).setOrigin(0.5).setDepth(12);
+                this.add.text(W / 2, 422, '煙屁股大作戰 · True Hobo I: Butt Brawl', {
+                    fontFamily: FONT_UI,
+                    fontSize: '15px',
+                    fontStyle: 'bold',
+                    color: '#fde68a'
+                }).setOrigin(0.5).setShadow(2, 2, '#000', 3).setDepth(12);
+
+                const btn = createComicButton(this, W / 2, 510, 250, 62, '🔊 點一下開始', { fontSize: '25px', depth: 13 });
+                this.tweens.add({ targets: btn, scale: 1.05, duration: 650, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+                this.add.text(W / 2, 572, 'TAP TO START · 建議開啟聲音遊玩', {
+                    fontFamily: FONT_UI,
+                    fontSize: '13px',
+                    color: '#a8a29e'
+                }).setOrigin(0.5).setDepth(12);
+
+
+                // pointerup 對手機才算「使用者操作」，要在這個當下建立音效、播放影片
+                this.input.once('pointerup', () => {
+                    audioEngine.init();
+                    CoverVideo.start();
                     this.scene.start('CoverScene');
                 });
             }
@@ -1783,15 +1944,14 @@
                 this.artFx = addNeonGlow(this, fx.neon, 2);
 
                 // 菸頭火光 + 裊裊白煙
-                const emberGlow = this.add.image(fx.ember.x, fx.ember.y, 'fx-glow')
-                    .setTint(0xff6a1a)
+                const emberGlow = this.add.image(fx.ember.x, fx.ember.y, glowKey(this, 0xff6a1a))
                     .setBlendMode(ADD)
                     .setScale(0.32)
                     .setDepth(4);
                 this.artFx.push(trackArt(emberGlow));
                 this.tweens.add({ targets: emberGlow, alpha: { from: 0.35, to: 0.85 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
-                this.add.particles(fx.ember.x + 4, fx.ember.y - 4, 'fx-smoke', {
+                const smoke = this.add.particles(fx.ember.x + 4, fx.ember.y - 4, 'fx-smoke', {
                     speedX: { min: 4, max: 22 },
                     speedY: { min: -48, max: -28 },
                     accelerationX: 9,
@@ -1806,15 +1966,20 @@
                 addRain(this, { density: 1.1 });
                 addFilmFinish(this);
 
-                // Sync HTML5 Cover Video overlay if custom video is loaded
-                this.syncVideoOverlay(true);
+                // 2. 封面影片 video.mp4：解出畫面後淡入（深度 6，蓋過只對得上原圖的霓虹/火光/白煙），聲音用影片原聲
+                this.videoImg = null;
+                this.imageOnlyFx = [...this.artFx, emberGlow, smoke];
+                if (CoverVideo.start()) {
+                    audioEngine.duckBGM = true;
+                } else {
+                    audioEngine.duckBGM = false;
+                    audioEngine.startContinuousBGM();
+                }
+                this.events.once('shutdown', () => CoverVideo.stop());
 
                 // 上下壓暗：標題移到下方，不再擋住阿睿的臉
-                const gradGfx = this.add.graphics().setDepth(10);
-                gradGfx.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.6, 0.6, 0, 0);
-                gradGfx.fillRect(0, 0, W, 90);
-                gradGfx.fillGradientStyle(0x05060a, 0x05060a, 0x05060a, 0x05060a, 0, 0, 0.95, 0.95);
-                gradGfx.fillRect(0, H - 470, W, 470);
+                this.add.image(W / 2, 0, shadeKey(this, '0,0,0', 0.6, 0)).setOrigin(0.5, 0).setDisplaySize(W, 90).setDepth(10);
+                this.add.image(W / 2, H, shadeKey(this, '5,6,10', 0, 0.95)).setOrigin(0.5, 1).setDisplaySize(W, 470).setDepth(10);
 
                 const tagTxt = this.add.text(W / 2, 588, '【 街友本色 一部曲 煙屁股大作戰 】', {
                     fontFamily: FONT_UI,
@@ -1901,7 +2066,7 @@
                     ease: 'Sine.easeInOut'
                 });
 
-                this.add.text(W / 2, 934, '🎵 點擊畫面任意處啟動街頭搖滾配樂（進入遊戲後音樂持續不中斷）', {
+                this.add.text(W / 2, 934, '🔊 右上角按鈕可隨時開關聲音', {
                     fontFamily: FONT_UI,
                     fontSize: '12px',
                     color: '#a8a29e'
@@ -1931,16 +2096,19 @@
                 });
                 this.tweens.add({ targets: [tagTxt, subTitle, titleEn, blurb], alpha: 1, delay: 900, duration: 500 });
 
-                // Start BGM on first pointer move/down anywhere, and enter StoryScene on click
+                // 點擊畫面任意處進入劇情：影片原聲隨畫面淡出，合成搖滾配樂接手（之後持續不中斷）
                 let entering = false;
                 const handleStart = () => {
                     if (entering) return;
                     entering = true;
+                    audioEngine.duckBGM = false;
                     audioEngine.startContinuousBGM();
                     audioEngine.playLighterFlick();
 
-                    // Keep video element playing for audio continuity, but hide its visual overlay so Phaser scenes show!
-                    this.syncVideoOverlay(false);
+                    const v = CoverVideo.el;
+                    if (v) {
+                        this.tweens.addCounter({ from: v.volume, to: 0, duration: 450, onUpdate: t => { v.volume = t.getValue(); } });
+                    }
 
                     this.cameras.main.fadeOut(450, 0, 0, 0);
                     this.time.delayedCall(460, () => {
@@ -1952,25 +2120,41 @@
                 btnStart.once('pointerdown', handleStart);
             }
 
-            syncVideoOverlay(visible) {
-                const videoEl = document.getElementById('cover-video-layer');
-                const canvas = this.sys.game.canvas;
-                if (!videoEl || !canvas) return;
-
-                if (visible && GAME_STATE.customVideoLoaded) {
-                    const rect = canvas.getBoundingClientRect();
-                    videoEl.style.width = `${rect.width}px`;
-                    videoEl.style.height = `${rect.height}px`;
-                    videoEl.style.opacity = '0.88';
-                    videoEl.play().catch(() => { });
-                } else {
-                    // Hide visual layer ONLY, never pause the video so its audio continues seamlessly!
-                    videoEl.style.opacity = '0';
-                }
-            }
-
             update() {
                 syncToArt(this.coverImg, this.artFx);
+                this.updateCoverVideo();
+            }
+
+            updateCoverVideo() {
+                const v = CoverVideo.el;
+                if (!v) {
+                    // 影片中途載入失敗：改回合成搖滾配樂
+                    if (audioEngine.duckBGM) {
+                        audioEngine.duckBGM = false;
+                        audioEngine.startContinuousBGM();
+                    }
+                    return;
+                }
+                if (v.readyState < 2) return;
+
+                if (!this.videoImg) {
+                    if (!this.textures.exists('coverVideo')) {
+                        this.textures.create('coverVideo', v, v.videoWidth, v.videoHeight).add('__BASE', 0, 0, 0, v.videoWidth, v.videoHeight);
+                    }
+                    this.videoImg = fitCover(this.add.image(GAME_W / 2, GAME_H / 2, 'coverVideo')).setDepth(6).setAlpha(0);
+                    this.tweens.add({
+                        targets: this.videoImg,
+                        alpha: 1,
+                        duration: 600,
+                        onComplete: () => this.imageOnlyFx.forEach(o => o.setVisible(false))
+                    });
+                    this.videoFrameTime = -1;
+                }
+                // WebGL 不會自己更新影片貼圖：有新畫面才重新上傳
+                if (v.currentTime !== this.videoFrameTime) {
+                    this.videoFrameTime = v.currentTime;
+                    this.textures.get('coverVideo').source[0].update();
+                }
             }
         }
 
@@ -2121,13 +2305,13 @@
                 this.slideFx = [...addNeonGlow(this, fx.neon, 3), ...addLampGlow(this, fx.lamp, 3)];
                 if (s.img === 'img0') {
                     const ember = ART_FX.img0.ember;
-                    const glow = this.add.image(ember.x, ember.y, 'fx-glow').setTint(0xff6a1a).setBlendMode(ADD).setScale(0.3).setAlpha(0.6).setDepth(4);
+                    const glow = this.add.image(ember.x, ember.y, glowKey(this, 0xff6a1a)).setBlendMode(ADD).setScale(0.3).setAlpha(0.6).setDepth(4);
                     this.tweens.add({ targets: glow, alpha: 0.3, duration: 800, yoyo: true, repeat: -1 });
                     this.slideFx.push(trackArt(glow));
                 }
                 if (fx.treasure) {
-                    const glow = this.add.image(fx.treasure.x, fx.treasure.y, 'fx-glow')
-                        .setTint(0xffc46b).setBlendMode(ADD).setDisplaySize(260, 90).setAlpha(0.15).setDepth(4);
+                    const glow = this.add.image(fx.treasure.x, fx.treasure.y, glowKey(this, 0xffc46b))
+                        .setBlendMode(ADD).setDisplaySize(260, 90).setAlpha(0.15).setDepth(4);
                     this.tweens.add({ targets: glow, alpha: 0.45, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
                     const glints = this.add.particles(fx.treasure.x, fx.treasure.y, 'fx-spark', {
                         x: { min: -55, max: 55 },
@@ -2209,12 +2393,13 @@
 
                 // Top Header（漫畫旁白框；上緣留空給右上角的 HTML 按鈕）
                 drawComicPanel(this, 14, 48, W - 28, 76, { fill: PAPER, alpha: 0.97, shadow: 6, halftone: true, depth: 20 });
-                this.add.text(W / 2, 74, '🚬 請在鐵盤上挑選一根「煙屁股」', {
+                const headTxt = this.add.text(W / 2, 74, '請在鐵盤上挑選一根「煙屁股」', {
                     fontFamily: FONT_UI,
                     fontSize: '20px',
                     fontStyle: '900',
                     color: '#b91c1c'
                 }).setOrigin(0.5).setDepth(21);
+                placeIconBeforeText(this, headTxt, W / 2, 74, 0.5, 1.2);
                 this.add.text(W / 2, 102, '越高級的煙屁股得分倍率越高，但火頭極短、升溫超快！', {
                     fontFamily: FONT_UI,
                     fontSize: '12px',
@@ -2226,7 +2411,7 @@
                 this.hotspots = CIGARETTE_BUTTS.map((butt, idx) => {
                     const { x, y } = butt.trayPos;
                     const color = hexColor(butt.badgeColor);
-                    const glow = this.add.image(x, y, 'fx-glow').setTint(color).setBlendMode(ADD).setScale(0.75).setAlpha(0.6).setDepth(10);
+                    const glow = this.add.image(x, y, glowKey(this, color)).setBlendMode(ADD).setScale(0.75).setAlpha(0.6).setDepth(10);
                     const ring = this.add.circle(x, y, 22).setStrokeStyle(3, 0xffffff, 0.95).setDepth(11);
                     const tagY = y - 46;
                     const leader = this.add.graphics().setDepth(11);
@@ -2395,8 +2580,8 @@
                 this.mouthY = fx.mouth.y;
 
                 // 菸頭火光（光暈 + 白熱核心）
-                this.emberHalo = this.add.image(this.emberX, this.emberY, 'fx-glow').setTint(0xff4400).setBlendMode(ADD).setAlpha(0).setDepth(5);
-                this.emberCore = this.add.image(this.emberX, this.emberY, 'fx-glow').setTint(0xffc46b).setBlendMode(ADD).setAlpha(0).setDepth(5);
+                this.emberHalo = this.add.image(this.emberX, this.emberY, glowKey(this, 0xff4400)).setBlendMode(ADD).setAlpha(0).setDepth(5);
+                this.emberCore = this.add.image(this.emberX, this.emberY, glowKey(this, 0xffc46b)).setBlendMode(ADD).setAlpha(0).setDepth(5);
 
                 // 煙：平常細細一縷，吸的時候濃煙 + 火星，放開時從嘴角吐出一大口
                 this.wispSmoke = this.add.particles(this.emberX + 4, this.emberY - 6, 'fx-smoke', {
@@ -2461,7 +2646,7 @@
 
                 this.holdZone = this.add.container(this.holdCenterX, this.holdCenterY).setDepth(15);
                 this.holdRing = this.add.graphics();
-                this.holdCore = this.add.image(0, 0, 'fx-glow').setTint(0xff7a1a).setBlendMode(ADD).setScale(0.55).setAlpha(0.55);
+                this.holdCore = this.add.image(0, 0, glowKey(this, 0xff7a1a)).setBlendMode(ADD).setScale(0.55).setAlpha(0.55);
                 const holdDot = this.add.circle(0, 0, 9, 0xfff3c4, 0.95).setStrokeStyle(3, 0x000000, 0.9);
                 this.holdZone.add([this.add.circle(0, 0, this.holdRadius, 0xffffff, 0.05), this.holdRing, this.holdCore, holdDot]);
                 this.drawHoldRing(0xfbbf24);
@@ -2574,20 +2759,39 @@
                     fontFamily: FONT_UI, fontSize: '13px', fontStyle: '900', color: '#f59e0b', stroke: '#000000', strokeThickness: 3
                 }).setOrigin(1, 0).setDepth(21);
 
-                // 菸蒂長度：迷你香菸（濾嘴 + 菸紙 + 火頭），菸紙隨 60 秒燒短
+                // 菸蒂長度：濾嘴後面只剩一小截菸紙（長短依菸蒂種類），隨 60 秒燒到濾嘴
                 this.add.text(26, top + 82, '菸蒂長度', {
                     fontFamily: FONT_UI, fontSize: '12px', fontStyle: 'bold', color: '#d6d3d1'
                 }).setDepth(21);
                 const barY = top + 91;
-                this.cigBarX = 132;
-                this.add.rectangle(90, barY, 42, 14, 0xd9893a).setOrigin(0, 0.5).setStrokeStyle(2, 0x000000).setDepth(21);
-                const dots = this.add.graphics().setDepth(21);
-                dots.fillStyle(0xf6c27a, 0.9);
-                for (let i = 0; i < 6; i++) dots.fillCircle(96 + i * 6, barY + (i % 2 ? 3 : -3), 1.2);
-                this.cigBarPaper = this.add.rectangle(this.cigBarX, barY, 150, 14, 0xeef0f2).setOrigin(0, 0.5).setStrokeStyle(2, 0x000000).setDepth(21);
-                this.cigBarGlow = this.add.image(this.cigBarX + 150, barY, 'fx-glow').setTint(0xff5a00).setBlendMode(ADD).setScale(0.35).setDepth(22);
-                this.cigBarEmber = this.add.circle(this.cigBarX + 150, barY, 7, 0xff3b00).setStrokeStyle(2, 0x000000).setDepth(22);
+                const maxStub = Math.max(...CIGARETTE_BUTTS.map(b => b.stubLen));
+                if (!this.textures.exists('hud-butt')) {
+                    this.textures.createCanvas('hud-butt', (CIG_BAR.filterW + maxStub + 10) * RENDER_SCALE, (CIG_BAR.h + 4) * RENDER_SCALE);
+                }
+                this.cigBarTex = this.textures.get('hud-butt');
+                this.cigBarX = 88;  // 貼圖左邊留 2px 描邊，濾嘴從 x=90 開始
+                this.cigBarStub = butt.stubLen;
+                this.cigBarPaperW = -1;
+                this.add.image(this.cigBarX, barY, 'hud-butt').setOrigin(0, 0.5).setScale(1 / RENDER_SCALE).setDepth(21);
+                this.drawCigBar(butt.stubLen);
+                this.cigBarGlow = this.add.image(this.cigBarTipX, barY, glowKey(this, 0xff5a00)).setBlendMode(ADD).setScale(0.28).setDepth(22);
+                // 火頭：貼著菸紙末端、跟菸紙一樣高的橢圓（像燒紅的切面，不要像一顆紅點）
+                this.cigBarEmber = this.add.ellipse(this.cigBarTipX, barY, 6, CIG_BAR.h - 2, 0xff4d00).setStrokeStyle(1.2, 0x7a1d00).setDepth(22);
                 this.tweens.add({ targets: this.cigBarGlow, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
+            }
+
+            // 菸紙長度變動（取整數 px）才重畫，火頭跟著停在菸紙末端
+            drawCigBar(paperW) {
+                const w = Math.round(paperW);
+                if (w === this.cigBarPaperW) return;
+                this.cigBarPaperW = w;
+                const ctx = this.cigBarTex.getContext();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+                const paperEnd = drawButtShape(ctx, CIG_BAR.filterW, w, CIG_BAR.h);
+                this.cigBarTex.refresh();
+                this.cigBarTipX = this.cigBarX + paperEnd + 1.5;
             }
 
             createGauges(W, H, butt) {
@@ -2603,7 +2807,7 @@
                 this.gaugeY = gy;
                 this.gaugeH = gh;
 
-                this.gaugeDanger = this.add.image(gx, gy, 'fx-glow').setTint(0xff2200).setBlendMode(ADD).setDisplaySize(gw * 5, gh * 1.3).setAlpha(0).setDepth(19);
+                this.gaugeDanger = this.add.image(gx, gy, glowKey(this, 0xff2200)).setBlendMode(ADD).setDisplaySize(gw * 5, gh * 1.3).setAlpha(0).setDepth(19);
 
                 const frame = this.add.graphics().setDepth(20);
                 frame.fillStyle(0x000000, 0.85);
@@ -2802,11 +3006,10 @@
                     this.timerTxt.setColor('#ef4444');
                 }
 
-                // Shrink visual cigarette butt paper over the 60 seconds
-                const paperW = Math.max(8, (this.timeLeft / 60) * 150);
-                this.cigBarPaper.width = paperW;
-                this.cigBarEmber.x = this.cigBarX + paperW;
-                this.cigBarGlow.x = this.cigBarEmber.x;
+                // 剩下的菸紙隨 60 秒燒向濾嘴（最後剩 3px）
+                this.drawCigBar(3 + (this.cigBarStub - 3) * (this.timeLeft / 60));
+                this.cigBarEmber.x = this.cigBarTipX;
+                this.cigBarGlow.x = this.cigBarTipX;
 
                 if (this.timeLeft <= 0) {
                     this.finishGame();
@@ -3051,7 +3254,7 @@
                 // Stats Breakdown Box
                 const statY = 392;
                 const stats = [
-                    { label: '🚬 挑選菸屁股', val: `${res.butt.name} (x${res.butt.scoreMultiplier})` },
+                    { label: '挑選菸屁股', icon: true, val: `${res.butt.name} (x${res.butt.scoreMultiplier})` },
                     { label: '🔥 黃金過癮區停留', val: `${res.goldenTime} 秒` },
                     { label: '⚡ 最高連吸 Combo', val: `${res.maxCombo} 連段` },
                     { label: '🥵 燙到手嘴罵台語次數', val: `${res.burnCount} 次` }
@@ -3059,11 +3262,13 @@
 
                 const statRows = stats.map((st, i) => {
                     const y = statY + i * 48;
+                    const label = this.add.text(56, y, st.label, {
+                        fontFamily: FONT_UI, fontSize: '14px', color: '#d6d3d1'
+                    }).setOrigin(0, 0.5).setDepth(22);
                     return [
                         this.add.rectangle(W / 2, y, W - 84, 38, 0x161b26, 0.92).setStrokeStyle(2, 0x000000).setDepth(21),
-                        this.add.text(56, y, st.label, {
-                            fontFamily: FONT_UI, fontSize: '14px', color: '#d6d3d1'
-                        }).setOrigin(0, 0.5).setDepth(22),
+                        label,
+                        ...(st.icon ? placeIconBeforeText(this, label, 56, y, 0) : []),
                         this.add.text(W - 56, y, st.val, {
                             fontFamily: FONT_UI, fontSize: '15px', fontStyle: 'bold', color: '#fbbf24'
                         }).setOrigin(1, 0.5).setDepth(22)
@@ -3083,7 +3288,7 @@
                 }).setOrigin(0.5).setDepth(22);
 
                 // Action Buttons
-                const btnRetry = createComicButton(this, W / 2, 720, W - 84, 56, '🚬 再撿一根 (重選菸屁股挑戰)', { fontSize: '19px' });
+                const btnRetry = createComicButton(this, W / 2, 720, W - 84, 56, '再撿一根 (重選菸屁股挑戰)', { fontSize: '19px', icon: true, iconScale: 1.15 });
                 btnRetry.on('pointerdown', () => {
                     audioEngine.playLighterFlick();
                     this.scene.start('SelectButtScene');
@@ -3138,7 +3343,9 @@
 
         window.onload = function () {
             const config = {
-                type: Phaser.AUTO,
+                type: IS_LOCAL_FILE ? Phaser.CANVAS : Phaser.AUTO,
+                // 本機開檔不能用 XHR 讀圖，改用 <img>
+                loader: { imageLoadType: IS_LOCAL_FILE ? 'HTMLImageElement' : 'XHR' },
                 parent: 'phaser-container',
                 width: GAME_W * RENDER_SCALE,
                 height: GAME_H * RENDER_SCALE,
@@ -3162,102 +3369,50 @@
                 const muted = audioEngine.toggleMute();
                 muteIcon.textContent = muted ? '🔇' : '🔊';
             });
-
-            // Bind Custom Asset Loader Modal (Allows user to drop their 0.jpg~6.jpg & video file directly)
-            const modal = document.getElementById('asset-modal');
-            const btnOpenAssets = document.getElementById('btn-open-assets');
-            const btnCloseAssets = document.getElementById('btn-close-assets');
-            const btnConfirmAssets = document.getElementById('btn-confirm-assets');
-            const fileInput = document.getElementById('file-input-assets');
-            const statusList = document.getElementById('asset-status-list');
-
-            // 「載入原圖/影片」按鈕與彈窗已從頁面移除時，就不綁定以下功能
-            if (!modal || !btnOpenAssets) return;
-
-            btnOpenAssets.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            });
-
-            const closeModal = () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            };
-            btnCloseAssets.addEventListener('click', closeModal);
-            btnConfirmAssets.addEventListener('click', closeModal);
-
-            fileInput.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files || []);
-                if (!files.length) return;
-
-                statusList.innerHTML = '';
-                files.forEach((file) => {
-                    const url = URL.createObjectURL(file);
-                    const nameLower = file.name.toLowerCase();
-
-                    if (file.type.startsWith('video/') || nameLower.endsWith('.mp4') || nameLower.endsWith('.webm')) {
-                        const videoEl = document.getElementById('cover-video-layer');
-                        videoEl.src = url;
-                        videoEl.muted = audioEngine.isMuted;
-                        videoEl.play().catch(() => { });
-                        GAME_STATE.customVideoLoaded = true;
-                        audioEngine.hasCustomVideoAudio = true;
-
-                        // If currently on CoverScene, show the video overlay immediately
-                        const coverScene = phaserGame.scene.getScene('CoverScene');
-                        if (coverScene && coverScene.scene.isActive()) {
-                            coverScene.syncVideoOverlay(true);
-                        }
-                        const log = document.createElement('div');
-                        log.className = 'text-amber-300 font-bold';
-                        log.textContent = `🎬 已載入封面影片與持續音樂：${file.name}`;
-                        statusList.appendChild(log);
-                    } else if (file.type.startsWith('image/')) {
-                        // Match 0.jpg ~ 7.jpg by digit in filename（7 = 燙到的反應圖）
-                        const match = nameLower.match(/([0-7])/);
-                        if (match) {
-                            const idx = match[1];
-                            const texKey = `img${idx}`;
-                            const img = new Image();
-                            img.onload = () => {
-                                if (phaserGame.textures.exists(texKey)) {
-                                    phaserGame.textures.remove(texKey);
-                                }
-                                phaserGame.textures.addImage(texKey, img);
-                            };
-                            img.src = url;
-                            const log = document.createElement('div');
-                            log.className = 'text-emerald-400';
-                            log.textContent = `🖼️ 已替換場景圖片 ${idx}.jpg ➔ ${file.name}`;
-                            statusList.appendChild(log);
-                        }
-                    }
-                });
-            });
         };
     </script>
 
-    <!-- game：底部小橫幅廣告（320×50）。寬螢幕放左下角、窄螢幕放正下方並讓出空間，都與遊戲保持 150px 以上距離；沒有廣告可放時自動收起 -->
-    <div id="ad-bar">
-        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px"
-            data-ad-client="ca-pub-9815906908978353" data-ad-slot="6817299480"></ins>
-    </div>
+    <!-- game：底部橫幅廣告。放在遊戲正下方並讓出空間（兩側夠寬時改放左下角），都與遊戲保持 150px 以上距離；
+         螢幕寬度放不下（例如手機放不下 728px）就不放；沒有廣告可放或被擋時自動收起 -->
+    <div id="ad-bar"></div>
     <script>
-        // Google 強烈建議遊戲頁的廣告離遊戲至少 150px，避免誤觸被判定為無效流量
-        const AD_W = 320;
-        const AD_H = 50;
+        // 固定尺寸的廣告單元不能自己改尺寸：手機要放廣告，請在 AdSense 另外建一個 320×50 的廣告單元，把編號填進下面第二筆的 slot
+        const AD_UNITS = [
+            { slot: '6817299480', w: 728, h: 90 },   // game（728×90）
+            { slot: '', w: 320, h: 50 }              // 手機用，尚未建立
+        ];
         const AD_MARGIN = 8;
+        // Google 強烈建議遊戲頁的廣告離遊戲至少 150px，避免誤觸被判定為無效流量
         const AD_GAP = 150;
+
+        // 依開啟時的螢幕寬度挑第一個放得下的廣告單元
+        const adUnit = AD_UNITS.find(u => u.slot && window.innerWidth >= u.w + AD_MARGIN * 2) || null;
+        const adBar = document.getElementById('ad-bar');
+        let adSlot = null;
+        if (adUnit) {
+            adBar.style.width = `${adUnit.w}px`;
+            adBar.style.height = `${adUnit.h}px`;
+            adSlot = document.createElement('ins');
+            adSlot.className = 'adsbygoogle';
+            adSlot.style.cssText = `display:inline-block;width:${adUnit.w}px;height:${adUnit.h}px`;
+            adSlot.setAttribute('data-ad-client', 'ca-pub-9815906908978353');
+            adSlot.setAttribute('data-ad-slot', adUnit.slot);
+            adBar.appendChild(adSlot);
+        } else {
+            document.body.classList.add('ad-hidden');
+        }
 
         function layoutAdBar() {
             const body = document.body;
             let reserve = 0;
-            if (!body.classList.contains('ad-hidden')) {
+            // 視窗縮到放不下時先收起（已投放的廣告不能換尺寸），放大回來再顯示
+            body.classList.toggle('ad-narrow', !!adUnit && window.innerWidth < adUnit.w + AD_MARGIN * 2);
+            if (adUnit && !body.classList.contains('ad-hidden') && !body.classList.contains('ad-narrow')) {
                 // 遊戲全高顯示時的畫布寬度（9:16）；兩側空白放得下廣告 + 150px 就移到左下角，遊戲不用縮小
                 const canvasW = Math.min(window.innerWidth, window.innerHeight * 9 / 16);
-                const corner = (window.innerWidth - canvasW) / 2 >= 16 + AD_W + AD_GAP;
+                const corner = (window.innerWidth - canvasW) / 2 >= 16 + adUnit.w + AD_GAP;
                 body.classList.toggle('ad-corner', corner);
-                if (!corner) reserve = AD_H + AD_MARGIN + AD_GAP;
+                if (!corner) reserve = adUnit.h + AD_MARGIN + AD_GAP;
             }
             document.documentElement.style.setProperty('--ad-reserve', `${reserve}px`);
             if (phaserGame) {
@@ -3275,16 +3430,17 @@
         window.addEventListener('resize', layoutAdBar);
 
         // 沒有廣告可投放（例如網站尚未通過 AdSense 審核）時收起，把空間還給遊戲
-        const adSlot = document.querySelector('#ad-bar .adsbygoogle');
-        new MutationObserver(() => {
-            if (adSlot.getAttribute('data-ad-status') === 'unfilled') hideAdBar();
-        }).observe(adSlot, { attributes: true, attributeFilter: ['data-ad-status'] });
+        if (adSlot) {
+            new MutationObserver(() => {
+                if (adSlot.getAttribute('data-ad-status') === 'unfilled') hideAdBar();
+            }).observe(adSlot, { attributes: true, attributeFilter: ['data-ad-status'] });
+        }
     </script>
     <!-- 廣告腳本被擋（例如裝了擋廣告外掛）時也收起 -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9815906908978353"
         crossorigin="anonymous" onerror="hideAdBar()"></script>
     <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
+        if (adSlot) (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 </body>
 
