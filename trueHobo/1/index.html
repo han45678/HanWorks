@@ -49,7 +49,7 @@
          玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。
          sw.js 也跟著這個號碼：號碼一變，裝好 App 的玩家下次開啟就會換新版的 sw.js。 -->
     <script>
-        window.APP_VERSION = '1.0.3';
+        window.APP_VERSION = '1.0.5';
 
         // 網址加上 ?v=版本號（雙擊開檔 file:// 時不加：本機檔案不會被快取，加了反而可能讀不到）
         window.withVersion = function (url) {
@@ -83,7 +83,42 @@
         <h1>無法連線</h1>
         <p>街友本色 I 需要網路才能玩</p>
         <small>請確認網路連線，連上後會自動重新載入</small>
-        <button type="button" onclick="location.reload()">重新連線</button>
+        <button type="button" class="comic-btn" onclick="location.reload()">重新連線</button>
+    </div>
+
+    <!-- 詢問要不要安裝成 App（什麼時候跳出由 js/install.js 決定；文字直接改這裡）
+           data-for="prompt"         ：Chrome / Edge / Android，按「安裝」叫出瀏覽器的安裝視窗
+           data-for="manual-desktop" ：電腦版 Chrome 還不准叫安裝視窗時（剛打開未滿 30 秒），教玩家用網址列的安裝圖示
+           data-for="manual-android" ：Android 同上，教玩家用「⋮」選單
+           data-for="ios"            ：iPhone / iPad，沒有安裝視窗，教玩家「分享 → 加入主畫面」 -->
+    <div id="install-dialog" class="install" hidden>
+        <div class="install-card" role="dialog" aria-modal="true" aria-labelledby="install-title">
+            <img class="install-icon" alt="" width="76" height="76">
+            <h2 id="install-title" class="comic-stroke">把街友本色 I 裝成 App？</h2>
+            <!-- 每個 <span> 是一個詞組，換行只會換在詞組之間 -->
+            <p data-for="prompt"><span>裝到桌面或主畫面，</span><span>下次一點就開抽，</span><span>還能全螢幕玩</span></p>
+            <p data-for="manual-desktop">
+                <span>點網址列右邊的安裝圖示<svg class="install-glyph" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true"><path d="M11 4H4v12h16v-4M9 20h6M12 16v4M17 3v7M14 7l3 3 3-3"/></svg>，</span><span>或右上角<svg class="install-glyph" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"
+                    aria-label="⋮"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>選單裡的「安裝」</span>
+            </p>
+            <p data-for="manual-android">
+                <span>點右上角的<svg class="install-glyph" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"
+                    aria-label="⋮"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>選單，</span><span>選「加到主畫面」或「安裝應用程式」</span>
+            </p>
+            <p data-for="ios">
+                <span>先點「分享」<svg class="install-glyph" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg>，</span><span>再選「加入主畫面」</span>
+                <small><span>新版 iOS 的 Safari</span> <span>要先點「⋯」才看得到「分享」</span></small>
+            </p>
+            <div class="install-actions">
+                <button type="button" class="comic-btn secondary" data-action="later" data-for="prompt">以後再說</button>
+                <button type="button" class="comic-btn" data-action="install" data-for="prompt">安裝</button>
+                <button type="button" class="comic-btn" data-action="later" data-for="ios manual-desktop manual-android">知道了</button>
+            </div>
+        </div>
     </div>
 
     <!-- 遊戲程式（依相依順序載入：音效 → 美術 → 資料 → 共用特效 → 各場景 → 啟動），網址自動帶版本號 -->
@@ -115,6 +150,10 @@
     <!-- 廣告程式（依上面 #ad-bar 的設定放廣告） -->
     <script>
         loadVersioned(['./js/ads.js']);
+    </script>
+    <!-- 主動詢問要不要安裝成 App（依上面 #install-dialog 顯示） -->
+    <script>
+        loadVersioned(['./js/install.js']);
     </script>
 </body>
 
