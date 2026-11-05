@@ -73,6 +73,66 @@ canvas {
         0px 4px 12px rgba(0, 0, 0, 0.9);
 }
 
+/* 無法連線：玩到一半斷線時蓋住整個畫面（含廣告列）；sw.js 的無法連線頁用同一套樣式 */
+.offline {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+    background: radial-gradient(circle at center, #161c24 0%, #05070a 100%);
+    font-family: "Noto Serif TC", "Noto Serif", "Songti TC", "PMingLiU", serif;
+}
+
+.offline[hidden] {
+    display: none;
+}
+
+.offline h1 {
+    margin: 0 0 4px;
+    font-size: 44px;
+    font-weight: 900;
+    color: #f59e0b;
+    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 12px rgba(0, 0, 0, 0.9);
+}
+
+.offline p {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fde68a;
+}
+
+.offline small {
+    font-size: 13px;
+    color: #a8a29e;
+}
+
+/* 跟遊戲裡的漫畫按鈕同一個樣子：橘底、黑框、右下黑色硬陰影 */
+.offline button {
+    margin-top: 18px;
+    padding: 12px 38px;
+    font: inherit;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0b0b0b;
+    background: linear-gradient(#f7b13c 0 42%, #f59e0b 42%);
+    border: 3.5px solid #000;
+    border-radius: 0;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+}
+
+.offline button:active {
+    transform: translate(3px, 3px);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.9);
+}
+
 .neon-glow-red {
     text-shadow: 0 0 10px #ff3b1f, 0 0 22px #ff1100, 2px 2px 0 #000;
 }

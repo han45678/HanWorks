@@ -35,8 +35,40 @@ function checkForNewVersion() {
         .catch(() => { });
 }
 
+/**
+ * PWA：註冊 service worker（sw.js）。它不快取遊戲（一定要連網才能玩），只在開啟時沒網路顯示「無法連線」頁。
+ * 網址帶 ?v=版本號：APP_VERSION 一改，瀏覽器就會換新版 sw.js。
+ */
+function registerServiceWorker() {
+    if (IS_LOCAL_FILE || !('serviceWorker' in navigator)) return;
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register(withVersion('./sw.js')).catch(() => { });
+    });
+}
+
+/**
+ * 玩到一半斷線：蓋上「無法連線」（index.html 的 #offline-overlay），遊戲、音效、封面影片全部停住；
+ * 網路連回來就重新載入，從頭開始。
+ */
+function setupOfflineGuard() {
+    const overlay = document.getElementById('offline-overlay');
+    if (!overlay) return;
+    const goOffline = () => {
+        overlay.hidden = false;
+        if (phaserGame) phaserGame.pause();
+        if (audioEngine.ctx) audioEngine.ctx.suspend().catch(() => { });
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        CoverVideo.stop();
+    };
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', () => { if (!overlay.hidden) location.reload(); });
+    if (navigator.onLine === false) goOffline();
+}
+
 console.info(`街友本色 I - 煙屁股大作戰 v${APP_VERSION}`);
 checkForNewVersion();
+registerServiceWorker();
+setupOfflineGuard();
 
 window.onload = function () {
     const config = {

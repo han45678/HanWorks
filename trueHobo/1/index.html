@@ -27,6 +27,16 @@
     <!-- 分頁小圖示：撿來的菸屁股（濾嘴 + 一小截皺菸紙 + 燒焦的頭）；內嵌，免得瀏覽器去抓不存在的 favicon.ico -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
+    <!-- PWA：可以「加到主畫面」安裝成 App（App 名稱、圖示、全螢幕直向見 manifest）；一定要連網才能玩，沒網路時顯示無法連線（見 sw.js）
+         manifest 和 icons/ 的圖示不加 ?v=版本號：它們由瀏覽器自己定期檢查更新，不是遊戲載入時讀的檔案 -->
+    <link rel="manifest" href="./manifest.webmanifest">
+    <meta name="theme-color" content="#080a0f">
+    <!-- iPhone / iPad 加到主畫面：iOS 用這個圖示和名稱，開啟後不顯示 Safari 網址列 -->
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="街友本色 I">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <!-- Phaser 3 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <!-- Google Fonts：中文 Noto Serif TC、英文 Noto Serif（全站統一） -->
@@ -36,9 +46,10 @@
     <!-- ===== 內部版本號 =====
          每次更新遊戲（JS、CSS、圖片、音檔、影片有任何變動）就把 APP_VERSION 改成新的號碼。
          所有檔案的網址都會帶上 ?v=版本號，號碼一變就是新網址，玩家的瀏覽器和 GitHub Pages 的 CDN 都會重新下載；
-         玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。 -->
+         玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。
+         sw.js 也跟著這個號碼：號碼一變，裝好 App 的玩家下次開啟就會換新版的 sw.js。 -->
     <script>
-        window.APP_VERSION = '1.0.1';
+        window.APP_VERSION = '1.0.3';
 
         // 網址加上 ?v=版本號（雙擊開檔 file:// 時不加：本機檔案不會被快取，加了反而可能讀不到）
         window.withVersion = function (url) {
@@ -65,6 +76,14 @@
     <div id="game-wrapper">
         <!-- Phaser Game Canvas Mount -->
         <div id="phaser-container"></div>
+    </div>
+
+    <!-- 無法連線：玩到一半斷線時蓋在遊戲上（js/main.js 的 setupOfflineGuard()）；開啟時就沒網路的無法連線頁在 sw.js -->
+    <div id="offline-overlay" class="offline" hidden>
+        <h1>無法連線</h1>
+        <p>街友本色 I 需要網路才能玩</p>
+        <small>請確認網路連線，連上後會自動重新載入</small>
+        <button type="button" onclick="location.reload()">重新連線</button>
     </div>
 
     <!-- 遊戲程式（依相依順序載入：音效 → 美術 → 資料 → 共用特效 → 各場景 → 啟動），網址自動帶版本號 -->
