@@ -10,9 +10,10 @@
  *   - 不問：從 App 開啟、已經裝過（記在瀏覽器裡；之後 Chrome 又發出 beforeinstallprompt 代表已經移除，會再問）、
  *     LINE / FB / IG / Threads 等 App 內建瀏覽器、Firefox 等不能安裝的瀏覽器
  *   - 正在抽菸（PlayScene）時先不跳，等這局結束；按「以後再說」只關掉這一次，下次打開還會問
- *   - 裝好之後：網頁沒辦法直接打開 App。電腦版 Chrome 通常會自己把遊戲移到 App 視窗；
- *     沒移過去（Android 一定不會）就跳「安裝好了」告訴玩家去哪裡開，Android 另外有「開啟 App」按鈕
- *     （用 intent 網址請 Android 打開剛裝好的 App）
+ *   - 裝好之後：網頁沒辦法切換到 App。電腦版 Chrome 通常會自己把遊戲移到 App 視窗；
+ *     沒移過去（Android 一定不會）就跳「安裝好了」告訴玩家去主畫面 / 桌面點圖示開。
+ *     （試過用 intent 網址請 Android 開 App：Chrome 會把同一個網站的網址留在瀏覽器裡開，只是重新載入網頁；
+ *       指定 App 的套件名稱才會交給 App，但 Chrome 裝的 App 套件名稱是隨機產生的，網頁拿不到）
  */
 (function () {
     const ASK_DELAY = 800;
@@ -117,11 +118,7 @@
 
     dialog.addEventListener('click', e => {
         const btn = e.target.closest('button');
-        if (btn && btn.dataset.action === 'open-app') {
-            // 請 Android 打開這個網址：裝好的 App 會接手；沒打開的話玩家照著視窗上的說明到主畫面點圖示
-            const start = new URL('./', location.href);
-            location.href = `intent://${start.host}${start.pathname}#Intent;scheme=https;end`;
-        } else if (btn && btn.dataset.action === 'install') {
+        if (btn && btn.dataset.action === 'install') {
             if (installEvent) {
                 installEvent.prompt();
                 installEvent = null;   // 一個 beforeinstallprompt 只能叫一次安裝視窗
