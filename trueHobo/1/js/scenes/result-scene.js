@@ -185,19 +185,22 @@ class ResultScene extends Phaser.Scene {
         const targets = [
             {
                 // 限時動態：只複製網址，玩家加「連結」貼紙時直接貼上
-                icon: 'icon-instagram', fill: 0xc13584, copyUrlOnly: true,
+                icon: 'icon-instagram', fill: 0xc13584, copyUrlOnly: true, app: 'instagram',
+                android: '戰績圖已存到手機、遊戲網址已複製\n在限時動態選最新這張圖，再加「連結」貼紙貼上',
                 pick: '選 Instagram →「限時動態」，再加「連結」貼紙\n遊戲網址已複製，在貼紙裡貼上即可',
                 desktop: '電腦不能直接發 IG 限時動態（要用手機）\n已下載戰績圖、複製網址，並開啟 IG',
                 web: () => ShareKit.instagramWeb()
             },
             {
-                icon: 'icon-facebook', fill: 0x1877f2,
+                icon: 'icon-facebook', fill: 0x1877f2, app: 'facebook',
+                android: '戰績圖已存到手機、文字已複製\n在 FB 新增貼文，選最新這張圖並貼上文字',
                 pick: '在分享選單選 Facebook\n文字和連結已複製，貼上即可',
                 desktop: '電腦不能把圖片直接帶進 FB（要用手機）\n已下載戰績圖、複製文字：新增貼文加入圖片即可',
                 web: () => ShareKit.facebookWeb()
             },
             {
-                icon: 'icon-threads', fill: 0x111111, withText: true,
+                icon: 'icon-threads', fill: 0x111111, withText: true, app: 'threads',
+                android: '戰績圖已存到手機，文字已帶入 Threads\n加入最新這張圖就能發文',
                 pick: '在分享選單選 Threads\n文字沒帶到的話，已複製好貼上即可',
                 desktop: '電腦不能把圖片直接帶進 Threads（要用手機）\n文字已帶入，加入已下載的戰績圖即可',
                 web: text => ShareKit.threadsWeb(text)
@@ -211,6 +214,14 @@ class ResultScene extends Phaser.Scene {
             }
             const text = ShareKit.text(this.shareInfo);
             ShareKit.copyText(t.copyUrlOnly ? SHARE_URL : text);
+            // Android：戰績圖存到手機，直接跳進對應的 App（提示留久一點，從 App 回來還看得到）
+            if (ShareKit.isAndroid()) {
+                ShareKit.download(file);
+                this.showToast(t.android, 12000);
+                setTimeout(() => ShareKit.openApp(ShareKit.androidAppUrl(t.app, text)), 300);
+                return;
+            }
+            // iPhone 等：系統分享選單（IG、FB、Threads 在第一排）
             if (ShareKit.canShareImage(file)) {
                 this.showToast(t.pick);
                 ShareKit.shareImage(file, t.withText ? text : null).then(result => {
@@ -222,6 +233,13 @@ class ResultScene extends Phaser.Scene {
                 });
                 return;
             }
+            // 手機但叫不出分享選單：多半是 LINE／IG／FB 內建的瀏覽器
+            if (ShareKit.isMobile()) {
+                ShareKit.download(file);
+                this.showToast('這個 App 內建的瀏覽器不能分享圖片\n請從右上角選單改用 Safari／Chrome 開啟遊戲', 8000);
+                return;
+            }
+            // 電腦：瀏覽器沒辦法把圖片交給 IG／FB／Threads，下載戰績圖並開社群網頁
             const opened = t.web ? ShareKit.openWindow(t.web(text)) : true;
             ShareKit.download(file);
             this.showToast(opened ? t.desktop : '戰績圖已下載、文字已複製\n發文視窗被瀏覽器擋下了，請允許彈出視窗');
@@ -241,7 +259,7 @@ class ResultScene extends Phaser.Scene {
     }
 
     // 底部提示訊息（面板下方），幾秒後淡出
-    showToast(msg) {
+    showToast(msg, duration = 4200) {
         if (this.toast) this.toast.destroy();
         const text = this.add.text(0, 0, msg, {
             fontFamily: FONT_UI, fontSize: '12px', fontStyle: 'bold', color: '#fef3c7', align: 'center', lineSpacing: 3
@@ -249,7 +267,7 @@ class ResultScene extends Phaser.Scene {
         const bg = this.add.rectangle(0, 0, text.width + 28, text.height + 14, 0x0b0e14, 0.94).setStrokeStyle(2, 0xf59e0b, 0.9);
         this.toast = this.add.container(GAME_W / 2, 918, [bg, text]).setDepth(60).setAlpha(0);
         this.tweens.add({ targets: this.toast, alpha: 1, duration: 160 });
-        this.tweens.add({ targets: this.toast, alpha: 0, delay: 4200, duration: 400 });
+        this.tweens.add({ targets: this.toast, alpha: 0, delay: duration, duration: 400 });
     }
 
     // 菸屁股卡片（top 為卡片上緣），回傳組成的所有物件，進場動畫用

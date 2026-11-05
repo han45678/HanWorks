@@ -3,7 +3,9 @@
  * 8. 分享戰績（結算畫面：IG 限時動態／FB 貼文／Threads 貼文，按鈕用各社群的圖示）
  * ============================================================================
  * 三個按鈕都分享「戰績圖」+ 分享文字（遊戲名稱、分數、遊戲連結）：
- * - 手機：系統分享選單帶著戰績圖，玩家選 Instagram／Facebook／Threads 發佈。
+ * - Android：分享選單沒辦法指定 App，所以改成「戰績圖存到手機 + 複製文字 + 直接跳進對應的 App」，
+ *   玩家在 App 裡選最新一張圖（IG 開限時動態相機、FB 開 App、Threads 開發文畫面並帶入文字）。
+ * - iPhone 等其他手機：系統分享選單帶著戰績圖（IG、FB、Threads 的圖示在第一排），玩家點選發佈。
  *   FB 不允許網頁預先帶入文字，所以文字會自動複製，貼上即可；Threads 會連文字一起帶過去。
  *   IG 限時動態的「連結」貼紙網頁無法自動加上（Instagram 只開放給註冊的 App），
  *   所以只複製遊戲網址，玩家加連結貼紙時直接貼上（貼整段文字貼紙不收）。
@@ -78,6 +80,31 @@ const ShareKit = {
 
     threadsWeb(text) {
         return `https://www.threads.com/intent/post?text=${encodeURIComponent(text)}`;
+    },
+
+    isAndroid() {
+        return /Android/i.test(navigator.userAgent);
+    },
+
+    /**
+     * Android：用 intent 網址直接打開對應的 App（網頁沒辦法指定分享選單裡的 App，也沒辦法把圖片塞進 App，
+     * 所以先把戰績圖存到手機，再跳進 App 讓玩家選最新一張圖）；沒裝 App 時改開網頁版
+     * - IG：限時動態相機　- FB：FB App　- Threads：發文畫面（文字已帶入）
+     */
+    androidAppUrl(app, text) {
+        const fallback = url => `S.browser_fallback_url=${encodeURIComponent(url)}`;
+        if (app === 'instagram') {
+            return `intent://story-camera#Intent;scheme=instagram;package=com.instagram.android;${fallback(ShareKit.instagramWeb())};end`;
+        }
+        if (app === 'facebook') {
+            return `intent://www.facebook.com/#Intent;scheme=https;package=com.facebook.katana;${fallback(ShareKit.facebookWeb())};end`;
+        }
+        const threads = ShareKit.threadsWeb(text);
+        return `intent://${threads.replace(/^https:\/\//, '')}#Intent;scheme=https;package=com.instagram.barcelona;${fallback(threads)};end`;
+    },
+
+    openApp(url) {
+        window.location.href = url;
     },
 
     // 這台裝置能不能用系統分享選單分享圖片（只在手機用：電腦的分享選單裡沒有 IG、FB、Threads）

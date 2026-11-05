@@ -38,7 +38,7 @@
          所有檔案的網址都會帶上 ?v=版本號，號碼一變就是新網址，玩家的瀏覽器和 GitHub Pages 的 CDN 都會重新下載；
          玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。 -->
     <script>
-        window.APP_VERSION = '1.0.0';
+        window.APP_VERSION = '1.0.1';
 
         // 網址加上 ?v=版本號（雙擊開檔 file:// 時不加：本機檔案不會被快取，加了反而可能讀不到）
         window.withVersion = function (url) {
