@@ -187,7 +187,7 @@ class ResultScene extends Phaser.Scene {
                 // 限時動態：只複製網址，玩家加「連結」貼紙時直接貼上
                 icon: 'icon-instagram', fill: 0xc13584, copyUrlOnly: true, app: 'instagram',
                 android: '戰績圖已存到手機、遊戲網址已複製\n在限時動態選最新這張圖，再加「連結」貼紙貼上',
-                pick: '選 Instagram →「限時動態」，再加「連結」貼紙\n遊戲網址已複製，在貼紙裡貼上即可',
+                pick: '在分享選單選 Instagram 的「限時動態」，再加「連結」貼紙\n遊戲網址已複製，在貼紙裡貼上即可',
                 desktop: '電腦不能直接發 IG 限時動態（要用手機）\n已下載戰績圖、複製網址，並開啟 IG',
                 web: () => ShareKit.instagramWeb()
             },
@@ -214,14 +214,8 @@ class ResultScene extends Phaser.Scene {
             }
             const text = ShareKit.text(this.shareInfo);
             ShareKit.copyText(t.copyUrlOnly ? SHARE_URL : text);
-            // Android：戰績圖存到手機，直接跳進對應的 App（提示留久一點，從 App 回來還看得到）
-            if (ShareKit.isAndroid()) {
-                ShareKit.download(file);
-                this.showToast(t.android, 12000);
-                setTimeout(() => ShareKit.openApp(ShareKit.androidAppUrl(t.app, text)), 300);
-                return;
-            }
-            // iPhone 等：系統分享選單（IG、FB、Threads 在第一排）
+            // 手機（Android、iPhone）：系統分享選單帶著戰績圖，選 IG 限時動態 / FB / Threads 就直接打開發文畫面、圖已放好
+            // （網頁沒辦法指定要開哪個 App，也沒辦法把圖直接塞進 App，只有分享選單做得到）
             if (ShareKit.canShareImage(file)) {
                 this.showToast(t.pick);
                 ShareKit.shareImage(file, t.withText ? text : null).then(result => {
@@ -231,6 +225,13 @@ class ResultScene extends Phaser.Scene {
                         this.showToast('這個瀏覽器不能直接分享，戰績圖已下載\n文字和連結已複製');
                     }
                 });
+                return;
+            }
+            // Android 叫不出分享選單：戰績圖存到手機，直接跳進對應的 App（提示留久一點，從 App 回來還看得到）
+            if (ShareKit.isAndroid()) {
+                ShareKit.download(file);
+                this.showToast(t.android, 12000);
+                setTimeout(() => ShareKit.openApp(ShareKit.androidAppUrl(t.app, text)), 300);
                 return;
             }
             // 手機但叫不出分享選單：多半是 LINE／IG／FB 內建的瀏覽器

@@ -10,6 +10,9 @@
  *   - 不問：從 App 開啟、已經裝過（記在瀏覽器裡；之後 Chrome 又發出 beforeinstallprompt 代表已經移除，會再問）、
  *     LINE / FB / IG / Threads 等 App 內建瀏覽器、Firefox 等不能安裝的瀏覽器
  *   - 正在抽菸（PlayScene）時先不跳，等這局結束；按「以後再說」只關掉這一次，下次打開還會問
+ *   - 裝好之後：網頁沒辦法直接打開 App。電腦版 Chrome 通常會自己把遊戲移到 App 視窗；
+ *     沒移過去（Android 一定不會）就跳「安裝好了」告訴玩家去哪裡開，Android 另外有「開啟 App」按鈕
+ *     （用 intent 網址請 Android 打開剛裝好的 App）
  */
 (function () {
     const ASK_DELAY = 800;
@@ -20,12 +23,12 @@
     if (!dialog) return;
 
     const ua = navigator.userAgent;
-    const isAppWindow = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches
-        || navigator.standalone === true;
     const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
     const isInAppBrowser = /FBAN|FBAV|FB_IAB|Instagram|Line\/|Barcelona|MicroMessenger/i.test(ua);
     const canPrompt = 'BeforeInstallPromptEvent' in window;
-    const MANUAL = /Android/i.test(ua) ? 'manual-android' : 'manual-desktop';
+    const MANUAL = isAndroid ? 'manual-android' : 'manual-desktop';
+    const INSTALLED = isAndroid ? 'installed-android' : 'installed-desktop';
 
     let installEvent = null;
     let asked = false;   // 這次打開已經問過（按了「以後再說」就不再跳）
@@ -46,6 +49,12 @@
         return typeof phaserGame !== 'undefined' && !!phaserGame && phaserGame.scene.isActive('PlayScene');
     }
 
+    // 現在是不是在 App 視窗裡（從主畫面 / 桌面打開，或電腦版裝好後被移進 App 視窗）
+    function inAppWindow() {
+        return window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches
+            || navigator.standalone === true;
+    }
+
     // 只顯示 data-for 包含這個 mode 的文字和按鈕
     function setMode(mode) {
         dialog.dataset.mode = mode;
@@ -64,12 +73,16 @@
             }
             timer = null;
             asked = true;
-            const icon = dialog.querySelector('.install-icon');
-            if (icon && !icon.getAttribute('src')) icon.src = withVersion('./icons/icon-192.png');
-            setMode(mode);
-            dialog.hidden = false;
+            show(mode);
         };
         timer = setTimeout(tryShow, ASK_DELAY);
+    }
+
+    function show(mode) {
+        const icon = dialog.querySelector('.install-icon');
+        if (icon && !icon.getAttribute('src')) icon.src = withVersion('./icons/icon-192.png');
+        setMode(mode);
+        dialog.hidden = false;
     }
 
     function close() {
@@ -77,7 +90,7 @@
     }
 
     // 從 App 開啟：記下來，之後在同一個瀏覽器的分頁打開也不問
-    if (isAppWindow) {
+    if (inAppWindow()) {
         markInstalled(true);
         return;
     }
@@ -92,15 +105,23 @@
         else ask('prompt');
     });
 
+    // 裝好了：等一下看 Chrome 有沒有把遊戲移進 App 視窗，沒有就告訴玩家去哪裡開
     window.addEventListener('appinstalled', () => {
         installEvent = null;
         markInstalled(true);
         close();
+        setTimeout(() => {
+            if (!inAppWindow()) show(INSTALLED);
+        }, 1200);
     });
 
     dialog.addEventListener('click', e => {
         const btn = e.target.closest('button');
-        if (btn && btn.dataset.action === 'install') {
+        if (btn && btn.dataset.action === 'open-app') {
+            // 請 Android 打開這個網址：裝好的 App 會接手；沒打開的話玩家照著視窗上的說明到主畫面點圖示
+            const start = new URL('./', location.href);
+            location.href = `intent://${start.host}${start.pathname}#Intent;scheme=https;end`;
+        } else if (btn && btn.dataset.action === 'install') {
             if (installEvent) {
                 installEvent.prompt();
                 installEvent = null;   // 一個 beforeinstallprompt 只能叫一次安裝視窗
