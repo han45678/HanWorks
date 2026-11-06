@@ -23,6 +23,8 @@ class BootScene extends Phaser.Scene {
     }
 
     create() {
+        // 結算畫面戰績圖的底圖（og-image.jpg）先在背景下載，不擋開場
+        ShareKit.loadBase().catch(() => { });
         loadWebFonts().then(() => {
             ComicArtGenerator.generateAllTextures(this);
             FxTextures.generate(this);
@@ -52,9 +54,9 @@ class BootScene extends Phaser.Scene {
             color: '#fde68a'
         }).setOrigin(0.5).setShadow(2, 2, '#000', 3).setDepth(12);
 
-        const btn = createComicButton(this, W / 2, 510, 250, 62, '🔊 點一下開始', { fontSize: '25px', depth: 13 });
+        const btn = createComicButton(this, W / 2, 510, 250, 62, '點一下開始', { fontSize: '25px', depth: 13 });
         this.tweens.add({ targets: btn, scale: 1.05, duration: 650, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        this.add.text(W / 2, 572, 'TAP TO START · 建議開啟聲音遊玩', {
+        this.add.text(W / 2, 572, 'HAN網頁工作室製作', {
             fontFamily: FONT_UI,
             fontSize: '13px',
             color: '#a8a29e'

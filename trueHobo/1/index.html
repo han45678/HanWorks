@@ -15,8 +15,9 @@
     <meta property="og:title" content="街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl">
     <meta property="og:description" content="在台灣霓虹暗巷裡挑一根菸屁股，壓住猛吸、適時放開控溫，60 秒內抽出最高分！你能抽贏我嗎？">
     <meta property="og:image" content="https://han45678.github.io/HanWorks/trueHobo/1/images/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <!-- og-image.jpg：直式 1080x1350（4:5），下方有遊戲網址的 QR code；結算畫面下載的戰績圖也用這張當底圖（js/share.js） -->
+    <meta property="og:image:width" content="1080">
+    <meta property="og:image:height" content="1350">
     <meta property="og:locale" content="zh_TW">
     <meta name="twitter:card" content="summary_large_image">
     <!-- AdSense 網站驗證（meta 標記 + 程式碼片段都放在 head，Google 只認 head 裡的） -->
@@ -49,7 +50,7 @@
          玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。
          sw.js 也跟著這個號碼：號碼一變，裝好 App 的玩家下次開啟就會換新版的 sw.js。 -->
     <script>
-        window.APP_VERSION = '1.0.7';
+        window.APP_VERSION = '1.0.11';
 
         // 網址加上 ?v=版本號（雙擊開檔 file:// 時不加：本機檔案不會被快取，加了反而可能讀不到）
         window.withVersion = function (url) {

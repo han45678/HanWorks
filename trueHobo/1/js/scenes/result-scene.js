@@ -46,12 +46,9 @@ class ResultScene extends Phaser.Scene {
             rankColor = '#38bdf8';
         }
 
-        // 分享用的戰績資料；戰績圖（0.webp 當背景）一進結算就先在背景做好（按下分享時才能立刻叫出分享選單）
-        this.shareInfo = { ...res, rankTitle, rankColor, rankQuote };
-        this.shareImage = null;
-        ShareKit.makeImage(this.textures.get('img0').getSourceImage(), this.shareInfo)
-            .then(file => { this.shareImage = file; })
-            .catch(() => { this.shareImage = false; });
+        // 戰績圖（og-image.jpg + 底部菸蒂與分數橫幅）一進結算就先在背景做好，按下按鈕直接下載
+        this.shareResult = res;
+        this.makeShareImage();
 
         // Settlement Card
         drawComicPanel(this, 18, 90, W - 36, 788, { fill: 0x0b0e14, alpha: 0.92, accent: 0xd97706, accentAlpha: 0.8, shadow: 8, depth: 20 });
@@ -125,8 +122,8 @@ class ResultScene extends Phaser.Scene {
             lineSpacing: 4
         }).setOrigin(0.5).setDepth(22);
 
-        // 分享戰績：IG 限時動態／FB 貼文／Threads 貼文
-        this.createShareRow(W, 668);
+        // 分享戰績：下載戰績圖
+        this.createShareButton(W, 694);
 
         // Action Buttons
         const btnRetry = createComicButton(this, W / 2, 770, W - 84, 52, '再撿一根 (重選菸屁股挑戰)', { fontSize: '19px', icon: true, iconScale: 1.15 });
@@ -174,89 +171,39 @@ class ResultScene extends Phaser.Scene {
         });
     }
 
-    // 分享列：標題 + 三顆社群圖示按鈕（IG 限時動態／FB 貼文／Threads 貼文）；labelY 為標題的位置，按鈕在下面一列
-    createShareRow(W, labelY) {
-        ensureSocialIcons(this);
-        this.add.text(W / 2, labelY, '📣 分享戰績', {
-            fontFamily: FONT_UI, fontSize: '13px', fontStyle: '900', color: '#fbbf24'
-        }).setOrigin(0.5).setDepth(22);
-
-        // 三個按鈕都分享戰績圖 + 文字：手機叫系統分享選單；電腦下載戰績圖並開發文頁
-        const targets = [
-            {
-                // 限時動態：只複製網址，玩家加「連結」貼紙時直接貼上
-                icon: 'icon-instagram', fill: 0xc13584, copyUrlOnly: true, app: 'instagram',
-                android: '戰績圖已存到手機、遊戲網址已複製\n在限時動態選最新這張圖，再加「連結」貼紙貼上',
-                pick: '在分享選單選 Instagram 的「限時動態」，再加「連結」貼紙\n遊戲網址已複製，在貼紙裡貼上即可',
-                desktop: '電腦不能直接發 IG 限時動態（要用手機）\n已下載戰績圖、複製網址，並開啟 IG',
-                web: () => ShareKit.instagramWeb()
-            },
-            {
-                icon: 'icon-facebook', fill: 0x1877f2, app: 'facebook',
-                android: '戰績圖已存到手機、文字已複製\n在 FB 新增貼文，選最新這張圖並貼上文字',
-                pick: '在分享選單選 Facebook\n文字和連結已複製，貼上即可',
-                desktop: '電腦不能把圖片直接帶進 FB（要用手機）\n已下載戰績圖、複製文字：新增貼文加入圖片即可',
-                web: () => ShareKit.facebookWeb()
-            },
-            {
-                icon: 'icon-threads', fill: 0x111111, withText: true, app: 'threads',
-                android: '戰績圖已存到手機，文字已帶入 Threads\n加入最新這張圖就能發文',
-                pick: '在分享選單選 Threads\n文字沒帶到的話，已複製好貼上即可',
-                desktop: '電腦不能把圖片直接帶進 Threads（要用手機）\n文字已帶入，加入已下載的戰績圖即可',
-                web: text => ShareKit.threadsWeb(text)
-            }
-        ];
-        const shareTo = t => () => {
-            const file = this.shareImage;
-            if (!file) {
-                this.showToast(file === false ? '戰績圖產生失敗，請重新整理後再試一次' : '戰績圖還在產生中，請再按一次');
-                return;
-            }
-            const text = ShareKit.text(this.shareInfo);
-            ShareKit.copyText(t.copyUrlOnly ? SHARE_URL : text);
-            // 手機（Android、iPhone）：系統分享選單帶著戰績圖，選 IG 限時動態 / FB / Threads 就直接打開發文畫面、圖已放好
-            // （網頁沒辦法指定要開哪個 App，也沒辦法把圖直接塞進 App，只有分享選單做得到）
-            if (ShareKit.canShareImage(file)) {
-                this.showToast(t.pick);
-                ShareKit.shareImage(file, t.withText ? text : null).then(result => {
-                    // App 內建瀏覽器等不給叫分享選單：改成下載
-                    if (result === 'failed') {
-                        ShareKit.download(file);
-                        this.showToast('這個瀏覽器不能直接分享，戰績圖已下載\n文字和連結已複製');
-                    }
-                });
-                return;
-            }
-            // Android 叫不出分享選單：戰績圖存到手機，直接跳進對應的 App（提示留久一點，從 App 回來還看得到）
-            if (ShareKit.isAndroid()) {
-                ShareKit.download(file);
-                this.showToast(t.android, 12000);
-                setTimeout(() => ShareKit.openApp(ShareKit.androidAppUrl(t.app, text)), 300);
-                return;
-            }
-            // 手機但叫不出分享選單：多半是 LINE／IG／FB 內建的瀏覽器
-            if (ShareKit.isMobile()) {
-                ShareKit.download(file);
-                this.showToast('這個 App 內建的瀏覽器不能分享圖片\n請從右上角選單改用 Safari／Chrome 開啟遊戲', 8000);
-                return;
-            }
-            // 電腦：瀏覽器沒辦法把圖片交給 IG／FB／Threads，下載戰績圖並開社群網頁
-            const opened = t.web ? ShareKit.openWindow(t.web(text)) : true;
-            ShareKit.download(file);
-            this.showToast(opened ? t.desktop : '戰績圖已下載、文字已複製\n發文視窗被瀏覽器擋下了，請允許彈出視窗');
-        };
-
-        const buttons = targets.map(t => ({ icon: t.icon, fill: t.fill, action: shareTo(t) }));
-        const gap = 12;
-        const bw = (W - 84 - gap * (buttons.length - 1)) / buttons.length;
-        buttons.forEach((b, i) => {
-            const btn = createComicButton(this, 42 + bw / 2 + i * (bw + gap), labelY + 36, bw, 40, '', {
-                fill: b.fill, shadow: 4, border: 2.5, shine: 0.12, depth: 25
-            });
-            btn.add(this.add.image(0, 0, b.icon).setScale(1.2 / SOCIAL_ICON.res));
-            // 手機上要等手指放開（touchend）才算使用者操作，開分享視窗 / 分享選單才不會被擋
-            btn.on('pointerup', b.action);
+    // 分享戰績：一顆按鈕，按下去下載戰績圖（不指定社群，玩家下載後想分享到哪裡都可以）；y 為按鈕中心
+    createShareButton(W, y) {
+        const btn = createComicButton(this, W / 2, y, W - 84, 46, '📣 分享戰績', {
+            fill: 0xb91c1c, color: '#ffffff', fontSize: '19px', shadow: 4, border: 2.5, shine: 0.12, depth: 25
         });
+        // 手機上要等手指放開（touchend）才算使用者操作，下載才不會被擋
+        btn.on('pointerup', () => this.downloadShareImage());
+    }
+
+    // shareImage：null = 產生中、false = 失敗、File = 好了
+    makeShareImage() {
+        this.shareImage = null;
+        ShareKit.makeImage(this.shareResult)
+            .then(file => { this.shareImage = file; })
+            .catch(() => { this.shareImage = false; });
+    }
+
+    downloadShareImage() {
+        const file = this.shareImage;
+        if (file === false) {
+            // 多半是 og-image.jpg 沒載到（網路不穩）：重新產生，好了再按一次
+            this.makeShareImage();
+            this.showToast('戰績圖產生失敗，正在重新產生\n請稍後再按一次');
+            return;
+        }
+        if (!file) {
+            this.showToast('戰績圖還在產生中，請再按一次');
+            return;
+        }
+        ShareKit.download(file);
+        this.showToast(ShareKit.isMobile()
+            ? '戰績圖已下載，想分享到哪裡都可以！\niPhone 存在「檔案」App；下載不了請改用 Safari／Chrome 開啟'
+            : '戰績圖已下載，想分享到哪裡都可以！', 6000);
     }
 
     // 底部提示訊息（面板下方），幾秒後淡出
