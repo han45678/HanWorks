@@ -530,7 +530,8 @@ class PlayScene extends Phaser.Scene {
 
             // Continuous Carrying / Inhaling Score Gain (一直有攜帶/吸食就會加分)
             const inSweetSpot = (this.heat >= butt.sweetMin && this.heat <= butt.sweetMax);
-            const zoneBonus = inSweetSpot ? this.zoneBonus : 1.0;
+            // 畫面上的 x 倍數（每 0.3 秒重抽）再乘上隱藏的分段倍數（越上面越高，見 SWEET_TIERS）
+            const zoneBonus = inSweetSpot ? this.zoneBonus * sweetTierBonus(butt, this.heat) : 1.0;
             if (inSweetSpot) {
                 this.goldenTime += dt;
             }
@@ -612,13 +613,13 @@ class PlayScene extends Phaser.Scene {
             ? 0.24 + Math.sin(time * 0.008) * 0.1
             : Phaser.Math.Linear(this.craveVignette.alpha, 0, 0.1));
 
-        // 壓按圈顏色跟著溫度區間變化（綠：還沒到 → 黃：過癮區內 → 橘：超過過癮區 → 紅：快燙傷）
+        // 壓按圈顏色跟著溫度區間變化（綠：還沒到 → 黃：過癮區內 → 紅：超過過癮區＝快燙傷）
+        const nearBurn = this.heat > butt.sweetMax;
         let ringColor = 0xfbbf24;
         if (this.isBurnStunned) {
             ringColor = 0xef4444;
         } else if (inhalingNow) {
-            if (this.heat >= 88) ringColor = 0xef4444;
-            else if (this.heat > butt.sweetMax) ringColor = 0xf97316;
+            if (nearBurn) ringColor = 0xef4444;
             else if (this.heat >= butt.sweetMin) ringColor = 0xfde047;
             else ringColor = 0x4ade80;
         }
@@ -634,8 +635,8 @@ class PlayScene extends Phaser.Scene {
         this.heatFill.setCrop(0, texH - cropH, texW, cropH);
         this.heatMarker.y = this.gaugeY + this.gaugeH / 2 - fillH;
         this.heatPctTxt.setText(`${Math.round(this.heat)}%`);
-        this.heatPctTxt.setColor(this.heat >= 88 ? '#f87171' : '#ffffff');
-        this.gaugeDanger.setAlpha(this.heat >= 88 ? 0.4 + Math.sin(time * 0.025) * 0.25 : 0);
+        this.heatPctTxt.setColor(nearBurn ? '#f87171' : '#ffffff');
+        this.gaugeDanger.setAlpha(nearBurn ? 0.4 + Math.sin(time * 0.025) * 0.25 : 0);
 
         // 4. Update Score & Combo Text
         this.scoreTxt.setText(`${Math.floor(this.score)}`);

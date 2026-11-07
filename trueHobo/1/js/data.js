@@ -5,68 +5,81 @@
  */
 const CIGARETTE_BUTTS = [
     {
-        id: 'damp_long',
-        name: '受潮長菸蒂',
-        subtitle: '路邊水窪旁撿到的半支長壽菸',
+        id: 'da_wei',
+        name: '大尾',
+        subtitle: '角頭大哥抽兩口就丟的長長一截',
         stars: '★☆☆☆☆',
         difficultyLabel: '簡單',
         badgeColor: '#2ecc71',
         heatRate: 28,          // % per second when holding
         coolRate: 38,          // % per second when released
-        // 黃金過癮區（燙度 %）：倍率越高的菸蒂區域越窄 → 簡單 40% / 適中 28% / 困難 18% / 地獄 12%
-        sweetMin: 45,          // Sweet spot start %
-        sweetMax: 85,          // Sweet spot end %（寬 40%）
+        // 黃金過癮區寬度（燙度 %）：倍率越高的菸蒂區域越窄 → 簡單 40% / 適中 32% / 困難 24% / 地獄 17% / 傳說 12%
+        // 上緣固定貼在燙傷線下方 SWEET_BURN_GAP，sweetMin / sweetMax 由下方自動算出
+        sweetWidth: 40,
         scoreMultiplier: 1.0,
         burnPenalty: 120,
         trayPos: { x: 84, y: 367 }, // 鐵盤原圖上實際菸蒂的位置（540x960 遊戲座標）
         stubLen: 46,           // HUD 上濾嘴後面還剩多長的菸紙（px，濾嘴固定 36px）
-        desc: '菸身較長且微濕，升溫慢、容錯率高，適合剛入巷弄的新手。'
+        desc: '大哥抽兩口就丟，菸身還很長，升溫慢、容錯率高，新手首選。'
     },
     {
-        id: 'half_rich',
-        name: '半截濃醇菸屁股',
-        subtitle: '快炒店老闆剛捻熄的七星濃菸',
-        stars: '★★★☆☆',
+        id: 'pi_si',
+        name: '屁死',
+        subtitle: '公園阿伯下棋時隨手捻熄的',
+        stars: '★★☆☆☆',
         difficultyLabel: '適中',
         badgeColor: '#f1c40f',
-        heatRate: 44,
-        coolRate: 34,
-        sweetMin: 55,
-        sweetMax: 83,          // 寬 28%
-        scoreMultiplier: 1.8,
-        burnPenalty: 180,
+        heatRate: 40,
+        coolRate: 35,
+        sweetWidth: 32,
+        scoreMultiplier: 1.5,
+        burnPenalty: 160,
+        trayPos: { x: 490, y: 430 },
+        stubLen: 36,
+        desc: '菸身還剩一大半、火力溫和，比大尾快一點，適合暖身練手感。'
+    },
+    {
+        id: 'ma_po_rou',
+        name: '麻婆肉',
+        subtitle: '快炒店老闆剛捻熄的半截濃菸',
+        stars: '★★★☆☆',
+        difficultyLabel: '困難',
+        badgeColor: '#e67e22',
+        heatRate: 52,
+        coolRate: 32,
+        sweetWidth: 24,
+        scoreMultiplier: 2.5,
+        burnPenalty: 220,
         trayPos: { x: 292, y: 467 },
-        stubLen: 30,
+        stubLen: 26,
         desc: '菸草乾燥紮實、吸起來濃郁過癮，但火頭推進速度明顯加快！'
     },
     {
-        id: 'short_import',
-        name: '極短進口濃菸頭',
-        subtitle: '居酒屋日本客留下的極短赤マル',
+        id: 'wen_si_dun',
+        name: '穩死盾',
+        subtitle: '居酒屋上班族留下的極短一截',
         stars: '★★★★☆',
-        difficultyLabel: '困難',
-        badgeColor: '#e67e22',
-        heatRate: 64,
-        coolRate: 30,
-        sweetMin: 64,
-        sweetMax: 82,          // 寬 18%
-        scoreMultiplier: 3.0,
-        burnPenalty: 260,
+        difficultyLabel: '地獄',
+        badgeColor: '#e74c3c',
+        heatRate: 68,
+        coolRate: 29,
+        sweetWidth: 17,
+        scoreMultiplier: 3.5,
+        burnPenalty: 300,
         trayPos: { x: 134, y: 496 },
         stubLen: 15,
         desc: '火源已經貼近濾嘴邊緣！稍微貪吸半秒就會直接燙爆嘴唇！'
     },
     {
-        id: 'legend_gold',
-        name: '傳說貼皮黃金屁股',
-        subtitle: '只剩 3mm 的頂級雪茄型濃菸頭',
+        id: 'shi_qi_xing_qiu',
+        name: '十柒猩球',
+        subtitle: '只剩 3mm 的街友界傳說菸頭',
         stars: '★★★★★',
-        difficultyLabel: '地獄',
-        badgeColor: '#e74c3c',
+        difficultyLabel: '傳說',
+        badgeColor: '#c084fc',
         heatRate: 88,
         coolRate: 27,
-        sweetMin: 72,
-        sweetMax: 84,          // 寬 12%
+        sweetWidth: 12,
         scoreMultiplier: 5.0,
         burnPenalty: 400,
         trayPos: { x: 489, y: 328 },
@@ -75,12 +88,30 @@ const CIGARETTE_BUTTS = [
     }
 ];
 
+// 黃金過癮區上緣只比燙傷（100%）低一點點：過了過癮區就是燙傷邊緣，
+// 免得玩家以為過癮區上面還有一大段「沒分數」的空白
+const SWEET_BURN_GAP = 1;
+CIGARETTE_BUTTS.forEach(butt => {
+    butt.sweetMax = 100 - SWEET_BURN_GAP;
+    butt.sweetMin = butt.sweetMax - butt.sweetWidth;
+});
+
 // 黃金過癮區的加分倍數：每 0.3 秒重新抽一次 x1.2 ~ x2.0（以 0.1 為單位）
 const ZONE_BONUS = { min: 1.2, max: 2.0, rerollMs: 300 };
 
 function rollZoneBonus() {
     const steps = Math.round((ZONE_BONUS.max - ZONE_BONUS.min) * 10);
     return Math.round((ZONE_BONUS.min * 10 + Phaser.Math.Between(0, steps))) / 10;
+}
+
+// 黃金過癮區再由下往上等分成幾段，越上面（越接近燙傷）加分越多；畫面上不畫出來，讓玩家自己摸索。
+// 跟上面每 0.3 秒重抽的加分倍數相乘；要改段數或倍數，直接改這個陣列（由下往上）
+const SWEET_TIERS = [1.0, 1.2, 1.5, 2.0];
+
+function sweetTierBonus(butt, heat) {
+    const t = (heat - butt.sweetMin) / (butt.sweetMax - butt.sweetMin);
+    const idx = Phaser.Math.Clamp(Math.floor(t * SWEET_TIERS.length), 0, SWEET_TIERS.length - 1);
+    return SWEET_TIERS[idx];
 }
 
 // Shared Game State

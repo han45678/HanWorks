@@ -32,6 +32,30 @@ class StreetAudioEngine {
             { text: "恁老師咧", tts: "恁老師咧", pitch: 0, rate: 1, audio: './audio/audio08.mp3' },
             { text: "燙", tts: "燙", pitch: 0, rate: 1, audio: './audio/audio09.mp3' }
         ];
+        // 洗牌袋：還沒抽到的台詞（見 drawBurnLine）
+        this.burnBag = [];
+        this.lastBurnLine = null;
+    }
+
+    // 台詞用「洗牌袋」抽：整副洗亂後依序抽，抽完才重洗，每一輪每句剛好出現一次，
+    // 重洗時也避開上一句，不會連續兩次同一句。
+    //（每次各自亂數雖然長期平均，但短時間內常常同一句連出好幾次，玩起來會像只有固定那幾句）
+    drawBurnLine(pool) {
+        while (this.burnBag.length) {
+            const line = this.burnBag.pop();
+            if (pool.includes(line)) return (this.lastBurnLine = line);
+        }
+        const bag = pool.slice();
+        for (let i = bag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [bag[i], bag[j]] = [bag[j], bag[i]];
+        }
+        // 下一句從陣列尾端抽，若剛好跟上一句一樣就跟開頭對調
+        if (bag.length > 1 && bag[bag.length - 1] === this.lastBurnLine) {
+            [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
+        }
+        this.burnBag = bag;
+        return (this.lastBurnLine = this.burnBag.pop());
     }
 
     init() {
@@ -283,7 +307,7 @@ class StreetAudioEngine {
         // 有真人配音就只挑有音檔的台詞，免得一下真人一下機器聲
         const recorded = this.taiwaneseBurnLines.filter(l => l.audio && VoiceClips.has(l.audio));
         const pool = recorded.length ? recorded : this.taiwaneseBurnLines;
-        const line = pool[Math.floor(Math.random() * pool.length)];
+        const line = this.drawBurnLine(pool);
         const playedClip = !!line.audio && VoiceClips.play(line.audio);
 
         if (this.ctx) {
